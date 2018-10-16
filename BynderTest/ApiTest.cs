@@ -9,11 +9,11 @@ namespace BynderTest
     {
         private readonly BynderClientSettings _bynderSettings = new BynderClientSettings()
         {
-            ConsumerKey = "5B9BDF90-65C8-4122-B1BAED1CDE643482",
-            ConsumerSecret = "0f5eed26ae737f2e30e6a91702875f5f",
-            CustomerBynderUrl = "https://xsarus.getbynder.com",
-            Token = "DE126C3E-81B8-442E-9FFF66A0A85732F5",
-            TokenSecret = "69badb73a05e05fb730c4b86bab57bd9"
+            ConsumerKey = "***",
+            ConsumerSecret = "***",
+            CustomerBynderUrl = "https://***.getbynder.com",
+            Token = "***",
+            TokenSecret = "***"
         };
 
         [TestMethod]
