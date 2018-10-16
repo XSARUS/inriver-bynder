@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BynderExtension", "BynderExtension\BynderExtension.csproj", "{401F0A67-A547-4BC4-97D8-E772E2DAC5B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BynderTest", "BynderTest\BynderTest.csproj", "{F450AC02-9E95-4EBF-BDEE-2DDB0A9FE1FD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionWide", "SolutionWide", "{200E1AD4-F988-41C7-B0F4-0564BD138F60}"
+	ProjectSection(SolutionItems) = preProject
+		build\createzip.ps1 = build\createzip.ps1
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{401F0A67-A547-4BC4-97D8-E772E2DAC5B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{401F0A67-A547-4BC4-97D8-E772E2DAC5B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{401F0A67-A547-4BC4-97D8-E772E2DAC5B5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{401F0A67-A547-4BC4-97D8-E772E2DAC5B5}.Debug|x64.Build.0 = Debug|Any CPU
+		{401F0A67-A547-4BC4-97D8-E772E2DAC5B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{401F0A67-A547-4BC4-97D8-E772E2DAC5B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{401F0A67-A547-4BC4-97D8-E772E2DAC5B5}.Release|x64.ActiveCfg = Release|Any CPU
+		{401F0A67-A547-4BC4-97D8-E772E2DAC5B5}.Release|x64.Build.0 = Release|Any CPU
+		{F450AC02-9E95-4EBF-BDEE-2DDB0A9FE1FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F450AC02-9E95-4EBF-BDEE-2DDB0A9FE1FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F450AC02-9E95-4EBF-BDEE-2DDB0A9FE1FD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F450AC02-9E95-4EBF-BDEE-2DDB0A9FE1FD}.Debug|x64.Build.0 = Debug|Any CPU
+		{F450AC02-9E95-4EBF-BDEE-2DDB0A9FE1FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F450AC02-9E95-4EBF-BDEE-2DDB0A9FE1FD}.Release|x64.ActiveCfg = Release|Any CPU
+		{F450AC02-9E95-4EBF-BDEE-2DDB0A9FE1FD}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A4A7E8B8-813B-419A-91AB-96CEDEA946AC}
+	EndGlobalSection
+EndGlobal

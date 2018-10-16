@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>nl.xsa.bynder</id>
+    <version>1.0.0.0</version>
+    <title>Bynder Extension</title>
+    <authors>XSARUS inRiver team</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>XSARUS Bynder Extension for iPMC</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2018</copyright>
+    <tags></tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="Microsoft.CSharp" />
+    </frameworkAssemblies>
+  </metadata>
+  <files>
+    <file src="..\build\Release\BynderExtension.zip" target="BynderExtension.zip" />
+  </files>
+</package>
