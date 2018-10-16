@@ -1,0 +1,65 @@
+@startuml
+
+title inRiver Bynder integration overview
+
+actor User
+participant  Bynder
+participant inRiver 
+control "inRiver Connect" as connect
+
+group UC User uploads or updates asset in Bynder
+User -> Bynder : Upload new/replace asset
+Bynder -> inRiver : Notify Asset
+inRiver -> inRiver : Match regular expression
+opt succesful match
+inRiver -> inRiver : Store / update Resource
+inRiver -> connect : trigger entity created/updated event
+inRiver -> inRiver : Create product/item Link
+inRiver -> connect : trigger link created event
+end
+end
+
+newpage
+
+group UC Manual / batch import
+User -> inRiver : activate extension
+inRiver -> Bynder : query assets
+loop
+inRiver -> inRiver : Match regular expression
+opt succesful match
+inRiver -> inRiver : Store / update Resource
+end
+end
+end
+
+newpage
+
+group UC inRiver Resource Entity created or changed
+connect -> inRiver : entity created/updated event
+inRiver -> Bynder : Request download URL
+inRiver -> inRiver: Download S3 file
+inRiver -> Bynder : Update metaproperties
+inRiver -> Bynder : Set asset usage
+end
+
+newpage
+
+group UC inRiver link to Resource is created
+User -> inRiver : create link
+inRiver -> connect : notify link created event
+...
+connect -> inRiver : trigger link created event
+inRiver -> Bynder : Update metaproperties
+end
+
+newpage
+
+group UC inRiver Other than Resource Entity changed
+User -> inRiver : modify entity
+inRiver -> connect :  notify entity updated event
+...
+connect -> inRiver : entity updated event
+inRiver -> Bynder : Update metaproperties
+end
+
+@enduml
