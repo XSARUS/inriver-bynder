@@ -7,5 +7,6 @@
         public static string ResourceMimeType = "ResourceMimeType";
         public static string ResourceBynderId = "ResourceBynderId";
         public static string ResourceBynderDownloadState = "ResourceBynderDownloadState";
+        public static string ResourceBynderIdHash = "ResourceBynderIdHash";
     }
 }

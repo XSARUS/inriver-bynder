@@ -68,6 +68,9 @@ namespace Bynder.Workers
                 resourceEntity.GetField(keyValuePair.Key.Id).Data = keyValuePair.Value;
             }
 
+            // save IdHash for re-creation of public CDN Urls in inRiver
+            resourceEntity.GetField(FieldTypeId.ResourceBynderIdHash).Data = asset.IdHash;
+
             var resultString = new StringBuilder();
             if (isNewResourceEntity)
             {

@@ -17,9 +17,10 @@ For the integration you need to add the following CVLs and values to the model:
 
 Also you need the have the following fields on the `Resource` entity:
 
-| Name | DataType | CVL | Unique | Multivalue |
-|-----| -----| ---| --| --|
-|`ResourceBynderId`|string||*||
+| Name | DataType | CVL | Unique | Multivalue | ReadOnly |
+|-----| -----| ---| --| --| -- |
+|`ResourceBynderId`|string||*||*
+|`ResourceBynderIdHash`|string||||*
 |`ResourceBynderDownloadState`|CVL|`ResourceBynderState`|
 |`ResourceMimeType`|string|
 |`ResourceFileId`|file|

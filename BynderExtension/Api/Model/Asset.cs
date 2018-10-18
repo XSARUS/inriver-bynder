@@ -7,6 +7,7 @@ namespace Bynder.Api.Model
     {
         private const string Original = "original";
         public string Id;
+        public string IdHash;
 
         public List<MediaItem> MediaItems;
 
