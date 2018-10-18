@@ -24,6 +24,7 @@ namespace Bynder.Workers
 
             // check existance of resource fields
             AssumeFieldTypeExists(FieldTypeId.ResourceBynderId);
+            AssumeFieldTypeExists(FieldTypeId.ResourceBynderIdHash);
             AssumeFieldTypeExists(FieldTypeId.ResourceBynderDownloadState);
             AssumeFieldTypeExists(FieldTypeId.ResourceFileId);
             AssumeFieldTypeExists(FieldTypeId.ResourceFileName);
