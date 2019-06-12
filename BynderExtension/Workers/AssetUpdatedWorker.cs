@@ -44,11 +44,8 @@ namespace Bynder.Workers
                 _inRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeId.ResourceBynderId, bynderAssetId,
                     LoadLevel.DataAndLinks);
 
-            bool isNewResourceEntity = false;
             if (resourceEntity == null)
             {
-                isNewResourceEntity = true;
-
                 EntityType resourceType = _inRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeId.Resource);
                 resourceEntity = Entity.CreateEntity(resourceType);
 
@@ -72,7 +69,7 @@ namespace Bynder.Workers
             resourceEntity.GetField(FieldTypeId.ResourceBynderIdHash).Data = asset.IdHash;
 
             var resultString = new StringBuilder();
-            if (isNewResourceEntity)
+            if (resourceEntity.Id == 0)
             {
                 resourceEntity = _inRiverContext.ExtensionManager.DataService.AddEntity(resourceEntity);
                 resultString.Append($"Resource {resourceEntity.Id} added");
