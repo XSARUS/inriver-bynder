@@ -1,9 +1,9 @@
 ﻿namespace Bynder.Names
 {
-    public class BynderState
+    public struct BynderState
     {
-        public static string Todo = "todo";
-        public static string Done = "done";
-        public static string Error = "error";
+        public const string Todo = "todo";
+        public const string Done = "done";
+        public const string Error = "error";
     }
 }

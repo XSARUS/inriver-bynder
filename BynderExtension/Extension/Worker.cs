@@ -15,12 +15,19 @@ namespace Bynder.Extension
         /// <param name="entityId"></param>
         public void EntityCreated(int entityId)
         {
-            if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
-                EntityTypeId.Resource, out var entity)) return;
+            try
+            {
+                if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
+                    EntityTypeId.Resource, out var entity)) return;
 
-            Container.GetInstance<AssetDownloadWorker>().Execute(entity);
-            Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
-            Container.GetInstance<AssetUsageUpdateWorker>().Execute(entity);
+                Container.GetInstance<AssetDownloadWorker>().Execute(entity);
+                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
+                Container.GetInstance<AssetUsageUpdateWorker>().Execute(entity);
+            }
+            catch (System.Exception ex)
+            {
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+            }
         }
 
         /// <summary>
@@ -30,20 +37,27 @@ namespace Bynder.Extension
         /// <param name="fields"></param>
         public void EntityUpdated(int entityId, string[] fields)
         {
-            var entity = Context.ExtensionManager.DataService.GetEntity(entityId, LoadLevel.Shallow);
-            if (entity.EntityType.Id == EntityTypeId.Resource)
+            try
             {
-                Container.GetInstance<AssetDownloadWorker>().Execute(entity);
-                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
-                Container.GetInstance<AssetUsageUpdateWorker>().Execute(entity);
+                var entity = Context.ExtensionManager.DataService.GetEntity(entityId, LoadLevel.Shallow);
+                if (entity.EntityType.Id == EntityTypeId.Resource)
+                {
+                    Container.GetInstance<AssetDownloadWorker>().Execute(entity);
+                    Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
+                    Container.GetInstance<AssetUsageUpdateWorker>().Execute(entity);
+                }
+                else
+                {
+                    // if other entitytype than resource update metaproperties based on modified fields
+                    Container.GetInstance<NonResourceMetapropertyWorker>().Execute(entity, fields);
+                }
             }
-            else
+            catch (System.Exception ex)
             {
-                // if other entitytype than resource update metaproperties based on modified fields
-                Container.GetInstance<NonResourceMetapropertyWorker>().Execute(entity, fields);
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
             }
         }
-        
+
         /// <summary>
         /// if a link is created with resource as target, we should check if we inform bynder
         /// </summary>
@@ -54,67 +68,103 @@ namespace Bynder.Extension
         /// <param name="linkEntityId"></param>
         public void LinkCreated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
         {
-            if (!Context.ExtensionManager.DataService.TryGetEntityOfType(targetId, LoadLevel.DataOnly,
-                EntityTypeId.Resource, out var entity)) return;
-
-            Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
-        }
-
-        public void LinkUpdated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
-        {
-            LinkCreated(linkId, sourceId, targetId, linkTypeId, linkEntityId);
-        }
-
-        public void LinkDeleted(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
-        {
-            LinkCreated(linkId, sourceId, targetId, linkTypeId, linkEntityId);
-        }
-
-        public void EntityDeleted(Entity deletedEntity)
-        {
-            foreach (var entityId in deletedEntity.OutboundLinks
-                .Where(l => l.Target.EntityType.Id.Equals(EntityTypeId.Resource))
-                .Select(l => l.Target.Id))
+            try
             {
-                if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
+                if (!Context.ExtensionManager.DataService.TryGetEntityOfType(targetId, LoadLevel.DataOnly,
                     EntityTypeId.Resource, out var entity)) return;
 
                 Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
             }
+            catch (System.Exception ex)
+            {
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+            }
         }
-        
+
+        public void LinkUpdated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
+        {
+            try
+            {
+                LinkCreated(linkId, sourceId, targetId, linkTypeId, linkEntityId);
+            }
+            catch (System.Exception ex)
+            {
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+            }
+        }
+
+        public void LinkDeleted(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
+        {
+            try
+            {
+                LinkCreated(linkId, sourceId, targetId, linkTypeId, linkEntityId);
+            }
+            catch (System.Exception ex)
+            {
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+            }
+        }
+
+        public void EntityDeleted(Entity deletedEntity)
+        {
+            try
+            {
+                foreach (var entityId in deletedEntity.OutboundLinks
+                    .Where(l => l.Target.EntityType.Id.Equals(EntityTypeId.Resource))
+                    .Select(l => l.Target.Id))
+                {
+                    if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
+                        EntityTypeId.Resource, out var entity)) return;
+
+                    Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+            }
+        }
+
         #region Not Implemented IEntityListener, ILinkListener Members
         public void LinkActivated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
         {
+            // Not implemented
         }
 
         public void LinkInactivated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
         {
+            // Not implemented
         }
 
 
         public void EntityLocked(int entityId)
         {
+            // Not implemented
         }
 
         public void EntityUnlocked(int entityId)
         {
+            // Not implemented
         }
 
         public void EntityFieldSetUpdated(int entityId, string fieldSetId)
         {
+            // Not implemented
         }
 
         public void EntityCommentAdded(int entityId, int commentId)
         {
+            // Not implemented
         }
 
         public void EntitySpecificationFieldAdded(int entityId, string fieldName)
         {
+            // Not implemented
         }
 
         public void EntitySpecificationFieldUpdated(int entityId, string fieldName)
         {
+            // Not implemented
         }
         #endregion
 

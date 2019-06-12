@@ -45,12 +45,12 @@
     <Reference Include="AWSSDK.SimpleNotificationService, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
       <HintPath>..\packages\AWSSDK.SimpleNotificationService.3.3.0.24\lib\net45\AWSSDK.SimpleNotificationService.dll</HintPath>
     </Reference>
-    <Reference Include="inRiver.Remoting, Version=7.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\inRiver.Remoting.iPMC.7.0.18045.7\lib\net461\inRiver.Remoting.dll</HintPath>
+    <Reference Include="inRiver.Remoting, Version=7.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\inRiver.Remoting.iPMC.7.3.19133.3\lib\net461\inRiver.Remoting.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.JScript" />
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="StructureMap, Version=4.6.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\StructureMap.4.6.1\lib\net45\StructureMap.dll</HintPath>
@@ -70,20 +70,33 @@
     <Compile Include="Api\BynderClientSettings.cs" />
     <Compile Include="Api\IBynderClient.cs" />
     <Compile Include="Api\Model\Account.cs" />
+    <Compile Include="Api\Model\ApiFieldAttribute.cs" />
     <Compile Include="Api\Model\Asset.cs" />
     <Compile Include="Api\Model\AssetDownloadLocation.cs" />
     <Compile Include="Api\Model\AssetCollection.cs" />
     <Compile Include="Api\Model\MediaItem.cs" />
     <Compile Include="Api\Model\Metaproperty.cs" />
     <Compile Include="Api\Model\MetapropertyList.cs" />
+    <Compile Include="Api\Model\MultipartParameter.cs" />
+    <Compile Include="Api\Model\Queries\RequestUploadQuery.cs" />
+    <Compile Include="Api\Model\Queries\SaveMediaQuery.cs" />
+    <Compile Include="Api\Model\Queries\UploadQuery.cs" />
+    <Compile Include="Api\Model\Request\UploadRequest.cs" />
+    <Compile Include="Api\Model\Responses\BrandResponse.cs" />
+    <Compile Include="Api\Model\Responses\FinalizeResponse.cs" />
+    <Compile Include="Api\Model\Responses\PollResponse.cs" />
+    <Compile Include="Api\Model\Responses\UploadResult.cs" />
+    <Compile Include="Api\Model\S3File.cs" />
     <Compile Include="Api\OAuthClient.cs" />
     <Compile Include="Api\SettingNames.cs" />
     <Compile Include="Extension\AssetLoader.cs" />
     <Compile Include="Extension\Registry.cs" />
     <Compile Include="Extension\Extension.cs" />
+    <Compile Include="Extension\Uploader.cs" />
     <Compile Include="Utils\InRiver\DataServiceExtensions.cs" />
     <Compile Include="Workers\AssetDownloadWorker.cs" />
     <Compile Include="Workers\AssetUpdatedWorker.cs" />
+    <Compile Include="Workers\AssetUploadWorker.cs" />
     <Compile Include="Workers\IWorker.cs" />
     <Compile Include="Workers\ResourceMetapropertyUpdateWorker.cs" />
     <Compile Include="Workers\BynderSettingsValidationWorker.cs" />
@@ -100,7 +113,7 @@
     <Compile Include="Names\LinkTypeId.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Config\Settings.cs" />
-    <Compile Include="Utils\FileNameEvaluator.cs" />
+    <Compile Include="Utils\FilenameEvaluator.cs" />
     <Compile Include="Utils\OAuth.cs" />
     <Compile Include="Workers\NotificationWorker.cs" />
   </ItemGroup>

@@ -1,9 +1,9 @@
 ﻿namespace Bynder.Names
 {
-    public class LinkTypeId
+    public struct LinkTypeId
     {
-        public static string ProductItem = "ProductItem";
-        public static string ItemResource = "ItemResource";
-        public static string ProductResource = "ProductResource";
+        public const string ProductItem = "ProductItem";
+        public const string ItemResource = "ItemResource";
+        public const string ProductResource = "ProductResource";
     }
 }

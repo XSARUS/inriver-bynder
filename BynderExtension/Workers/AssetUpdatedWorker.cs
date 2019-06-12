@@ -13,9 +13,9 @@ namespace Bynder.Workers
     {
         private readonly inRiverContext _inRiverContext;
         private readonly IBynderClient _bynderClient;
-        private readonly FileNameEvaluator _fileNameEvaluator;
+        private readonly FilenameEvaluator _fileNameEvaluator;
 
-        public AssetUpdatedWorker(inRiverContext inRiverContext, IBynderClient bynderClient, FileNameEvaluator fileNameEvaluator)
+        public AssetUpdatedWorker(inRiverContext inRiverContext, IBynderClient bynderClient, FilenameEvaluator fileNameEvaluator)
         {
             _inRiverContext = inRiverContext;
             _bynderClient = bynderClient;
@@ -30,7 +30,7 @@ namespace Bynder.Workers
             var asset = _bynderClient.GetAssetByAssetId(bynderAssetId);
 
             string originalFileName = asset.GetOriginalFileName();
-            
+
             // evaluate filename
             var evaluatorResult = _fileNameEvaluator.Evaluate(originalFileName);
             if (!evaluatorResult.IsMatch())
@@ -103,7 +103,16 @@ namespace Bynder.Workers
                     inboundResourceLinkTypes.FirstOrDefault(lt => lt.SourceEntityTypeId == sourceEntity.EntityType.Id);
                 if (linkType == null) continue;
 
-                _inRiverContext.ExtensionManager.DataService.CreateLinkIfNotExists(sourceEntity, resourceEntity, linkType);
+                if (!_inRiverContext.ExtensionManager.DataService.LinkAlreadyExists(sourceEntity.Id, resourceEntity.Id, null, linkType.Id))
+                {
+                    _inRiverContext.ExtensionManager.DataService.AddLink(new Link()
+                    {
+                        Source = sourceEntity,
+                        Target = resourceEntity,
+                        LinkType = linkType
+                    });
+                }
+
                 resultString.Append($"; {sourceEntity.EntityType.Id} entity {sourceEntity.Id} found and linked");
             }
 

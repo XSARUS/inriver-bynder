@@ -13,7 +13,7 @@ namespace Bynder.Workers
         {
             _inRiverContext = inRiverContext;
         }
-        
+
         /// <summary>
         /// check the necesaary prereqs for the bynder-inriver integration in the inriver model
         /// </summary>
@@ -29,13 +29,13 @@ namespace Bynder.Workers
             AssumeFieldTypeExists(FieldTypeId.ResourceFileId);
             AssumeFieldTypeExists(FieldTypeId.ResourceFileName);
             AssumeFieldTypeExists(FieldTypeId.ResourceMimeType);
-            
+
             // check existance of CVL
-            AssumeCVLExists(CVLId.ResourceBynderState);
-            AssumeCVLValuesExists(CVLId.ResourceBynderState, new []{BynderState.Todo, BynderState.Done, BynderState.Error});
+            AssumeCVLExists(CvlId.ResourceBynderState);
+            AssumeCVLValuesExists(CvlId.ResourceBynderState, new[] { BynderState.Todo, BynderState.Done, BynderState.Error });
 
             // check if field downloadstate linked to right CVL
-            AssumeFieldTypeIsCVL(FieldTypeId.ResourceBynderDownloadState, CVLId.ResourceBynderState);
+            AssumeFieldTypeIsCVL(FieldTypeId.ResourceBynderDownloadState, CvlId.ResourceBynderState);
 
             return _workerResult;
         }
@@ -91,7 +91,5 @@ namespace Bynder.Workers
                 }
             }
         }
-
-
     }
 }

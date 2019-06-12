@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Bynder.Utils;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using Bynder.Utils;
 
 namespace Bynder.Api
 {
@@ -22,7 +22,7 @@ namespace Bynder.Api
         /// <returns></returns>
         public string Get(string uri)
         {
-            var response =  SendRequest(
+            var response = SendRequest(
                 new HttpRequestMessage()
                 {
                     RequestUri = new Uri(uri),
@@ -42,7 +42,8 @@ namespace Bynder.Api
         public string GetWithRetry(string uri, int maxRetries = 8)
         {
             int retryCount = 0;
-            while (true) {
+            while (true)
+            {
                 var response = SendRequest(
                     new HttpRequestMessage()
                     {
@@ -142,16 +143,14 @@ namespace Bynder.Api
         /// <param name="message"></param>
         private void SignRequestMessage(HttpRequestMessage message)
         {
-            if (OAuthManager == null) throw new Exception("OAuthManager is not initialized");
-
             var uri = message.RequestUri.ToString();
             if (message.Method.Equals(HttpMethod.Post) && message.Content.GetType() == typeof(FormUrlEncodedContent))
             {
                 uri += "?" + message.Content.ReadAsStringAsync().Result;
             }
-            message.Headers.Add(
-                HttpRequestHeader.Authorization.ToString(), OAuthManager.GenerateAuthzHeader(uri, message.Method.Method)
-            );
+
+            if (OAuthManager == null) throw new Exception("OAuthManager is not initialized");
+            message.Headers.Add(HttpRequestHeader.Authorization.ToString(), OAuthManager.GenerateAuthzHeader(uri, message.Method.Method));
         }
     }
 }

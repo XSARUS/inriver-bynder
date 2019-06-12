@@ -1,8 +1,8 @@
 ﻿namespace Bynder.Names
 {
-    public class EntityTypeId
+    public struct EntityTypeId
     {
-        public static string Resource = "Resource";
-        public static string Product = "Product";
+        public const string Resource = "Resource";
+        public const string Product = "Product";
     }
 }

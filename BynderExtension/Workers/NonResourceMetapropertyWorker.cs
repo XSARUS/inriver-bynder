@@ -15,7 +15,7 @@ namespace Bynder.Workers
             _inRiverContext = inRiverContext;
             _resourceMetapropertyUpdateWorker = resourceMetapropertyUpdateWorker;
         }
-        
+
         public void Execute(Entity entity, string[] fields)
         {
             if (entity.EntityType.Id == EntityTypeId.Resource) return;

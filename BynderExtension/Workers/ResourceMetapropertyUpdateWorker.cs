@@ -66,7 +66,7 @@ namespace Bynder.Workers
                 foreach (var metaProperty in configuredMetaPropertyMap)
                 {
                     // skip resource metaproperties
-                    if(metaProperty.Value.StartsWith(EntityTypeId.Resource)) continue;
+                    if (metaProperty.Value.StartsWith(EntityTypeId.Resource)) continue;
 
                     // save metaproperty values in a list so we can combine multiple occuneces to a single string
                     var values = new List<string>();

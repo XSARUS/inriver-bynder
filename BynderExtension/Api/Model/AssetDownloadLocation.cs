@@ -2,6 +2,6 @@
 {
     public class AssetDownloadLocation
     {
-        public string S3_File;
+        public string S3_File { get; set; }
     }
 }

@@ -4,8 +4,8 @@ namespace Bynder.Api.Model
 {
     public class AssetCollection
     {
-        public List<Asset> Media;
-        public Total Total;
+        public List<Asset> Media { get; set; }
+        public Total Total { get; set; }
         public int Page { get; set; }
         public int Limit { get; set; }
 
