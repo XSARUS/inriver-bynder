@@ -6,10 +6,10 @@ namespace Bynder.Api.Model
     public class Asset
     {
         private const string Original = "original";
-        public string Id;
-        public string IdHash;
+        public string Id { get; set; }
+        public string IdHash { get; set; }
 
-        public List<MediaItem> MediaItems;
+        public List<MediaItem> MediaItems { get; set; }
 
         public string GetOriginalFileName()
         {
@@ -28,7 +28,7 @@ namespace Bynder.Api.Model
             {
                 mimeType = regKey.GetValue("Content Type").ToString();
             }
-                
+
             return mimeType;
         }
     }

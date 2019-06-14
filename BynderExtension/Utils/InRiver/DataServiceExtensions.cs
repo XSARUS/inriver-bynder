@@ -14,8 +14,8 @@ namespace Bynder.Utils.InRiver
         /// <returns></returns>
         public static Link CreateLinkIfNotExists(this IDataService dataService, Link link)
         {
-            return dataService.LinkAlreadyExists(link.Source.Id, link.Target.Id, link.LinkEntity?.Id, link.LinkType.Id) 
-                ? null 
+            return dataService.LinkAlreadyExists(link.Source.Id, link.Target.Id, link.LinkEntity?.Id, link.LinkType.Id)
+                ? null
                 : dataService.AddLinkLast(link);
         }
 
@@ -64,8 +64,8 @@ namespace Bynder.Utils.InRiver
         /// <returns></returns>
         public static Entity EntityLoadLevel(this IDataService dataService, Entity entity, LoadLevel loadLevel)
         {
-            return entity.LoadLevel < loadLevel 
-                ? dataService.GetEntity(entity.Id, loadLevel) 
+            return entity.LoadLevel < loadLevel
+                ? dataService.GetEntity(entity.Id, loadLevel)
                 : entity;
         }
     }

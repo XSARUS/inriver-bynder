@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Bynder.Api.Model;
+﻿using Bynder.Api.Model;
+using System.Collections.Generic;
 
 namespace Bynder.Api
 {
@@ -14,5 +14,12 @@ namespace Bynder.Api
         AssetDownloadLocation GetAssetDownloadLocation(string assetId);
         string SetMetaProperties(string assetId, MetapropertyList metapropertyList);
         string SetMetaProperties(string assetId, Dictionary<string, string> metapropertyDictionary);
+        string GetClosestS3Endpoint();
+        UploadRequest RequestUploadInformation(RequestUploadQuery requestUploadQuery);
+        void UploadPart(string s3Endpoint, string filename, byte[] buffer, int bytesRead, uint chunkNumber, UploadRequest uploadRequest, uint numberOfChunks);
+        FinalizeResponse FinalizeUpload(UploadRequest uploadRequest, uint chunkNumber);
+        PollResponse PollStatus(IList<string> items);
+        UploadResult SaveMedia(SaveMediaQuery saveMediaQuery);
+        IList<BrandResponse> GetAvailableBranches();
     }
 }

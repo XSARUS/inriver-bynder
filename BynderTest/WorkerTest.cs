@@ -6,21 +6,25 @@ namespace BynderTest
     [TestClass]
     public class WorkerTest : TestBase
     {
-        [TestMethod]
-        public void TestEntityCreate()
+        [Ignore("Add resource entityId here")]
+        [DataRow(123)]
+        [DataTestMethod]
+        public void TestEntityCreate(int entityId)
         {
             var worker = new Worker
             {
                 Context = InRiverContext
             };
             worker.Context.Settings = TestSettings;
-            worker.EntityCreated(4016);
+            worker.EntityCreated(entityId);
             Logger.Log("Done!");
 
         }
 
-        [TestMethod]
-        public void TestEntityUpdate()
+        [Ignore("Add product entityId here or adjust the test with an other field for other entitytype")]
+        [DataRow(123)]
+        [DataTestMethod]
+        public void TestEntityUpdate(int entityId)
         {
             var worker = new Worker
             {
@@ -31,7 +35,7 @@ namespace BynderTest
             string[] fields = {
                 "ProductName"
             };
-            worker.EntityUpdated(4036, fields);
+            worker.EntityUpdated(entityId, fields);
             Logger.Log("Done!");
         }
     }

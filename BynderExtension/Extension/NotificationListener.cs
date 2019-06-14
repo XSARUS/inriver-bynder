@@ -20,21 +20,32 @@ namespace Bynder.Extension
         /// <returns></returns>
         public string Update(string value)
         {
-            // first, handle the notification
-            var notificationWorker = Container.GetInstance<NotificationWorker>();
-            var notificationResult = notificationWorker.Execute(value);
-            var resultMessages = notificationResult.Messages;
+            string result = string.Empty;
 
-            // if the outcome of the notification contains a media Id, we need to start handling the asset
-            if (!string.IsNullOrEmpty(notificationResult.MediaId))
+            try
             {
-                var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
-                var updaterResult = assetWorker.Execute(notificationResult.MediaId);
-                resultMessages.AddRange(updaterResult.Messages);
+                // first, handle the notification
+                var notificationWorker = Container.GetInstance<NotificationWorker>();
+                var notificationResult = notificationWorker.Execute(value);
+                var resultMessages = notificationResult.Messages;
+
+                // if the outcome of the notification contains a media Id, we need to start handling the asset
+                if (!string.IsNullOrEmpty(notificationResult.MediaId))
+                {
+                    var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
+                    var updaterResult = assetWorker.Execute(notificationResult.MediaId);
+                    resultMessages.AddRange(updaterResult.Messages);
+                }
+
+                // return the outcome to the caller
+                result = string.Join(Environment.NewLine, resultMessages);
+            }
+            catch (Exception ex)
+            {
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
             }
 
-            // return the outcome to the caller
-            return string.Join(Environment.NewLine, resultMessages);
+            return result;
         }
 
         /// <summary>

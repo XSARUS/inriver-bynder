@@ -2,17 +2,18 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using Bynder.Config;
+using Bynder.Names;
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 
 namespace Bynder.Utils
 {
-    public class FileNameEvaluator
+    public class FilenameEvaluator
     {
         private readonly inRiverContext _inRiverContext;
 
-        public FileNameEvaluator(inRiverContext inRiverContext)
+        public FilenameEvaluator(inRiverContext inRiverContext)
         {
             _inRiverContext = inRiverContext;
         }
@@ -22,8 +23,8 @@ namespace Bynder.Utils
         /// </summary>
         public Result Evaluate(string fileName)
         {
-            var result = new Result {FileName = fileName};
-            
+            var result = new Result { Filename = fileName };
+
             string regularExpressionPattern = _inRiverContext.Settings[Settings.RegularExpressionForFileName];
             var regex = new Regex(regularExpressionPattern, RegexOptions.None);
 
@@ -35,7 +36,10 @@ namespace Bynder.Utils
                 // check if matchgroup name indicates a non resource field, if so, add to output collection
                 var groupName = regex.GroupNameFromNumber(i);
                 var fieldType = _inRiverContext.ExtensionManager.ModelService.GetFieldType(groupName);
+
                 if (fieldType == null) continue;
+                if (string.IsNullOrWhiteSpace(result?.Match?.Groups[i]?.Value)) continue;
+
                 result.EntityDataInFilename.Add(fieldType, result.Match.Groups[i].Value);
             }
 
@@ -45,11 +49,16 @@ namespace Bynder.Utils
 
         public class Result
         {
-            public string FileName;
-            public Match Match;
-            public Dictionary<FieldType, string> EntityDataInFilename = new Dictionary<FieldType, string>();
+            public string Filename { get; set; }
+            public Match Match { get; set; }
+            public Dictionary<FieldType, string> EntityDataInFilename { get; set; }
 
             public bool IsMatch() => Match.Success;
+
+            public Result()
+            {
+                EntityDataInFilename = new Dictionary<FieldType, string>();
+            }
 
             public Dictionary<string, string> GetLinkType()
             {
@@ -63,13 +72,13 @@ namespace Bynder.Utils
 
             public Dictionary<FieldType, string> GetResourceDataInFilename()
             {
-                return EntityDataInFilename.Where(kv => kv.Key.EntityTypeId == "Resource")
+                return EntityDataInFilename.Where(kv => kv.Key.EntityTypeId == EntityTypeIds.Resource)
                     .ToDictionary(kv => kv.Key, kv => kv.Value);
             }
 
             public Dictionary<FieldType, string> GetRelatedEntityDataInFilename()
             {
-                return EntityDataInFilename.Where(kv => kv.Key.EntityTypeId != "Resource")
+                return EntityDataInFilename.Where(kv => kv.Key.EntityTypeId != EntityTypeIds.Resource)
                     .ToDictionary(kv => kv.Key, kv => kv.Value);
             }
         }

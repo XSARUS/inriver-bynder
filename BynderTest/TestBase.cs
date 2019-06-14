@@ -13,6 +13,7 @@ namespace BynderTest
         protected inRiverContext InRiverContext;
         protected Logger Logger;
 
+        // todo: Add your settings here
         protected Dictionary<string,string> TestSettings = new Dictionary<string, string>
         {
             {Bynder.Api.SettingNames.ConsumerKey, "***" },
@@ -22,7 +23,8 @@ namespace BynderTest
             {Bynder.Api.SettingNames.TokenSecret, "***" },
             {Bynder.Config.Settings.RegularExpressionForFileName, @"^(?<ProductNumber>[0-9a-zA-Z]+)_(?<ResourceType>image|document)_(?<ResourcePosition>[0-9]+)" },
             {Bynder.Config.Settings.InitialAssetLoadUrlQuery, @"type=image" },
-            {Bynder.Config.Settings.MetapropertyMap, @"C7BC01E1-670D-4410-A7B81E9032FE261A=ResourcePosition,C284234B-29B6-4CA8-B907B728455F30EA=ProductNumber" }
+            {Bynder.Config.Settings.MetapropertyMap, @"C7BC01E1-670D-4410-A7B81E9032FE261A=ResourcePosition,C284234B-29B6-4CA8-B907B728455F30EA=ProductNumber" },
+            {Bynder.Config.Settings.bynderBrandName, "" }
         };
 
         [TestInitialize]
@@ -30,12 +32,16 @@ namespace BynderTest
         {
             Logger = new Logger(TestContext);
             Logger.Log(LogLevel.Information, $"Initialize connection to inRiver Server");
+
+            // Customer: https://remoting.productmarketingcloud.com
+            // Sandbox:  https://partner.remoting.productmarketingcloud.com
+
+            // todo: add your inRiver username, password and environment here 
             InRiverContext = new inRiverContext(
                 RemoteManager.CreateInstance("https://partner.remoting.productmarketingcloud.com",
-                    "***", "***"), Logger);
+                    "***", "***", "***"), Logger);
 
             Assert.IsNotNull(InRiverContext, "Login failed ??");
         }
-
     }
 }

@@ -23,7 +23,7 @@ namespace Bynder.Workers
             // get resource entity with fields
             resourceEntity =
                 _inRiverContext.ExtensionManager.DataService.EntityLoadLevel(resourceEntity, LoadLevel.DataOnly);
-            string assetId = resourceEntity.GetField(FieldTypeId.ResourceBynderId)?.Data?.ToString();
+            string assetId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderId)?.Data;
 
             // check if empty - nothing to do
             if (string.IsNullOrEmpty(assetId)) return;

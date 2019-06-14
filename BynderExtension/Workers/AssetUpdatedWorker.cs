@@ -1,11 +1,10 @@
-﻿using System.Linq;
-using System.Text;
-using Bynder.Api;
+﻿using Bynder.Api;
 using Bynder.Names;
 using Bynder.Utils;
-using Bynder.Utils.InRiver;
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Objects;
+using System.Linq;
+using System.Text;
 
 namespace Bynder.Workers
 {
@@ -13,9 +12,9 @@ namespace Bynder.Workers
     {
         private readonly inRiverContext _inRiverContext;
         private readonly IBynderClient _bynderClient;
-        private readonly FileNameEvaluator _fileNameEvaluator;
+        private readonly FilenameEvaluator _fileNameEvaluator;
 
-        public AssetUpdatedWorker(inRiverContext inRiverContext, IBynderClient bynderClient, FileNameEvaluator fileNameEvaluator)
+        public AssetUpdatedWorker(inRiverContext inRiverContext, IBynderClient bynderClient, FilenameEvaluator fileNameEvaluator)
         {
             _inRiverContext = inRiverContext;
             _bynderClient = bynderClient;
@@ -30,7 +29,7 @@ namespace Bynder.Workers
             var asset = _bynderClient.GetAssetByAssetId(bynderAssetId);
 
             string originalFileName = asset.GetOriginalFileName();
-            
+
             // evaluate filename
             var evaluatorResult = _fileNameEvaluator.Evaluate(originalFileName);
             if (!evaluatorResult.IsMatch())
@@ -41,23 +40,23 @@ namespace Bynder.Workers
 
             // find resourceEntity based on bynderAssetId
             Entity resourceEntity =
-                _inRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeId.ResourceBynderId, bynderAssetId,
+                _inRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeIds.ResourceBynderId, bynderAssetId,
                     LoadLevel.DataAndLinks);
 
             if (resourceEntity == null)
             {
-                EntityType resourceType = _inRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeId.Resource);
+                EntityType resourceType = _inRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
                 resourceEntity = Entity.CreateEntity(resourceType);
 
                 // add asset id to new ResourceEntity
-                resourceEntity.GetField(FieldTypeId.ResourceBynderId).Data = bynderAssetId;
+                resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = bynderAssetId;
 
                 // set filename (only for *new* resource)
-                resourceEntity.GetField(FieldTypeId.ResourceFileName).Data = $"{bynderAssetId}_{asset.GetOriginalFileName()}";
+                resourceEntity.GetField(FieldTypeIds.ResourceFilename).Data = $"{bynderAssetId}_{asset.GetOriginalFileName()}";
             }
 
             // status for new and existing ResourceEntity
-            resourceEntity.GetField(FieldTypeId.ResourceBynderDownloadState).Data = BynderState.Todo;
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState).Data = BynderStates.Todo;
 
             // resource fields from regular expression created from filename
             foreach (var keyValuePair in evaluatorResult.GetResourceDataInFilename())
@@ -66,7 +65,7 @@ namespace Bynder.Workers
             }
 
             // save IdHash for re-creation of public CDN Urls in inRiver
-            resourceEntity.GetField(FieldTypeId.ResourceBynderIdHash).Data = asset.IdHash;
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
 
             var resultString = new StringBuilder();
             if (resourceEntity.Id == 0)
@@ -83,8 +82,8 @@ namespace Bynder.Workers
             // get related entity data found in filename so we can create or update link to these entities
             // all found field/values are supposed to be unique fields in the correspondent entitytype
             // get all *inbound* linktypes towards the Resource entitytype in the model (e.g. ProductResource, ItemResource NOT ResourceOtherEntity)
-            var inboundResourceLinkTypes = _inRiverContext.ExtensionManager.ModelService.GetLinkTypesForEntityType(EntityTypeId.Resource)
-                .Where(lt => lt.TargetEntityTypeId == EntityTypeId.Resource).OrderBy(lt => lt.Index).ToList();
+            var inboundResourceLinkTypes = _inRiverContext.ExtensionManager.ModelService.GetLinkTypesForEntityType(EntityTypeIds.Resource)
+                .Where(lt => lt.TargetEntityTypeId == EntityTypeIds.Resource).OrderBy(lt => lt.Index).ToList();
 
             foreach (var keyValuePair in evaluatorResult.GetRelatedEntityDataInFilename())
             {
@@ -100,7 +99,16 @@ namespace Bynder.Workers
                     inboundResourceLinkTypes.FirstOrDefault(lt => lt.SourceEntityTypeId == sourceEntity.EntityType.Id);
                 if (linkType == null) continue;
 
-                _inRiverContext.ExtensionManager.DataService.CreateLinkIfNotExists(sourceEntity, resourceEntity, linkType);
+                if (!_inRiverContext.ExtensionManager.DataService.LinkAlreadyExists(sourceEntity.Id, resourceEntity.Id, null, linkType.Id))
+                {
+                    _inRiverContext.ExtensionManager.DataService.AddLink(new Link()
+                    {
+                        Source = sourceEntity,
+                        Target = resourceEntity,
+                        LinkType = linkType
+                    });
+                }
+
                 resultString.Append($"; {sourceEntity.EntityType.Id} entity {sourceEntity.Id} found and linked");
             }
 

@@ -10,7 +10,7 @@ namespace Bynder.Api.Model
             var pairs = new List<KeyValuePair<string, string>>();
             foreach (var metaproperty in this)
             {
-                pairs.Add(new KeyValuePair<string, string>("metaproperty."+metaproperty.Id, metaproperty.Value));
+                pairs.Add(new KeyValuePair<string, string>("metaproperty." + metaproperty.Id, metaproperty.Value));
             }
             return pairs;
         }

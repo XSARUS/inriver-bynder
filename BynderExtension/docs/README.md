@@ -27,7 +27,7 @@ The AssetUpdated worker, in short, handles the process of newly created or updat
   * If not found: a new Resource entity will be created
 * The following values will be set on the Resource entity:
   * `ResourceBynderId` : Bynder Asset ID
-  * `ResourceFileName` : filename from Bynder (currently prefixed with the asset ID to keep it unique)
+  * `ResourceFilename` : filename from Bynder (currently prefixed with the asset ID to keep it unique)
   * `ResourceBynderDownloadState` : "todo" 
 * All labeled regex groups starting with `Resource` will be put in matching Resource fields on the Resource entity. With this you can set an inRiver resource value based on parts of the filename
 * All labeled regex groups *not* starting with `Resource` will be processed; for each value:

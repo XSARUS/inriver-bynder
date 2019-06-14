@@ -25,6 +25,7 @@ namespace Bynder.Extension
                 settings.Add(Config.Settings.MetapropertyMap, "metapropertyguid1=inriverfield1,metapropertyguid2=inriverfield2");
                 settings.Add(Config.Settings.inriverIntegrationId, "41a92562-bfd9-4847-a34d-4320bcef5e4a");
                 settings.Add(Config.Settings.inriverEntityUrl, "https://inriver.productmarketingcloud.com/app/enrich#entity/{entityId}/");
+                settings.Add(Config.Settings.bynderBrandName, "");
                 return settings;
             }
         }

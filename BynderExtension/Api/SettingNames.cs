@@ -10,7 +10,7 @@ namespace Bynder.Api
         public const string Token = "TOKEN";
         public const string TokenSecret = "TOKEN_SECRET";
 
-        public static Dictionary<string, string> GetDefaultBynderApiSettings() 
+        public static Dictionary<string, string> GetDefaultBynderApiSettings()
             => new Dictionary<string, string>
             {
                 {CustomerBynderUrl, "https://[CUSTOMER].getbynder.com"},

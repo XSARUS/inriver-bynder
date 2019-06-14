@@ -14,19 +14,19 @@ namespace Bynder.Extension
 
             // Bynder API Client
             For<IBynderClient>().Use<BynderClient>();
-            
+
             // Bynder API Client configuration
             For<BynderClientSettings>().Use(BynderClientSettings.Create(inRiverContext.Settings));
 
             // file name evaluator
-            For<FileNameEvaluator>().Use<FileNameEvaluator>();
+            For<FilenameEvaluator>().Use<FilenameEvaluator>();
 
             // auto add the workers
             Scan(x =>
-                {
-                    x.TheCallingAssembly();
-                    x.AddAllTypesOf<IWorker>().NameBy(type => type.Name);
-                }
+            {
+                x.TheCallingAssembly();
+                x.AddAllTypesOf<IWorker>().NameBy(type => type.Name);
+            }
             );
         }
     }

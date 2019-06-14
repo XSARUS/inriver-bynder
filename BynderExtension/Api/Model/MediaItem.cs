@@ -2,8 +2,8 @@ namespace Bynder.Api.Model
 {
     public class MediaItem
     {
-        public string Id;
-        public string FileName;
-        public string Type;
+        public string Id { get; set; }
+        public string FileName { get; set; }
+        public string Type { get; set; }
     }
 }

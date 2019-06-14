@@ -21,10 +21,10 @@ namespace Bynder.Workers
         public WorkerResult Execute()
         {
             var result = new WorkerResult();
-            
+
             result.Messages.AddRange(_modelValidationWorker.Execute().Messages);
             result.Messages.AddRange(_bynderSettingsValidationWorker.Execute().Messages);
-            
+
             // test bynder bynderClient
             result.Messages.Add("Test Bynder API Connection:");
             var account = _bynderClient.GetAccount();
