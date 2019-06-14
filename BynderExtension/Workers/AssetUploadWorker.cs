@@ -38,7 +38,7 @@ namespace Bynder.Workers
         }
         private string GetFileNameFromEntity(Entity resourceEntity)
         {
-            return (string)resourceEntity.GetField("ResourceFilename")?.Data;
+            return (string)resourceEntity.GetField(FieldTypeIds.ResourceFilename)?.Data;
         }
         private string GetBrandIdBasedOnSettingKey()
         {

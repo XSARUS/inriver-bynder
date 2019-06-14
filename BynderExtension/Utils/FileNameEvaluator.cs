@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using Bynder.Config;
+using Bynder.Names;
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
@@ -71,13 +72,13 @@ namespace Bynder.Utils
 
             public Dictionary<FieldType, string> GetResourceDataInFilename()
             {
-                return EntityDataInFilename.Where(kv => kv.Key.EntityTypeId == "Resource")
+                return EntityDataInFilename.Where(kv => kv.Key.EntityTypeId == EntityTypeIds.Resource)
                     .ToDictionary(kv => kv.Key, kv => kv.Value);
             }
 
             public Dictionary<FieldType, string> GetRelatedEntityDataInFilename()
             {
-                return EntityDataInFilename.Where(kv => kv.Key.EntityTypeId != "Resource")
+                return EntityDataInFilename.Where(kv => kv.Key.EntityTypeId != EntityTypeIds.Resource)
                     .ToDictionary(kv => kv.Key, kv => kv.Value);
             }
         }
