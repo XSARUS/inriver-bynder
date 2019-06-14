@@ -24,17 +24,17 @@ namespace Bynder.Workers
         public void Execute(Entity resourceEntity)
         {
             // check if entity is resource and loadlevel is high enough
-            if (!resourceEntity.EntityType.Id.Equals(EntityTypeId.Resource)) return;
+            if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
 
             resourceEntity = _inRiverContext.ExtensionManager.DataService.EntityLoadLevel(resourceEntity, LoadLevel.DataOnly);
 
             // block resourceEntity for bynder update if no BynderId is found on entity
-            string bynderId = resourceEntity.GetField(FieldTypeId.ResourceBynderId).Data.ToString();
+            string bynderId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderId)?.Data;
             if (string.IsNullOrWhiteSpace(bynderId)) return;
 
             // only update bynder asset if resource has status 'Done'
-            string bynderStatus = resourceEntity.GetField(FieldTypeId.ResourceBynderDownloadState).Data.ToString();
-            if (string.IsNullOrWhiteSpace(bynderStatus) || bynderStatus != BynderState.Done) return;
+            string bynderStatus = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState)?.Data;
+            if (string.IsNullOrWhiteSpace(bynderStatus) || bynderStatus != BynderStates.Done) return;
 
             // parse setting map in dictionary
             var configuredMetaPropertyMap = GetConfiguredMetaPropertyMap();
@@ -49,7 +49,7 @@ namespace Bynder.Workers
                 if (field != null)
                 {
                     _inRiverContext.Logger.Log(LogLevel.Debug, $"Saving value for metaproperty {metaProperty.Key} ({metaProperty.Value}) (R)");
-                    newMetapropertyValues.Add(metaProperty.Key, field.Data?.ToString() ?? "");
+                    newMetapropertyValues.Add(metaProperty.Key, (string)field.Data ?? "");
                 }
             }
 
@@ -66,7 +66,7 @@ namespace Bynder.Workers
                 foreach (var metaProperty in configuredMetaPropertyMap)
                 {
                     // skip resource metaproperties
-                    if (metaProperty.Value.StartsWith(EntityTypeId.Resource)) continue;
+                    if (metaProperty.Value.StartsWith(EntityTypeIds.Resource)) continue;
 
                     // save metaproperty values in a list so we can combine multiple occuneces to a single string
                     var values = new List<string>();

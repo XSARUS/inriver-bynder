@@ -106,11 +106,11 @@
     <Compile Include="Workers\NonResourceMetapropertyWorker.cs" />
     <Compile Include="Extension\Worker.cs" />
     <Compile Include="Extension\NotificationListener.cs" />
-    <Compile Include="Names\BynderState.cs" />
-    <Compile Include="Names\CVLId.cs" />
-    <Compile Include="Names\EntityTypeId.cs" />
-    <Compile Include="Names\FieldTypeId.cs" />
-    <Compile Include="Names\LinkTypeId.cs" />
+    <Compile Include="Names\BynderStates.cs" />
+    <Compile Include="Names\CVLIds.cs" />
+    <Compile Include="Names\EntityTypeIds.cs" />
+    <Compile Include="Names\FieldTypeIds.cs" />
+    <Compile Include="Names\LinkTypeIds.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Config\Settings.cs" />
     <Compile Include="Utils\FilenameEvaluator.cs" />

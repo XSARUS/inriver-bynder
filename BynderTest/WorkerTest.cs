@@ -21,7 +21,7 @@ namespace BynderTest
 
         }
 
-        [Ignore("Add product entityId here")]
+        [Ignore("Add product entityId here or adjust the test with an other field for other entitytype")]
         [DataRow(123)]
         [DataTestMethod]
         public void TestEntityUpdate(int entityId)

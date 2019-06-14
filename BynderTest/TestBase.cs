@@ -13,6 +13,7 @@ namespace BynderTest
         protected inRiverContext InRiverContext;
         protected Logger Logger;
 
+        // todo: Add your settings here
         protected Dictionary<string,string> TestSettings = new Dictionary<string, string>
         {
             {Bynder.Api.SettingNames.ConsumerKey, "***" },
@@ -35,12 +36,12 @@ namespace BynderTest
             // Customer: https://remoting.productmarketingcloud.com
             // Sandbox:  https://partner.remoting.productmarketingcloud.com
 
+            // todo: add your inRiver username, password and environment here 
             InRiverContext = new inRiverContext(
                 RemoteManager.CreateInstance("https://partner.remoting.productmarketingcloud.com",
-                    "***", "***"), Logger);
+                    "***", "***", "***"), Logger);
 
             Assert.IsNotNull(InRiverContext, "Login failed ??");
         }
-
     }
 }

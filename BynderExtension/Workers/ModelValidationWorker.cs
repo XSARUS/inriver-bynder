@@ -23,19 +23,19 @@ namespace Bynder.Workers
             _workerResult = new WorkerResult();
 
             // check existance of resource fields
-            AssumeFieldTypeExists(FieldTypeId.ResourceBynderId);
-            AssumeFieldTypeExists(FieldTypeId.ResourceBynderIdHash);
-            AssumeFieldTypeExists(FieldTypeId.ResourceBynderDownloadState);
-            AssumeFieldTypeExists(FieldTypeId.ResourceFileId);
-            AssumeFieldTypeExists(FieldTypeId.ResourceFileName);
-            AssumeFieldTypeExists(FieldTypeId.ResourceMimeType);
+            AssumeFieldTypeExists(FieldTypeIds.ResourceBynderId);
+            AssumeFieldTypeExists(FieldTypeIds.ResourceBynderIdHash);
+            AssumeFieldTypeExists(FieldTypeIds.ResourceBynderDownloadState);
+            AssumeFieldTypeExists(FieldTypeIds.ResourceFileId);
+            AssumeFieldTypeExists(FieldTypeIds.ResourceFilename);
+            AssumeFieldTypeExists(FieldTypeIds.ResourceMimeType);
 
             // check existance of CVL
-            AssumeCVLExists(CvlId.ResourceBynderState);
-            AssumeCVLValuesExists(CvlId.ResourceBynderState, new[] { BynderState.Todo, BynderState.Done, BynderState.Error });
+            AssumeCVLExists(CvlIds.ResourceBynderState);
+            AssumeCVLValuesExists(CvlIds.ResourceBynderState, new[] { BynderStates.Todo, BynderStates.Done, BynderStates.Error });
 
             // check if field downloadstate linked to right CVL
-            AssumeFieldTypeIsCVL(FieldTypeId.ResourceBynderDownloadState, CvlId.ResourceBynderState);
+            AssumeFieldTypeIsCVL(FieldTypeIds.ResourceBynderDownloadState, CvlIds.ResourceBynderState);
 
             return _workerResult;
         }

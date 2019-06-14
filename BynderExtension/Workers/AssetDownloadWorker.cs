@@ -20,19 +20,18 @@ namespace Bynder.Workers
 
         public void Execute(Entity resourceEntity)
         {
-            if (!resourceEntity.EntityType.Id.Equals(EntityTypeId.Resource)) return;
+            if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
             if (resourceEntity.LoadLevel < LoadLevel.DataOnly)
             {
                 resourceEntity = _inRiverContext.ExtensionManager.DataService.GetEntity(resourceEntity.Id, LoadLevel.DataOnly);
             }
 
             string bynderDownloadState =
-                resourceEntity.GetField(FieldTypeId.ResourceBynderDownloadState)?.Data
-                    ?.ToString();
+                (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState)?.Data;
 
-            if (string.IsNullOrWhiteSpace(bynderDownloadState) || bynderDownloadState != BynderState.Todo) return;
+            if (string.IsNullOrWhiteSpace(bynderDownloadState) || bynderDownloadState != BynderStates.Todo) return;
 
-            string bynderId = resourceEntity.GetField(FieldTypeId.ResourceBynderId)?.Data?.ToString();
+            string bynderId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderId)?.Data;
             if (string.IsNullOrWhiteSpace(bynderId)) return;
 
             // download asset information
@@ -44,14 +43,11 @@ namespace Bynder.Workers
             }
 
             // check for existing file
-            int existingFileId = 0;
-            if (resourceEntity.GetField(FieldTypeId.ResourceFileId).Data != null)
-            {
-                existingFileId = (int)resourceEntity.GetField(FieldTypeId.ResourceFileId).Data;
-            }
+            var resourceFileId = resourceEntity.GetField(FieldTypeIds.ResourceFileId)?.Data;
+            int existingFileId = resourceFileId != null ? (int)resourceFileId : 0;
 
             // add new asset
-            string resourceFileName = resourceEntity.GetField(FieldTypeId.ResourceFileName).Data.ToString();
+            string resourceFileName = (string)resourceEntity.GetField(FieldTypeIds.ResourceFilename)?.Data;
             int newFileId = _inRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(resourceFileName, _bynderClient.GetAssetDownloadLocation(asset.Id).S3_File);
 
             // delete older asset file
@@ -62,9 +58,9 @@ namespace Bynder.Workers
             }
 
             // set fieltypes for resource entity
-            resourceEntity.GetField(FieldTypeId.ResourceFileId).Data = newFileId;
-            resourceEntity.GetField(FieldTypeId.ResourceMimeType).Data = asset.GetOriginalMimeType();
-            resourceEntity.GetField(FieldTypeId.ResourceBynderDownloadState).Data = BynderState.Done;
+            resourceEntity.GetField(FieldTypeIds.ResourceFileId).Data = newFileId;
+            resourceEntity.GetField(FieldTypeIds.ResourceMimeType).Data = asset.GetOriginalMimeType();
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState).Data = BynderStates.Done;
 
             _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
             _inRiverContext.Logger.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");

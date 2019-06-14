@@ -15,7 +15,7 @@ namespace Bynder.Extension
             try
             {
                 if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
-                    EntityTypeId.Resource, out var entity)) return;
+                    EntityTypeIds.Resource, out var entity)) return;
 
                 Container.GetInstance<AssetUploadWorker>().Execute(entity);
             }
@@ -59,7 +59,7 @@ namespace Bynder.Extension
             try
             {
                 if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
-                    EntityTypeId.Resource, out var entity)) return;
+                    EntityTypeIds.Resource, out var entity)) return;
 
                 Container.GetInstance<AssetUploadWorker>().Execute(entity);
             }

@@ -18,7 +18,7 @@ namespace Bynder.Workers
 
         public void Execute(Entity entity, string[] fields)
         {
-            if (entity.EntityType.Id == EntityTypeId.Resource) return;
+            if (entity.EntityType.Id == EntityTypeIds.Resource) return;
 
             // create metaproperty dictionary
             var metapropertyMap = _resourceMetapropertyUpdateWorker.GetConfiguredMetaPropertyMap();
@@ -28,7 +28,7 @@ namespace Bynder.Workers
             if (fields.Any(field => metapropertyMap.ContainsValue(field)))
             {
                 var resourceIds = _inRiverContext.ExtensionManager.DataService.GetOutboundLinksForEntity(entity.Id)
-                    .Where(l => l.LinkType.TargetEntityTypeId.Equals(EntityTypeId.Resource))
+                    .Where(l => l.LinkType.TargetEntityTypeId.Equals(EntityTypeIds.Resource))
                     .Select(l => l.Target.Id);
 
                 foreach (var resourceId in resourceIds)

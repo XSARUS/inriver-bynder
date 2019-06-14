@@ -18,7 +18,7 @@ namespace Bynder.Extension
             try
             {
                 if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
-                    EntityTypeId.Resource, out var entity)) return;
+                    EntityTypeIds.Resource, out var entity)) return;
 
                 Container.GetInstance<AssetDownloadWorker>().Execute(entity);
                 Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
@@ -40,7 +40,7 @@ namespace Bynder.Extension
             try
             {
                 var entity = Context.ExtensionManager.DataService.GetEntity(entityId, LoadLevel.Shallow);
-                if (entity.EntityType.Id == EntityTypeId.Resource)
+                if (entity.EntityType.Id == EntityTypeIds.Resource)
                 {
                     Container.GetInstance<AssetDownloadWorker>().Execute(entity);
                     Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
@@ -71,7 +71,7 @@ namespace Bynder.Extension
             try
             {
                 if (!Context.ExtensionManager.DataService.TryGetEntityOfType(targetId, LoadLevel.DataOnly,
-                    EntityTypeId.Resource, out var entity)) return;
+                    EntityTypeIds.Resource, out var entity)) return;
 
                 Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
             }
@@ -110,11 +110,11 @@ namespace Bynder.Extension
             try
             {
                 foreach (var entityId in deletedEntity.OutboundLinks
-                    .Where(l => l.Target.EntityType.Id.Equals(EntityTypeId.Resource))
+                    .Where(l => l.Target.EntityType.Id.Equals(EntityTypeIds.Resource))
                     .Select(l => l.Target.Id))
                 {
                     if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
-                        EntityTypeId.Resource, out var entity)) return;
+                        EntityTypeIds.Resource, out var entity)) return;
 
                     Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
                 }

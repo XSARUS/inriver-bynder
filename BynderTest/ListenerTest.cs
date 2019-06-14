@@ -15,6 +15,7 @@ namespace BynderTest
             };
             listener.Context.Settings = TestSettings;
 
+            // todo: fill in your SNS settings in this test message
             var result = listener.Add(@"{
                   ""Type"" : ""Notification"",
                   ""MessageId"" : ""da41e39f-ea4d-435a-b922-c6aae3915ebe"",

@@ -33,11 +33,12 @@ namespace Bynder.Workers
         #region Methods
         private int GetFileIdFromEntity(Entity resourceEntity)
         {
-            return int.Parse(resourceEntity.GetField("ResourceFileId")?.Data?.ToString());
+            var resourceFileId = resourceEntity.GetField(FieldTypeIds.ResourceFileId)?.Data;
+            return resourceFileId != null ? (int)resourceFileId : 0;         
         }
         private string GetFileNameFromEntity(Entity resourceEntity)
         {
-            return resourceEntity.GetField("ResourceFilename")?.Data?.ToString();
+            return (string)resourceEntity.GetField("ResourceFilename")?.Data;
         }
         private string GetBrandIdBasedOnSettingKey()
         {
@@ -50,7 +51,7 @@ namespace Bynder.Workers
         }
         private string GetBynderUploadStateFromEntity(Entity resourceEntity)
         {
-            return resourceEntity.GetField(FieldTypeId.ResourceBynderUploadState)?.Data?.ToString();
+            return (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState)?.Data;
         }
         private byte[] GetResourceByteArrayFromEntity(int fileId)
         {
@@ -99,13 +100,13 @@ namespace Bynder.Workers
         {
             _inRiverContext.Logger.Log(LogLevel.Information, $"Start uploading resource entity {resourceEntity.Id}");
 
-            if (!resourceEntity.EntityType.Id.Equals(EntityTypeId.Resource)) return;
+            if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
 
             if (resourceEntity.LoadLevel < LoadLevel.DataOnly)
                 resourceEntity = _inRiverContext.ExtensionManager.DataService.GetEntity(resourceEntity.Id, LoadLevel.DataOnly);
 
             string bynderUploadState = GetBynderUploadStateFromEntity(resourceEntity);
-            if (string.IsNullOrWhiteSpace(bynderUploadState) || bynderUploadState != BynderState.Todo) return;
+            if (string.IsNullOrWhiteSpace(bynderUploadState) || bynderUploadState != BynderStates.Todo) return;
 
             try
             {
@@ -113,7 +114,7 @@ namespace Bynder.Workers
                 if (brandId == null)
                 {
                     _inRiverContext.Logger.Log(LogLevel.Warning, $"Upload resource entity {resourceEntity.Id} failed, because the brandname within settings is not correctly configurated");
-                    resourceEntity.GetField(FieldTypeId.ResourceBynderUploadState).Data = BynderState.Error;
+                    resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState).Data = BynderStates.Error;
                     return;
                 }
 
@@ -121,7 +122,7 @@ namespace Bynder.Workers
                 if (fileName == null)
                 {
                     _inRiverContext.Logger.Log(LogLevel.Warning, $"Upload resource entity {resourceEntity.Id} failed, because the filename within the entity is not set");
-                    resourceEntity.GetField(FieldTypeId.ResourceBynderUploadState).Data = BynderState.Error;
+                    resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState).Data = BynderStates.Error;
                     return;
                 }
 
@@ -131,7 +132,7 @@ namespace Bynder.Workers
                 if (bytes.Length == 0)
                 {
                     _inRiverContext.Logger.Log(LogLevel.Warning, $"Upload resource entity {resourceEntity.Id} failed, because there is no resource avaiable");
-                    resourceEntity.GetField(FieldTypeId.ResourceBynderUploadState).Data = BynderState.Error;
+                    resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState).Data = BynderStates.Error;
                     return;
                 }
 
@@ -139,7 +140,7 @@ namespace Bynder.Workers
                 if (s3Bucket == null)
                 {
                     _inRiverContext.Logger.Log(LogLevel.Warning, $"Upload resource entity {resourceEntity.Id} failed, because the amazon s3 bucket endpoint cannot be defined");
-                    resourceEntity.GetField(FieldTypeId.ResourceBynderUploadState).Data = BynderState.Error;
+                    resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState).Data = BynderStates.Error;
                     return;
                 }
 
@@ -154,19 +155,19 @@ namespace Bynder.Workers
                 {
                     var result = _bynderClient.SaveMedia(new SaveMediaQuery()
                     {
-                        MediaId = resourceEntity.GetField(FieldTypeId.ResourceBynderAssetId).Data?.ToString(),
+                        MediaId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId)?.Data,
                         BrandId = brandId,
                         Filename = fileName,
                         ImportId = finalizeResponse.ImportId
                     });
-                    resourceEntity.GetField(FieldTypeId.ResourceBynderAssetId).Data = result.MediaId;
+                    resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId).Data = result.MediaId;
                 }
 
-                resourceEntity.GetField(FieldTypeId.ResourceBynderUploadState).Data = BynderState.Done;
+                resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState).Data = BynderStates.Done;
             }
             catch (Exception ex)
             {
-                resourceEntity.GetField(FieldTypeId.ResourceBynderUploadState).Data = BynderState.Error;
+                resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState).Data = BynderStates.Error;
                 _inRiverContext.Logger.Log(LogLevel.Error, $"Error uploading resource entity {resourceEntity.Id}. Message: {ex.GetBaseException().Message}");
             }
 

@@ -1,6 +1,6 @@
 ﻿namespace Bynder.Names
 {
-    public struct CvlId
+    public struct CvlIds
     {
         public const string ResourceBynderState = "ResourceBynderState";
     }
