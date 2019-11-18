@@ -72,15 +72,22 @@ namespace Bynder.Api
         /// <returns></returns>
         public string Post(string uri, string postData)
         {
-            var response = SendRequest(
-                new HttpRequestMessage()
-                {
-                    RequestUri = new Uri(uri),
-                    Method = HttpMethod.Post,
-                    Content = new StringContent(postData)
-                }
-            );
-            response.EnsureSuccessStatusCode();
+            var response = SendRequest(new HttpRequestMessage
+            {
+                RequestUri = new Uri(uri),
+                Method = HttpMethod.Post,
+                Content = new StringContent(postData)
+            });
+
+            try
+            {
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception exception)
+            {
+                return null;
+            }
+
             return response.Content.ReadAsStringAsync().Result;
         }
 
@@ -93,15 +100,22 @@ namespace Bynder.Api
         /// <returns></returns>
         public string Post(string uri, List<KeyValuePair<string, string>> formData)
         {
-            var response = SendRequest(
-                new HttpRequestMessage()
-                {
-                    RequestUri = new Uri(uri),
-                    Method = HttpMethod.Post,
-                    Content = new FormUrlEncodedContent(formData)
-                }
-            );
-            response.EnsureSuccessStatusCode();
+            var response = SendRequest(new HttpRequestMessage
+            {
+                RequestUri = new Uri(uri),
+                Method = HttpMethod.Post,
+                Content = new FormUrlEncodedContent(formData)
+            });
+
+            try
+            {
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception exception)
+            {
+                return null;
+            }
+
             return response.Content.ReadAsStringAsync().Result;
         }
 
@@ -112,14 +126,21 @@ namespace Bynder.Api
         /// <returns></returns>
         public string Delete(string uri)
         {
-            var response = SendRequest(
-                new HttpRequestMessage()
-                {
-                    RequestUri = new Uri(uri),
-                    Method = HttpMethod.Delete
-                }
-            );
-            response.EnsureSuccessStatusCode();
+            var response = SendRequest(new HttpRequestMessage
+            {
+                RequestUri = new Uri(uri),
+                Method = HttpMethod.Delete
+            });
+
+            try
+            {
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception exception)
+            {
+                return null;
+            }
+
             return response.Content.ReadAsStringAsync().Result;
         }
 
