@@ -11,15 +11,21 @@ namespace BynderTest
         private const string _testAssetId = "9542A933-2DF5-4999-9AB52701F33613C0";
         private const string _testIntegrationId = "41a92562-bfd9-4847-a34d-4320bcef5e4a";
 
-        private readonly BynderClientSettings _bynderSettings = new BynderClientSettings()
-        {
-            ConsumerKey = "***",
-            ConsumerSecret = "***",
-            CustomerBynderUrl = "***",
-            Token = "***",
-            TokenSecret = "***"
-        };
+        private BynderClientSettings _bynderSettings;
                 
+        [TestInitialize]
+        public void Init()
+        {
+            _bynderSettings = new BynderClientSettings()
+            {
+                ConsumerKey = TestSettings[SettingNames.ConsumerKey],
+                ConsumerSecret = TestSettings[SettingNames.ConsumerSecret],
+                CustomerBynderUrl = TestSettings[SettingNames.CustomerBynderUrl],
+                Token = TestSettings[SettingNames.Token],
+                TokenSecret = TestSettings[SettingNames.TokenSecret]
+            };
+        }
+
         [TestMethod]
         public void TestFlow()
         {
