@@ -4,7 +4,7 @@
 
 When an asset is uploaded (newly created or updated) Bynder will send an AWS SNS Notification to inRiver.
 
-![Sequence diagram](img/inRiver Bynder integration overview-page1.png)
+![Sequence diagram](img/inRiver_Bynder_integration_overview-page1.png)
 
 The inRiver endpoint defined in `Bynder.Extenstion.NotificationListener` will listen for SNS messages with topics:
 
@@ -42,7 +42,7 @@ The AssetUpdated worker, in short, handles the process of newly created or updat
 
 The manual import process should be used to initially sync inRiver with Bynder, e.g. when an integration is just setup. This ensures that any asset in Bynder that matches the inRiver configuration will be fetched.
 
-![Sequence diagram](img/inRiver Bynder integration overview-page2.png)
+![Sequence diagram](img/inRiver_Bynder_integration_overview-page2.png)
 
 The process is defined in `Bynder.Extension.AssetLoader` and can be named accordingly in the inRiver extension configuration. 
 
@@ -59,7 +59,7 @@ For large collections in Bynder you may assume that this process will take a lon
 
 Many events lead to changes on the Resource entity. These events trigger the `Bynder.Extension.Worker` which is both configured as `IEntityListener` and `ILinkListener` to be able to catch all the required events.
 
-![Sequence diagram](img/inRiver Bynder integration overview-page3.png)
+![Sequence diagram](img/inRiver_Bynder_integration_overview-page3.png)
 
 The following workers will run:
 
@@ -105,13 +105,13 @@ This worker is responsible for updating the asset usage in Bynder.
 
 When a link is created or updated with a resource as Target, the metaproperties worker is called. See [Resource Metaproperty Update worker](#ResourceMetapropertyUpdateWorker).
 
-![Sequence diagram](img/inRiver Bynder integration overview-page4.png)
+![Sequence diagram](img/inRiver_Bynder_integration_overview-page4.png)
 
 ## UC inRiver "Other than Resource" Entity changed
 
 Many events lead to changes on the Resource entity. These events trigger the `Bynder.Extension.Worker` which is both configured as `IEntityListener` and `ILinkListener` to be able to catch all the required events.
 
-![Sequence diagram](img/inRiver Bynder integration overview-page5.png)
+![Sequence diagram](img/inRiver_Bynder_integration_overview-page5.png)
 
 When another entity than of type Resource is changed this may lead to metaproperty changes for linked Resource entities. This is handled in [Non-Resource Metaproperty Update worker](#NonResourceMetapropertyUpdateWorker)
 
