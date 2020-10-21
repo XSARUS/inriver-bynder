@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Bynder.Api;
 using inRiver.Remoting;
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
@@ -12,6 +13,16 @@ namespace BynderTest
         public TestContext TestContext { get; set; }
         protected inRiverContext InRiverContext;
         protected Logger Logger;
+
+        // todo: Add your bynder connection settings here
+        protected readonly BynderClientSettings _bynderSettings = new BynderClientSettings()
+        {
+            ConsumerKey = "***",
+            ConsumerSecret = "***",
+            CustomerBynderUrl = "***",
+            Token = "***",
+            TokenSecret = "***"
+        };
 
         // todo: Add your settings here
         protected Dictionary<string,string> TestSettings = new Dictionary<string, string>
@@ -41,7 +52,7 @@ namespace BynderTest
                 RemoteManager.CreateInstance("https://partner.remoting.productmarketingcloud.com",
                     "***", "***", "***"), Logger);
 
-            Assert.IsNotNull(InRiverContext, "Login failed ??");
+            Assert.IsNotNull(InRiverContext?.ExtensionManager, "Connection to inRiver failed. Please check the url and credentials within the test initialize method.");
         }
     }
 }

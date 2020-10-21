@@ -39,6 +39,7 @@
     <Reference Include="Microsoft.JScript" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -71,10 +72,17 @@
     <Compile Include="Api\Model\S3File.cs" />
     <Compile Include="Api\OAuthClient.cs" />
     <Compile Include="Api\SettingNames.cs" />
+    <Compile Include="Converters\AssetJsonConverter.cs" />
     <Compile Include="Extension\AssetLoader.cs" />
     <Compile Include="Extension\Registry.cs" />
     <Compile Include="Extension\Extension.cs" />
     <Compile Include="Extension\Uploader.cs" />
+    <Compile Include="Utils\Extensions\CollectionExtensions.cs" />
+    <Compile Include="Utils\Extensions\StringToCollectionExtensions.cs" />
+    <Compile Include="Utils\Extensions\ParseExtensions.cs" />
+    <Compile Include="Utils\Extensions\TypeExtensions.cs" />
+    <Compile Include="Utils\Generics.cs" />
+    <Compile Include="Utils\Helpers\JsonHelper.cs" />
     <Compile Include="Utils\InRiver\DataServiceExtensions.cs" />
     <Compile Include="Workers\AssetDownloadWorker.cs" />
     <Compile Include="Workers\AssetUpdatedWorker.cs" />

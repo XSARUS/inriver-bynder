@@ -5,6 +5,9 @@ namespace Bynder.Api.Model
 {
     public class MetapropertyList : List<Metaproperty>
     {
+        public MetapropertyList(IEnumerable<Metaproperty> metaproperties) : base(metaproperties) { }
+        public MetapropertyList() { }
+
         public List<KeyValuePair<string, string>> GetPostKeyValuePairs()
         {
             var pairs = new List<KeyValuePair<string, string>>();
@@ -27,7 +30,7 @@ namespace Bynder.Api.Model
 
             foreach (var element in dictionary)
             {
-                metaproperyList.Add(new Metaproperty(element.Key, element.Value));
+                metaproperyList.Add(new Metaproperty{ Id = element.Key, Value = element.Value });
             }
 
             return metaproperyList;

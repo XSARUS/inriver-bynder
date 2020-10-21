@@ -1,14 +1,20 @@
-﻿using Bynder.Api;
-using Bynder.Names;
-using Bynder.Utils;
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
+using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace Bynder.Workers
 {
-    class AssetUpdatedWorker : IWorker
+    using Api;
+    using Api.Model;
+    using Names;
+    using Utils;
+    using Utils.Extensions;
+
+    public class AssetUpdatedWorker : IWorker
     {
         private readonly inRiverContext _inRiverContext;
         private readonly IBynderClient _bynderClient;
@@ -21,16 +27,50 @@ namespace Bynder.Workers
             _fileNameEvaluator = fileNameEvaluator;
         }
 
-        public WorkerResult Execute(string bynderAssetId)
+
+        public void SetMetapropertyData(Entity resourceEntity, Asset asset, WorkerResult result)
+        {
+            //var fieldsToUpdate = new List<Field>();
+            var metaPropertyMapping = GetConfiguredMetaPropertyMap();
+            foreach(var property in asset.MetaProperties)
+            {
+                if (!metaPropertyMapping.ContainsKey(property.Name) || metaPropertyMapping[property.Name] == null) continue;
+
+                var fieldTypeId = metaPropertyMapping[property.Name];
+                var field = resourceEntity.GetField(fieldTypeId);
+                if (field == null)
+                {
+                    result.Messages.Add($"FieldType '{fieldTypeId}' in MetaPropertyMapping does not exist on Resource EntityType");
+                    _inRiverContext.Logger.Log(LogLevel.Warning, $"FieldType '{fieldTypeId}' does not exist on Resource EntityType");
+                    continue;
+                }
+
+                //var oldValue = ((Field)field.Clone()).Data;
+
+                //todo check if datetime is applicable this way? is bynder always iso en inriver always default?
+                field.Data = property.Value.ConvertTo(field.FieldType.DataType);
+                //if (field.ValueHasBeenModified(oldValue))
+                //{
+                //    fieldsToUpdate.Add(field);
+                //}
+            }
+
+            //if(fieldsToUpdate.Count > 0)
+            //{
+            //    _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldsToUpdate);
+            //    result.Messages.Add($"Updated fields '{string.Join(", ", fieldsToUpdate.Select(x=> x.FieldType.Id))}' on Resource {fieldsToUpdate.First().EntityId}");
+            //}
+        }
+
+        public WorkerResult Execute(string bynderAssetId, bool onlyUpdateMetadataHasUpdated)
         {
             var result = new WorkerResult();
 
             // get original filename, as we need to evaluate this for further processing
             var asset = _bynderClient.GetAssetByAssetId(bynderAssetId);
 
-            string originalFileName = asset.GetOriginalFileName();
-
             // evaluate filename
+            string originalFileName = asset.GetOriginalFileName();
             var evaluatorResult = _fileNameEvaluator.Evaluate(originalFileName);
             if (!evaluatorResult.IsMatch())
             {
@@ -43,49 +83,65 @@ namespace Bynder.Workers
                 _inRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeIds.ResourceBynderId, bynderAssetId,
                     LoadLevel.DataAndLinks);
 
+            // only update metadata
+            if (resourceEntity != null && onlyUpdateMetadataHasUpdated)
+            {
+                return UpdateMetadata(result, asset, resourceEntity);
+            }
+
+            return CreateOrUpdateEntityAndRelations(bynderAssetId, result, asset, evaluatorResult, resourceEntity);
+        }
+
+        private WorkerResult UpdateMetadata(WorkerResult result, Asset asset, Entity resourceEntity)
+        {
+            SetMetapropertyData(resourceEntity, asset, result);
+            resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
+            result.Messages.Add($"Resource {resourceEntity.Id} updated");
+            return result;
+        }
+
+        private WorkerResult CreateOrUpdateEntityAndRelations(string bynderAssetId, WorkerResult result, Asset asset, FilenameEvaluator.Result evaluatorResult, Entity resourceEntity)
+        {
             if (resourceEntity == null)
             {
-                EntityType resourceType = _inRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
-                resourceEntity = Entity.CreateEntity(resourceType);
-
-                // add asset id to new ResourceEntity
-                resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = bynderAssetId;
-
-                // set filename (only for *new* resource)
-                resourceEntity.GetField(FieldTypeIds.ResourceFilename).Data = $"{bynderAssetId}_{asset.GetOriginalFileName()}";
+                resourceEntity = CreateResourceEntity(bynderAssetId, asset);
             }
 
-            // status for new and existing ResourceEntity
-            resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState).Data = BynderStates.Todo;
+            SetMetapropertyData(resourceEntity, asset, result);
 
-            // resource fields from regular expression created from filename
-            foreach (var keyValuePair in evaluatorResult.GetResourceDataInFilename())
-            {
-                resourceEntity.GetField(keyValuePair.Key.Id).Data = keyValuePair.Value;
-            }
+            var filenameData = evaluatorResult.GetResourceDataInFilename();
+            SetResourceFilenameData(resourceEntity, asset, filenameData);
 
-            // save IdHash for re-creation of public CDN Urls in inRiver
-            resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
-
+            // todo why stringbuilder, why not add the messages to the workerResult?
             var resultString = new StringBuilder();
-            if (resourceEntity.Id == 0)
+            resourceEntity = AddOrUpdateEntityInInRiver(resourceEntity, resultString);
+
+            var relatedEntityData = evaluatorResult.GetRelatedEntityDataInFilename();
+            AddRelations(relatedEntityData, resourceEntity, resultString);
+
+            result.Messages.Add(resultString.ToString());
+            return result;
+        }
+
+        /// <summary>
+        /// get related entity data found in filename so we can create or update link to these entities
+        /// all found field/values are supposed to be unique fields in the correspondent entitytype
+        /// </summary>
+        /// <param name="evaluatorResult"></param>
+        /// <param name="resourceEntity"></param>
+        /// <param name="resultString"></param>
+        private void AddRelations(Dictionary<FieldType, string> relatedEntityData, Entity resourceEntity, StringBuilder resultString)
+        {
+            if(relatedEntityData.Count == 0)
             {
-                resourceEntity = _inRiverContext.ExtensionManager.DataService.AddEntity(resourceEntity);
-                resultString.Append($"Resource {resourceEntity.Id} added");
-            }
-            else
-            {
-                resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
-                resultString.Append($"Resource {resourceEntity.Id} updated");
+                return;
             }
 
-            // get related entity data found in filename so we can create or update link to these entities
-            // all found field/values are supposed to be unique fields in the correspondent entitytype
-            // get all *inbound* linktypes towards the Resource entitytype in the model (e.g. ProductResource, ItemResource NOT ResourceOtherEntity)
+            // get all *inbound* linktypes towards the Resource entitytype in the model(e.g.ProductResource, ItemResource NOT ResourceOtherEntity)
             var inboundResourceLinkTypes = _inRiverContext.ExtensionManager.ModelService.GetLinkTypesForEntityType(EntityTypeIds.Resource)
                 .Where(lt => lt.TargetEntityTypeId == EntityTypeIds.Resource).OrderBy(lt => lt.Index).ToList();
 
-            foreach (var keyValuePair in evaluatorResult.GetRelatedEntityDataInFilename())
+            foreach (var keyValuePair in relatedEntityData)
             {
                 var fieldTypeId = keyValuePair.Key.Id;
                 var value = keyValuePair.Value;
@@ -111,9 +167,64 @@ namespace Bynder.Workers
 
                 resultString.Append($"; {sourceEntity.EntityType.Id} entity {sourceEntity.Id} found and linked");
             }
+        }
 
-            result.Messages.Add(resultString.ToString());
-            return result;
+        private static void SetResourceFilenameData(Entity resourceEntity, Asset asset, Dictionary<FieldType, string> filenameData)
+        {
+            // status for new and existing ResourceEntity
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState).Data = BynderStates.Todo;
+
+            // resource fields from regular expression created from filename
+            foreach (var keyValuePair in filenameData)
+            {
+                resourceEntity.GetField(keyValuePair.Key.Id).Data = keyValuePair.Value;
+            }
+
+            // save IdHash for re-creation of public CDN Urls in inRiver
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
+        }
+
+        private Entity CreateResourceEntity(string bynderAssetId, Asset asset)
+        {
+            Entity resourceEntity;
+            EntityType resourceType = _inRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
+            resourceEntity = Entity.CreateEntity(resourceType);
+
+            // add asset id to new ResourceEntity
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = bynderAssetId;
+
+            // set filename (only for *new* resource)
+            resourceEntity.GetField(FieldTypeIds.ResourceFilename).Data = $"{bynderAssetId}_{asset.GetOriginalFileName()}";
+            return resourceEntity;
+        }
+
+        private Entity AddOrUpdateEntityInInRiver(Entity resourceEntity, StringBuilder resultString)
+        {
+            if (resourceEntity.Id == 0)
+            {
+                resourceEntity = _inRiverContext.ExtensionManager.DataService.AddEntity(resourceEntity);
+                resultString.Append($"Resource {resourceEntity.Id} added");
+            }
+            else
+            {
+                resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
+                resultString.Append($"Resource {resourceEntity.Id} updated");
+            }
+
+            return resourceEntity;
+        }
+
+        public Dictionary<string, string> GetConfiguredMetaPropertyMap()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Config.Settings.MetapropertyMap))
+            {
+                return _inRiverContext.Settings[Config.Settings.MetapropertyMap]
+                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => x.Split('='))
+                    .ToDictionary(x => x[0], y => y[1]);
+            }
+            _inRiverContext.Logger.Log(LogLevel.Error, "Could not find configured metaproperty Map");
+            return new Dictionary<string, string>();
         }
     }
 }

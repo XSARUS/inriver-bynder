@@ -51,12 +51,11 @@ Unfortunately you have to configure 4 extensions to make the integration complet
 | TOKEN | YOUR-TOKEN | Bynder API Token
 | TOKEN_SECRET | YOUR-TOKEN-SECRET | Bynder API Token secret
 | REGULAR_EXPRESSION_FOR_FILENAME | ^(?\<ProductNumber\>[0-9a-zA-Z]+)\_(?\<ResourceType\>image\|document\|resource)\_(?\<ResourcePosition\>[0-9]+)| Regular expression to which the filename is matched; named groups are used to store in inRiver and create content relationship.
-| METAPROPERTY_MAP | D38054AD-8C0F-451C-99F675D689EAA0BD=ResourceDescription, 50B5233E-AD1C-4CF5-82B910BADA62F30F=ProductName, 1A76B650-FF7A-483A-96FD506C29576C23=ResourceDescription,  5E2A0950-FD44-47FC-9A5558105BA9D977=ProductName | comma separated mapping list BynderMetapropertyId=InRiverFieldId, see [Add metaproperties](BYNDER-CONFIGURATION.md#Add-metaproperties)
+| METAPROPERTY_MAP | D38054AD-8C0F-451C-99F675D689EAA0BD=ResourceDescription, 50B5233E-AD1C-4CF5-82B910BADA62F30F=ProductName, 1A76B650-FF7A-483A-96FD506C29576C23=ResourceDescription,  5E2A0950-FD44-47FC-9A5558105BA9D977=ProductName | For extensions 'Uploader' and 'Worker' it will be comma separated mapping list BynderMetapropertyId=InRiverFieldId, so data can be uploaded by metaproperty id. For the 'AssetLoader' and 'NotificationListener' will be {PropertyName}={FieldTypeId}. To import updated metadata we get the properties from the asset. The asset json contains properties name property_{propertyname} f.e. property_EANcode
 | INITIAL_ASSET_LOAD_URL_QUERY | type=image | filter query for the initial asset loader
 | INRIVER_INTEGRATION_ID | 41a92562-bfd9-4847-a34d-4320bcef5e4a | See https://help.bynder.com/System/Integrations/asset-tracker.htm
 | INRIVER_RESOURCE_URL | https://inriver.productmarketingcloud.com//app/enrich#entity{entityId} | Deeplink to resource entity in inRiver |
 
 Press Test on each connector (in the extensions page) to see if the connector works and your settings are valid
-
 
 To read more about how to setup metaproperties go to [Add metaproperties](BYNDER-CONFIGURATION.md#Add-metaproperties)

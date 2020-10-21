@@ -12,6 +12,7 @@ The inRiver endpoint defined in `Bynder.Extenstion.NotificationListener` will li
 * asset_bank.media.pre_archived
 * asset_bank.media.upload
 * asset_bank.media.create
+* asset_bank.media.meta_updated
 
 All topics will be treated the same: the Bynder `MediaId` is parsed from the message and starts the [AssetUpdated Worker](#AssetUpdatedWorker)
 

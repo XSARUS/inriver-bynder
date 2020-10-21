@@ -1,15 +1,32 @@
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Bynder.Api.Model
 {
+    using Converters;
+
+    [JsonConverter(typeof(AssetJsonConverter))]
     public class Asset
     {
+        #region Fields
+
         private const string Original = "original";
+
+        #endregion Fields
+
+        #region Properties
+
         public string Id { get; set; }
         public string IdHash { get; set; }
 
         public List<MediaItem> MediaItems { get; set; }
+
+        public MetapropertyList MetaProperties { get; set; }
+
+        #endregion Properties
+
+        #region Methods
 
         public string GetOriginalFileName()
         {
@@ -31,5 +48,7 @@ namespace Bynder.Api.Model
 
             return mimeType;
         }
+
+        #endregion Methods
     }
 }
