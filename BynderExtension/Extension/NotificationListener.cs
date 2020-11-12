@@ -25,6 +25,7 @@ namespace Bynder.Extension
 
             try
             {
+                Context.Log(inRiver.Remoting.Log.LogLevel.Verbose, "notification: " + value);
                 // first, handle the notification
                 var notificationWorker = Container.GetInstance<NotificationWorker>();
                 var notificationResult = notificationWorker.Execute(value);
@@ -45,6 +46,7 @@ namespace Bynder.Extension
             {
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
             }
+            Context.Log(inRiver.Remoting.Log.LogLevel.Verbose, result);
 
             return result;
         }

@@ -3,6 +3,7 @@ using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -30,12 +31,12 @@ namespace Bynder.Workers
 
         public void SetMetapropertyData(Entity resourceEntity, Asset asset, WorkerResult result)
         {
-            //var fieldsToUpdate = new List<Field>();
-            var metaPropertyMapping = GetConfiguredMetaPropertyMap();
-            foreach(var property in asset.MetaProperties)
-            {
-                if (!metaPropertyMapping.ContainsKey(property.Name) || metaPropertyMapping[property.Name] == null) continue;
+            _inRiverContext.Log(LogLevel.Verbose, "Setting metaproperties on entity");
 
+            var metaPropertyMapping = GetConfiguredMetaPropertyMap();
+            var metaPropertiesToProcess = asset.MetaProperties.Where(property => metaPropertyMapping.ContainsKey(property.Name) && metaPropertyMapping[property.Name] != null);
+            foreach(var property in metaPropertiesToProcess)
+            {
                 var fieldTypeId = metaPropertyMapping[property.Name];
                 var field = resourceEntity.GetField(fieldTypeId);
                 if (field == null)
@@ -45,25 +46,48 @@ namespace Bynder.Workers
                     continue;
                 }
 
-                //var oldValue = ((Field)field.Clone()).Data;
+                switch (field.FieldType.DataType.ToLower())
+                {
+                    case "localestring":
+                        var languagesToSet = GetLanguagesToSet();
+                        var ls = (LocaleString)field.Data;
+                        if(ls == null)
+                        {
+                            ls = new LocaleString(_inRiverContext.ExtensionManager.UtilityService.GetAllLanguages());
+                        }
 
-                //todo check if datetime is applicable this way? is bynder always iso en inriver always default?
-                field.Data = property.Value.ConvertTo(field.FieldType.DataType);
-                //if (field.ValueHasBeenModified(oldValue))
-                //{
-                //    fieldsToUpdate.Add(field);
-                //}
+                        foreach (var lang in languagesToSet)
+                        {
+                            var culture = new CultureInfo(lang);
+                            if (!ls.ContainsCulture(culture)) continue;
+                            ls[culture] = property.Value;
+                        }
+
+                        field.Data = ls;
+                        break;
+                    case "datetime":
+                        if (property.Value.Contains('/')) // when using the date property
+                        {
+                            // 07/28/2017
+                            field.Data = property.Value.ConvertTo<DateTime>(null, null, "MM/dd/yyyy");
+                        }
+                        else // added this just to be sure, it is used in example outputs of the Bynder API
+                        {
+                            //2017-03-28T14:28:56Z
+                            field.Data = property.Value.ConvertTo<DateTime>(null, null, "yyyy-MM-ddTHH:mm:ssZ");
+                        }
+                        break;
+                    default:
+                        field.Data = property.Value.ConvertTo(field.FieldType.DataType);
+                        break;
+                }
             }
-
-            //if(fieldsToUpdate.Count > 0)
-            //{
-            //    _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldsToUpdate);
-            //    result.Messages.Add($"Updated fields '{string.Join(", ", fieldsToUpdate.Select(x=> x.FieldType.Id))}' on Resource {fieldsToUpdate.First().EntityId}");
-            //}
         }
 
         public WorkerResult Execute(string bynderAssetId, bool onlyUpdateMetadataHasUpdated)
         {
+            _inRiverContext.Log(LogLevel.Verbose, "Only metadata updated: " + onlyUpdateMetadataHasUpdated);
+
             var result = new WorkerResult();
 
             // get original filename, as we need to evaluate this for further processing
@@ -94,6 +118,8 @@ namespace Bynder.Workers
 
         private WorkerResult UpdateMetadata(WorkerResult result, Asset asset, Entity resourceEntity)
         {
+            _inRiverContext.Log(LogLevel.Verbose, "Update metadata only");
+
             SetMetapropertyData(resourceEntity, asset, result);
             resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
             result.Messages.Add($"Resource {resourceEntity.Id} updated");
@@ -102,6 +128,8 @@ namespace Bynder.Workers
 
         private WorkerResult CreateOrUpdateEntityAndRelations(string bynderAssetId, WorkerResult result, Asset asset, FilenameEvaluator.Result evaluatorResult, Entity resourceEntity)
         {
+            _inRiverContext.Log(LogLevel.Verbose, "Create or update entity, metadata and relations");
+
             if (resourceEntity == null)
             {
                 resourceEntity = CreateResourceEntity(bynderAssetId, asset);
@@ -225,6 +253,16 @@ namespace Bynder.Workers
             }
             _inRiverContext.Logger.Log(LogLevel.Error, "Could not find configured metaproperty Map");
             return new Dictionary<string, string>();
+        }
+
+        private IEnumerable<string> GetLanguagesToSet()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Config.Settings.LocaleStringLanguagesToSet))
+            {
+                return _inRiverContext.Settings[Config.Settings.LocaleStringLanguagesToSet].ConvertTo<IEnumerable<string>>() ?? new List<string>();
+            }
+            _inRiverContext.Logger.Log(LogLevel.Error, "Could not find LocaleString languages to set");
+            return new List<string>();
         }
     }
 }

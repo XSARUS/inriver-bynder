@@ -71,9 +71,23 @@ namespace Bynder.Api
             return JsonConvert.DeserializeObject<Metaproperty>(result);
         }
 
-        public MetapropertyList GetMetadataProperties(List<string> metaDataPropertyIds)
+        /// <summary>
+        /// todo finish implementation of this method, now returns an empty list
+        /// </summary>
+        /// <param name="metaDataPropertyIds"></param>
+        /// <returns></returns>
+        public MetapropertyList GetMetadataProperties(List<string> metaDataPropertyIds = null)
         {
-            //var result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/?ids={string.Join(",", metaDataPropertyIds)}");
+            string result;
+            if(metaDataPropertyIds == null)
+            {
+                result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/");
+            }
+            else
+            {
+                result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/?ids={string.Join(",", metaDataPropertyIds)}");
+            }
+
             //var ok =  JsonConvert.DeserializeObject<List<Metaproperty>>(result); //todo for later, not using it yet
             return new MetapropertyList();
         }
@@ -181,7 +195,7 @@ namespace Bynder.Api
                 new KeyValuePair<string, string>("name", saveMediaQuery.Filename),
             };
 
-            string uri = null;
+            string uri;
             if (saveMediaQuery.MediaId == null)
             {
                 uri = $"api/v4/media/save/{saveMediaQuery.ImportId}/";
@@ -195,6 +209,7 @@ namespace Bynder.Api
 
             return (string.IsNullOrWhiteSpace(result)) ? null : JsonConvert.DeserializeObject<UploadResult>(result.ToString());
         }
+
         /// <summary>
         /// set meta properties for asset
         /// </summary>

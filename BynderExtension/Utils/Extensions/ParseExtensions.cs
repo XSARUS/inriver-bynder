@@ -348,13 +348,18 @@ namespace Bynder.Utils.Extensions
                 //Xml
                 //A data type for storing and validating data as xml.
 
-                //CVL
-                //Means that the field type is associated with an existing CVL from the marketing model that also must be assigned to the field type.The property Multivalue(true / false) on a field type decides if one ore more values can be selected from the CVL.In clients the CVL: s are normally presented as dropdown controls.
 
                 case "string":
                 case "xml":
-                case "cvl":
                     return ConvertTo<string>(input);
+
+                //CVL
+                //Means that the field type is associated with an existing CVL from the marketing model that also must be assigned to the field type.The property Multivalue(true / false) on a field type decides if one ore more values can be selected from the CVL.In clients the CVL: s are normally presented as dropdown controls.
+                case "cvl":
+                    var keys = ConvertTo<IEnumerable<string>>(input);
+                    if (keys == null) return null;
+
+                    return string.Join(";", keys);
 
                 //Double
                 //Represents a numerical value with decimals.
@@ -407,14 +412,18 @@ namespace Bynder.Utils.Extensions
                 //Xml
                 //A data type for storing and validating data as xml.
 
-                //CVL
-                //Means that the field type is associated with an existing CVL from the marketing model that also must be assigned to the field type.The property Multivalue(true / false) on a field type decides if one ore more values can be selected from the CVL.In clients the CVL: s are normally presented as dropdown controls.
-
                 case "string":
                 case "xml":
-                case "cvl":
                     success = TryToConvert(input, out string tryStringVal);
                     returnValue = tryStringVal;
+                    break;
+
+                //CVL
+                //Means that the field type is associated with an existing CVL from the marketing model that also must be assigned to the field type.The property Multivalue(true / false) on a field type decides if one ore more values can be selected from the CVL.In clients the CVL: s are normally presented as dropdown controls.
+                case "cvl":
+                    success = TryToConvert(input, out IEnumerable<string> keys);
+                    if (keys == null) returnValue = null;
+                    else returnValue = string.Join(";", keys);
                     break;
 
                 //Double
