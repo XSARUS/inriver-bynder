@@ -2,13 +2,14 @@
 using Bynder.Api.Model;
 using Bynder.Extension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 
 namespace BynderTest
 {
     [TestClass]
     public class ApiTest : TestBase
     {
-        private const string _testAssetId = "CE9F3C36-3EDF-4F92-979A791B83B21DDA";
+        private const string _testAssetId = "86020C4E-9140-4713-9356AB72024CD0D7";
         private const string _testIntegrationId = "41a92562-bfd9-4847-a34d-4320bcef5e4a";
         private const string _testMetaPropertyId = "EE9827C8-0AA6-4334-AFF1708DA0A67A52";
 
@@ -35,34 +36,35 @@ namespace BynderTest
 
         public void CreateAssetUsage()
         {
-            BynderClient bynderBynderClient = new BynderClient(_bynderSettings);
+            BynderClient bynderBynderClient = new BynderClient(BynderSettings);
             var result = bynderBynderClient.CreateAssetUsage(_testAssetId, _testIntegrationId, "http://test.com/123");
             Logger.Log(result);
         }
 
         public void DeleteAssetUsage()
         {
-            BynderClient bynderBynderClient = new BynderClient(_bynderSettings);
+            BynderClient bynderBynderClient = new BynderClient(BynderSettings);
             var result = bynderBynderClient.DeleteAssetUsage(_testAssetId, _testIntegrationId);
             Logger.Log(result);
         }
 
+        [TestMethod]
         public void PostMetaProperties()
         {
-            BynderClient bynderBynderClient = new BynderClient(_bynderSettings);
+            BynderClient bynderClient = new BynderClient(BynderSettings);
             var mpl = new MetapropertyList()
             {
-                new Metaproperty{ Id="50B5233E-AD1C-4CF5-82B910BADA62F30F", Value="Hello" },
-                new Metaproperty{ Id="C284234B-29B6-4CA8-B907B728455F30EA", Value = "World" }
+                new Metaproperty{ Id="4F1C2956-01DC-415C-94BB1D770FEE5A98", Values = new List<string>{ "Hello" } },
+                new Metaproperty{ Id="ABFC192D-A92B-47A0-9AFE96BBCBA3E79A", Values = new List<string>{ "bci", "gnr" } }
             };
-            var result = bynderBynderClient.SetMetaProperties(_testAssetId, mpl);
+            var result = bynderClient.SetMetaProperties(_testAssetId, mpl);
             Logger.Log(result);
         }
 
         [TestMethod]
         public void GetAssetByAssetId()
         {
-            BynderClient bynderClient = new BynderClient(_bynderSettings);
+            BynderClient bynderClient = new BynderClient(BynderSettings);
             Asset asset = bynderClient.GetAssetByAssetId(_testAssetId);
 
             var originalFileName = asset.GetOriginalFileName();
@@ -72,21 +74,24 @@ namespace BynderTest
         }
 
         [TestMethod]
-        public void GetMetaproperties()
+        public void GetMetaproperty()
         {
-            BynderClient bynderClient = new BynderClient(_bynderSettings);
+            BynderClient bynderClient = new BynderClient(BynderSettings);
             var metaproperty = bynderClient.GetMetadataProperty(_testMetaPropertyId);
             Assert.IsNotNull(metaproperty?.Name);
+        }
 
-            // todo not using it yet
-            //var metaproperties = bynderClient.GetMetadataProperties(new List<string> { _testMetaPropertyId });
-            //Assert.IsNotNull(metaproperties);
-            //Assert.AreEqual(1, metaproperties.Count);
+        [TestMethod, Ignore("currently only used to retreive the metaproperties in the bynderclient")]
+        public void GetMetaproperties()
+        {
+            BynderClient bynderClient = new BynderClient(BynderSettings);
+            var metaproperties = bynderClient.GetMetadataProperties();
+            Assert.IsTrue(true);
         }
 
         public void GetAccount()
         {
-           BynderClient bynderClient = new BynderClient(_bynderSettings);
+           BynderClient bynderClient = new BynderClient(BynderSettings);
             var accountName = bynderClient.GetAccount().Name;
 
             Logger.Log(accountName);
@@ -95,7 +100,7 @@ namespace BynderTest
 
         public void GetAssetCollection()
         {
-            BynderClient bynderClient = new BynderClient(_bynderSettings);
+            BynderClient bynderClient = new BynderClient(BynderSettings);
             var collection = bynderClient.GetAssetCollection("");
             Assert.IsInstanceOfType(collection, typeof(AssetCollection));
             Logger.Log("Total assets in result: " + collection.Total.Count);

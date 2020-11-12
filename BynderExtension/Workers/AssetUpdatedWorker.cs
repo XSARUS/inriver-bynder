@@ -11,6 +11,7 @@ namespace Bynder.Workers
 {
     using Api;
     using Api.Model;
+    using Config;
     using Names;
     using Utils;
     using Utils.Extensions;
@@ -46,6 +47,9 @@ namespace Bynder.Workers
                     continue;
                 }
 
+                var mergedVal = property.Values == null ? null : string.Join(_inRiverContext.Settings[Settings.MultivalueSeparator], property.Values);
+                var singleVal = property.Values.FirstOrDefault();
+
                 switch (field.FieldType.DataType.ToLower())
                 {
                     case "localestring":
@@ -60,27 +64,49 @@ namespace Bynder.Workers
                         {
                             var culture = new CultureInfo(lang);
                             if (!ls.ContainsCulture(culture)) continue;
-                            ls[culture] = property.Value;
+                            ls[culture] = mergedVal;
                         }
 
                         field.Data = ls;
                         break;
+                    case "string":
+                        field.Data = mergedVal;
+                        break;
+                    case "cvl":
+                        field.Data = property.Values == null ? null : string.Join(";", property.Values); 
+                        break;
                     case "datetime":
-                        if (property.Value.Contains('/')) // when using the date property
+                        ShowMessageIfMultipleValuesAreDeliveredForSingleValueField(property, fieldTypeId, field.FieldType.DataType);
+
+                        if(string.IsNullOrEmpty(singleVal))
+                        {
+                            field.Data = null;
+                        }
+                        else if (singleVal.Contains('/')) // when using the date property
                         {
                             // 07/28/2017
-                            field.Data = property.Value.ConvertTo<DateTime>(null, null, "MM/dd/yyyy");
+                            field.Data = singleVal.ConvertTo<DateTime?>(null, null, "MM/dd/yyyy");
                         }
                         else // added this just to be sure, it is used in example outputs of the Bynder API
                         {
                             //2017-03-28T14:28:56Z
-                            field.Data = property.Value.ConvertTo<DateTime>(null, null, "yyyy-MM-ddTHH:mm:ssZ");
+                            field.Data = singleVal.ConvertTo<DateTime?>();
                         }
                         break;
                     default:
-                        field.Data = property.Value.ConvertTo(field.FieldType.DataType);
+                        ShowMessageIfMultipleValuesAreDeliveredForSingleValueField(property, fieldTypeId, field.FieldType.DataType);
+
+                        field.Data = singleVal.ConvertTo(field.FieldType.DataType);
                         break;
                 }
+            }
+        }
+
+        private void ShowMessageIfMultipleValuesAreDeliveredForSingleValueField(Metaproperty property, string fieldTypeId, string datatype)
+        {
+            if (property.Values != null && property.Values.Count > 1)
+            {
+                _inRiverContext.Log(LogLevel.Verbose, $"Property '{property.Name}' contains multiple values, while the Field '{fieldTypeId}' and datatype {datatype} only needs one. Taking the first value.");
             }
         }
 

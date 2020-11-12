@@ -55,8 +55,9 @@ Unfortunately you have to configure 4 extensions to make the integration complet
 | INITIAL_ASSET_LOAD_URL_QUERY | type=image | filter query for the initial asset loader
 | INRIVER_INTEGRATION_ID | 41a92562-bfd9-4847-a34d-4320bcef5e4a | See https://help.bynder.com/System/Integrations/asset-tracker.htm
 | INRIVER_RESOURCE_URL | https://inriver.productmarketingcloud.com//app/enrich#entity{entityId} | Deeplink to resource entity in inRiver |
-| BYNDER_BRAND_NAME | Customer Brand Name | Used to set the BrandId in the upload of Assets. (F.e. the BrandName could be retreived by running the GetAvailableBranches() method on the BynderClient) |
+| BYNDER_BRAND_NAME | Customer Brand Name | Used to set the BrandId in the upload of Assets. Can be found under Brand Management in Bynder or with the API by running the GetAvailableBranches() method on the BynderClient. |
 | LOCALESTRING_LANGUAGES_TO_SET | en-GB, nl-NL | Languages to set on the Entity, when a FieldType in the METAPROPERTY_MAP is of type LocaleString. Values in Bynder are not language specific, so the value on the property will be copied to the configured languages (in the AssetUpdatedWorker).|
+| MULTIVALUE_SEPARATOR | ,  | Separator which will be used to concat multiple values delivered by Bynder into a (locale)string field for metadataproperties. This separator will only be used on string and LocaleString fields, for CVL we concat the values with a semicolon(;), because that's what inRiver expects. |
 
 Press Test on each connector (in the extensions page) to see if the connector works and your settings are valid
 

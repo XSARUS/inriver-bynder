@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Bynder.Api.Model
 {
@@ -15,13 +16,9 @@ namespace Bynder.Api.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Value as string, multiple values comma separated.
-        /// 
-        /// todo: check out if string is ok or needs to change to an other datatype.
-        /// Note that the list of (metaproperty) options should include all the (metaproperty) options available in the lower hierarchy; 
-        /// meaning it should include the (metaproperty) options of the (metaproperty) options etc.
+        /// Values from bynder are always represented as array 
         /// </summary>
-        public string Value { get; set; }
+        public List<string> Values { get; set; }
 
         public Metaproperty() {}
 
@@ -29,7 +26,7 @@ namespace Bynder.Api.Model
         public Metaproperty(string id, string value)
         {
             Id = id;
-            Value = value;
+            Values = new List<string> { value };
         }
     }
 }

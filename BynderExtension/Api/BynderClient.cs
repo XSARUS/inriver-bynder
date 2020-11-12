@@ -226,7 +226,7 @@ namespace Bynder.Api
         /// <param name="assetId"></param>
         /// <param name="metapropertyDictionary"></param>
         /// <returns></returns>
-        public string SetMetaProperties(string assetId, Dictionary<string, string> metapropertyDictionary)
+        public string SetMetaProperties(string assetId, Dictionary<string, List<string>> metapropertyDictionary)
         {
             // defence:
             if (string.IsNullOrWhiteSpace(assetId) || !metapropertyDictionary.Any()) return null;

@@ -7,7 +7,6 @@ using System.Linq;
 namespace Bynder.Converters
 {
     using Api.Model;
-    using Utils.Helpers;
 
     public class AssetJsonConverter : JsonConverter
     {
@@ -44,9 +43,10 @@ namespace Bynder.Converters
         private MetapropertyList GetMetapropertyList(List<JProperty> properties)
         {
             var propertyTokens = properties.Where(x => x.Name.StartsWith(_propertyPrefix));
-            var metaProperties= propertyTokens.Select(x => 
-                // save values as string
-                new Metaproperty { Name = x.Name.Substring(x.Name.IndexOf(_propertyPrefix) + _propertyPrefix.Length), Value = JsonHelper.GetValueAsString(x) });
+            var metaProperties= propertyTokens.Select(jProperty => 
+                // property values are always send as array
+                new Metaproperty { Name = jProperty.Name.Substring(jProperty.Name.IndexOf(_propertyPrefix) + _propertyPrefix.Length), Values = (List<string>)jProperty.Value.ToObject(typeof(List<string>))
+            });
             return new MetapropertyList(metaProperties);
         }
 

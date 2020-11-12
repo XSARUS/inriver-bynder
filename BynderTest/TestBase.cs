@@ -15,7 +15,7 @@ namespace BynderTest
         protected Logger Logger;
 
         // todo: Add your bynder connection settings here
-        protected readonly BynderClientSettings _bynderSettings = new BynderClientSettings()
+        protected readonly BynderClientSettings BynderSettings = new BynderClientSettings()
         {
             ConsumerKey = "***",
             ConsumerSecret = "***",
@@ -35,7 +35,9 @@ namespace BynderTest
             {Bynder.Config.Settings.RegularExpressionForFileName, @"^(?<ProductNumber>[0-9a-zA-Z]+)_(?<ResourceType>image|document)_(?<ResourcePosition>[0-9]+)" },
             {Bynder.Config.Settings.InitialAssetLoadUrlQuery, @"type=image" },
             {Bynder.Config.Settings.MetapropertyMap, @"C7BC01E1-670D-4410-A7B81E9032FE261A=ResourcePosition,C284234B-29B6-4CA8-B907B728455F30EA=ProductNumber" },
-            {Bynder.Config.Settings.bynderBrandName, "" }
+            {Bynder.Config.Settings.BynderBrandName, "" },
+            {Bynder.Config.Settings.LocaleStringLanguagesToSet, "en-GB, nl-NL" },
+            {Bynder.Config.Settings.MultivalueSeparator, ", " }
         };
 
         [TestInitialize]

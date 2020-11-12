@@ -13,7 +13,7 @@ namespace Bynder.Api.Model
             var pairs = new List<KeyValuePair<string, string>>();
             foreach (var metaproperty in this)
             {
-                pairs.Add(new KeyValuePair<string, string>("metaproperty." + metaproperty.Id, metaproperty.Value));
+                pairs.Add(new KeyValuePair<string, string>("metaproperty." + metaproperty.Id, string.Join(",", metaproperty.Values)));
             }
             return pairs;
         }
@@ -23,14 +23,14 @@ namespace Bynder.Api.Model
             return string.Join($"\n", GetPostKeyValuePairs().Select(kv => $"{kv.Key}={kv.Value}"));
         }
 
-        public static MetapropertyList CreateFromDictionary(Dictionary<string, string> dictionary)
+        public static MetapropertyList CreateFromDictionary(Dictionary<string, List<string>> dictionary)
         {
             var metaproperyList = new MetapropertyList();
             if (dictionary == null) return metaproperyList;
 
             foreach (var element in dictionary)
             {
-                metaproperyList.Add(new Metaproperty{ Id = element.Key, Value = element.Value });
+                metaproperyList.Add(new Metaproperty{ Id = element.Key, Values = element.Value  });
             }
 
             return metaproperyList;
