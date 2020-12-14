@@ -45,9 +45,31 @@ namespace Bynder.Converters
             var propertyTokens = properties.Where(x => x.Name.StartsWith(_propertyPrefix));
             var metaProperties= propertyTokens.Select(jProperty => 
                 // property values are always send as array
-                new Metaproperty { Name = jProperty.Name.Substring(jProperty.Name.IndexOf(_propertyPrefix) + _propertyPrefix.Length), Values = (List<string>)jProperty.Value.ToObject(typeof(List<string>))
+                new Metaproperty { Name = jProperty.Name.Substring(jProperty.Name.IndexOf(_propertyPrefix) + _propertyPrefix.Length), Values = GetValueAsStringList(jProperty.Value)
             });
             return new MetapropertyList(metaProperties);
+        }
+
+        private static List<string> GetValueAsStringList(JToken token)
+        {
+            if (token == null) return new List<string>();
+
+            switch (token.Type)
+            {
+                case JTokenType.Null:
+                    return new List<string>();
+
+                case JTokenType.Array:
+                    var arr = (JArray)token;
+                    return arr.ToObject<List<string>>();
+
+                //todo need to implement this? depends on what will be send as value for the metaproperty types in bynder. Have only seen strings and string arrays.
+                case JTokenType.Object:
+                    throw new NotImplementedException("No implementation to process JToken Object yet");
+
+                default:
+                    return new List<string> { token.Value<string>() };
+            }
         }
 
         public override bool CanWrite => false;

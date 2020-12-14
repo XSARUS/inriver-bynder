@@ -108,14 +108,14 @@ namespace Bynder.Utils.Extensions
                 convertType = typeof(T);
             }
 
+            // create string for later usage
+            var inputAsString = input?.ToString(); //as string will only return string when object is of type string. Maybe this is necessary?
+
             // return null immediately if nullable and input is null
-            if (isNullable && input == null)
+            if (isNullable && string.IsNullOrWhiteSpace(inputAsString)) //input == null
             {
                 return default(T);
             }
-
-            // create string for later usage
-            var inputAsString = input as string;
 
             return GetConvertedValue<T>(convertType, input, inputAsString, numberFormatInfo, culture, dateTimeFormat);
         }
@@ -225,7 +225,7 @@ namespace Bynder.Utils.Extensions
                     return (T)(object)Convert.ToUInt64(input);
                 case TypeCode.Double:
                 case TypeCode.Decimal:
-                    return ParseFloatingType<T>(convertType, input, numberFormatInfo, culture);
+                    return ParseFloatingType<T>(convertType, input, inputAsString, numberFormatInfo, culture);
                 case TypeCode.DateTime:
                     return ParseDateTime<T>(input, inputAsString, culture, dateTimeFormat);
                 case TypeCode.Boolean:
@@ -233,13 +233,13 @@ namespace Bynder.Utils.Extensions
                 case TypeCode.Char:
                     return (T)(object)Convert.ToChar(input);
                 case TypeCode.String:
-                    return ParseString<T>(convertType, input, numberFormatInfo, culture, dateTimeFormat);
+                    return ParseString<T>(convertType, input, inputAsString, numberFormatInfo, culture, dateTimeFormat);
             }
 
             return default(T);
         }
 
-        private static T ParseString<T>(Type convertType, object input, NumberFormatInfo numberFormatInfo, CultureInfo culture, string dateTimeFormat)
+        private static T ParseString<T>(Type convertType, object input, string inputAsString, NumberFormatInfo numberFormatInfo, CultureInfo culture, string dateTimeFormat)
         {
             if (input == null)
             {
@@ -252,7 +252,7 @@ namespace Bynder.Utils.Extensions
             {
                 case TypeCode.Double:
                 case TypeCode.Decimal:
-                    return ParseFloatingType<T>(convertType, input, numberFormatInfo, culture);
+                    return ParseFloatingType<T>(convertType, input, inputAsString, numberFormatInfo, culture);
                 case TypeCode.DateTime:
                     return ParseDateTimeToString<T>(convertType, input, culture, dateTimeFormat);
             }
@@ -287,10 +287,11 @@ namespace Bynder.Utils.Extensions
             return default(T);
         }
 
-        private static T ParseFloatingType<T>(Type convertType, object input, NumberFormatInfo numberFormatInfo, CultureInfo culture)
+        private static T ParseFloatingType<T>(Type convertType, object input, string inputAsString, NumberFormatInfo numberFormatInfo, CultureInfo culture)
         {
             // cant convert null, so return this way 
-            if (input == null)
+            // also treat empty strings as null
+            if (input == null || string.IsNullOrWhiteSpace(inputAsString))
             {
                 return default(T);
             }

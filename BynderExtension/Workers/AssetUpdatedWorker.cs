@@ -29,7 +29,6 @@ namespace Bynder.Workers
             _fileNameEvaluator = fileNameEvaluator;
         }
 
-
         public void SetMetapropertyData(Entity resourceEntity, Asset asset, WorkerResult result)
         {
             _inRiverContext.Log(LogLevel.Verbose, "Setting metaproperties on entity");
@@ -73,12 +72,20 @@ namespace Bynder.Workers
                         field.Data = mergedVal;
                         break;
                     case "cvl":
-                        field.Data = property.Values == null ? null : string.Join(";", property.Values); 
+                        if (field.FieldType.Multivalue)
+                        {
+                            field.Data = property.Values == null ? null : string.Join(";", property.Values);
+                        }
+                        else
+                        {
+                            LogMessageIfMultipleValuesAreDeliveredForSingleValueField(result, property, fieldTypeId, field.FieldType.DataType, singleVal, mergedVal);
+                            field.Data = singleVal;
+                        }
                         break;
                     case "datetime":
-                        ShowMessageIfMultipleValuesAreDeliveredForSingleValueField(property, fieldTypeId, field.FieldType.DataType);
+                        LogMessageIfMultipleValuesAreDeliveredForSingleValueField(result, property, fieldTypeId, field.FieldType.DataType, singleVal, mergedVal);
 
-                        if(string.IsNullOrEmpty(singleVal))
+                        if (string.IsNullOrEmpty(singleVal))
                         {
                             field.Data = null;
                         }
@@ -94,7 +101,7 @@ namespace Bynder.Workers
                         }
                         break;
                     default:
-                        ShowMessageIfMultipleValuesAreDeliveredForSingleValueField(property, fieldTypeId, field.FieldType.DataType);
+                        LogMessageIfMultipleValuesAreDeliveredForSingleValueField(result, property, fieldTypeId, field.FieldType.DataType, singleVal, mergedVal);
 
                         field.Data = singleVal.ConvertTo(field.FieldType.DataType);
                         break;
@@ -102,11 +109,11 @@ namespace Bynder.Workers
             }
         }
 
-        private void ShowMessageIfMultipleValuesAreDeliveredForSingleValueField(Metaproperty property, string fieldTypeId, string datatype)
+        private void LogMessageIfMultipleValuesAreDeliveredForSingleValueField(WorkerResult result, Metaproperty property, string fieldTypeId, string datatype, string firstVal, string allValuesAsString)
         {
             if (property.Values != null && property.Values.Count > 1)
             {
-                _inRiverContext.Log(LogLevel.Verbose, $"Property '{property.Name}' contains multiple values, while the Field '{fieldTypeId}' and datatype {datatype} only needs one. Taking the first value.");
+                result.Messages.Add($"Property '{property.Name}' contains multiple values, while the Field '{fieldTypeId}' and datatype {datatype} only needs one. Taking the value '{firstVal}' of the list of values '{allValuesAsString}'.");
             }
         }
 
