@@ -78,6 +78,7 @@
     <Compile Include="Extension\Extension.cs" />
     <Compile Include="Extension\Uploader.cs" />
     <Compile Include="Utils\Extensions\CollectionExtensions.cs" />
+    <Compile Include="Utils\Extensions\StringExtensions.cs" />
     <Compile Include="Utils\Extensions\StringToCollectionExtensions.cs" />
     <Compile Include="Utils\Extensions\ParseExtensions.cs" />
     <Compile Include="Utils\Extensions\TypeExtensions.cs" />

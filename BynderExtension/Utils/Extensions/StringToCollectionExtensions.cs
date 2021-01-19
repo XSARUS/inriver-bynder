@@ -7,6 +7,25 @@ namespace Bynder.Utils.Extensions
     public static class StringToCollectionExtensions
     {
         /// <summary>
+        /// String to dictionary. One unique key per string.
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TVal"></typeparam>
+        /// <param name="input"></param>
+        /// <param name="parameterSeparator"></param>
+        /// <param name="keyValueSeparator"></param>
+        /// <returns></returns>
+        public static Dictionary<TKey, TVal> ToDictionary<TKey, TVal>(this string input, char parameterSeparator, char keyValueSeparator)
+        {
+            IEnumerable<List<string>> keyValueLists = from row in input.ToIEnumerable<string>(parameterSeparator)
+                                                      select row.ToList<string>(keyValueSeparator);
+            return keyValueLists.ToDictionary(
+                    pair => pair[0].ConvertTo<TKey>(),
+                    pair => pair.ElementAtOrDefault(1).ConvertTo<TVal>()
+            );
+        }
+
+        /// <summary>
         /// Splits string into a collection. Empty List if string is null.
         /// </summary>
         /// <param name="input"></param>

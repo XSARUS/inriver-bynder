@@ -189,8 +189,7 @@ namespace Bynder.Utils.Extensions
                 }
 
                 //IEnumerable handling: type is ienumerable or class implements type IEnumerable 
-                bool isIEnumerable = convertType.IsGenericType && convertType.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
-                    convertType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+                bool isIEnumerable = convertType.IsIEnumerable();
 
                 // string is a list of chars, then convert to valuetype
                 if (isIEnumerable && convertType != typeof(string))
@@ -204,6 +203,12 @@ namespace Bynder.Utils.Extensions
             {
                 throw new InvalidCastException($"The conversion of '{input}' to {convertType.Name} is not possible", ex);
             }
+        }
+
+        public static bool IsIEnumerable(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
+                    type.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>));
         }
 
         private static T ConvertToValueType<T>(Type convertType, object input, string inputAsString, NumberFormatInfo numberFormatInfo, CultureInfo culture, string dateTimeFormat)
@@ -326,7 +331,9 @@ namespace Bynder.Utils.Extensions
                 {
                     dateTimeCulture = Generics.CultureInfo;
                 }
-                return (T)(object)DateTime.ParseExact(inputAsString, dateTimeFormat, dateTimeCulture);
+
+                var dt = DateTime.ParseExact(inputAsString, dateTimeFormat, dateTimeCulture);
+                return (T)(object)dt;
             }
 
             return default(T);

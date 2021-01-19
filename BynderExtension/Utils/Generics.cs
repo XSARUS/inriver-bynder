@@ -5,7 +5,6 @@ namespace Bynder.Utils
 {
     public static class Generics
     {
-        public const string GENERAL_FORMAT_CULTURE_NAME = "en-US";
         public const string GENERAL_FORMAT_DATETIME = "yyyy-MM-ddTHH:mm:ssZ"; // ISO8601, or "yyyy-MM-dd'T'HH:mm:ss'Z'"
 
         /// <summary>
@@ -50,9 +49,6 @@ namespace Bynder.Utils
             }
         }
 
-        /// <summary>
-        /// Culture of general format (which is en-US)
-        /// </summary>
-        public static readonly CultureInfo CultureInfo = CultureInfo.GetCultureInfo(GENERAL_FORMAT_CULTURE_NAME);
+        public static readonly CultureInfo CultureInfo = CultureInfo.InvariantCulture;
     }
 }
