@@ -11,5 +11,6 @@
         public const string AssetPropertyMap = "ASSET_PROPERTY_MAP";
         public const string RegularExpressionForFileName = "REGULAR_EXPRESSION_FOR_FILENAME";
         public const string MultivalueSeparator = "MULTIVALUE_SEPARATOR";
+        public const string CreateMissingCvlKeys = "CREATE_MISSING_CVL_KEYS";
     }
 }

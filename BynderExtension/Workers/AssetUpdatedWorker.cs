@@ -187,6 +187,18 @@ namespace Bynder.Workers
             return new List<string>();
         }
 
+        private bool GetConfiguredCreateMissingCvlKeys()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Settings.CreateMissingCvlKeys))
+            {
+                return string.Equals(_inRiverContext.Settings[Settings.CreateMissingCvlKeys], true.ToString(), StringComparison.InvariantCultureIgnoreCase);
+            }
+
+            _inRiverContext.Logger.Log(LogLevel.Error, $"Could not find configuration for '{Settings.CreateMissingCvlKeys}'");
+            
+            return false;
+        }
+
         private void LogMessageIfMultipleValuesForSingleField(WorkerResult result, string propertyName, Field field, List<string> values, string firstVal, string mergedVal)
         {
             if (values != null && values.Count > 1)
@@ -263,14 +275,11 @@ namespace Bynder.Workers
                         field.Data = mergedVal;
                         break;
                     case "cvl":
-                        if (field.FieldType.Multivalue)
-                        {
-                            field.Data = string.Join(";", values);
-                        }
-                        else
+                        UpdateCvlField(field, values, result, out singleVal);
+
+                        if (!field.FieldType.Multivalue)
                         {
                             LogMessageIfMultipleValuesForSingleField(result, assetProperty.Name, field, values, singleVal, mergedVal);
-                            field.Data = singleVal;
                         }
                         break;
                     case "datetime":
@@ -337,14 +346,11 @@ namespace Bynder.Workers
                         field.Data = mergedVal;
                         break;
                     case "cvl":
-                        if (field.FieldType.Multivalue)
-                        {
-                            field.Data = property.Values == null ? null : string.Join(";", property.Values);
-                        }
-                        else
+                        UpdateCvlField(field, property.Values, result, out singleVal);
+
+                        if (!field.FieldType.Multivalue)
                         {
                             LogMessageIfMultipleValuesForSingleField(result, property.Name, field, property.Values, singleVal, mergedVal);
-                            field.Data = singleVal;
                         }
                         break;
                     case "datetime":
@@ -373,7 +379,77 @@ namespace Bynder.Workers
                 }
             }
         }
+        private void UpdateCvlField(Field field, List<string> values, WorkerResult result, out string singleVal)
+        {
+            singleVal = string.Empty;
 
+            if (values == null || values.Count == 0)
+            {
+                return;
+            }
+
+            List<string> validatedCvlKeys = new List<string>(values);
+            List<CVLValue> cvlValues = _inRiverContext.ExtensionManager.ModelService.GetCVLValuesForCVL(field.FieldType.CVLId, true);
+
+            foreach (string cvlKey in values)
+            {
+                if (string.IsNullOrWhiteSpace(cvlKey))
+                {
+                    continue;
+                }
+
+                if (cvlValues.FirstOrDefault(c => c.Key.Equals(cvlKey)) != null)
+                {
+                    validatedCvlKeys.Add(cvlKey);
+                    continue;
+                }
+
+                string cleanCvlKey = cvlKey.ToStringWithoutControlCharactersForCvlKey();
+                if (cvlValues.FirstOrDefault(c => c.Key.Equals(cleanCvlKey)) != null)
+                {
+                    validatedCvlKeys.Add(cleanCvlKey);
+                    continue;
+                }
+
+                if (this.GetConfiguredCreateMissingCvlKeys())
+                {
+
+                    CVLValue newCvlValue = new CVLValue()
+                    {
+                        CVLId = field.FieldType.CVLId,
+                        Key = cleanCvlKey,
+                        Value = cvlKey
+                    };
+
+                    try
+                    {
+                        newCvlValue = _inRiverContext.ExtensionManager.ModelService.AddCVLValue(newCvlValue);
+                        cvlValues.Add(newCvlValue);
+                    }
+                    catch (Exception e)
+                    {
+                        result.Messages.Add($"Could not add CVLKey '{cleanCvlKey}' ({cvlKey}).");
+                    }
+                }
+                else
+                {
+                    result.Messages.Add($"Missing CVLKey '{cleanCvlKey}' ({cvlKey}) has not been added.");
+                }
+            }
+
+            if (validatedCvlKeys.Any())
+            {
+                if (field.FieldType.Multivalue)
+                {
+                    field.Data = string.Join(";", validatedCvlKeys);
+                }
+                else
+                {
+                    singleVal = validatedCvlKeys.FirstOrDefault();
+                    field.Data = singleVal;
+                }
+            }
+        }
         private WorkerResult UpdateMetadata(WorkerResult result, Asset asset, Entity resourceEntity)
         {
             _inRiverContext.Log(LogLevel.Verbose, "Update metadata only");
@@ -383,7 +459,6 @@ namespace Bynder.Workers
             result.Messages.Add($"Resource {resourceEntity.Id} updated");
             return result;
         }
-
         public WorkerResult Execute(string bynderAssetId, bool onlyUpdateMetadataHasUpdated)
         {
             var result = new WorkerResult();
