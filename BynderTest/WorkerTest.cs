@@ -1,14 +1,23 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Bynder.Api;
 using Bynder.Extension;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BynderTest
 {
     [TestClass]
     public class WorkerTest : TestBase
     {
+        [Ignore("Test create/update for asset")]
+        [DataTestMethod, DataRow("CE9F3C36-3EDF-4F92-979A791B83B21DDA")]
+        public void TestAssetUpdatedWorker(string bynderAssetId)
+        {
+            InRiverContext.Settings = TestSettings;
+            var worker = new Bynder.Workers.AssetUpdatedWorker(InRiverContext, new BynderClient(BynderSettings), new Bynder.Utils.FilenameEvaluator(InRiverContext));
+            var updaterResult = worker.Execute(bynderAssetId, true);
+        }
+
         [Ignore("Add resource entityId here")]
-        [DataRow(123)]
-        [DataTestMethod]
+        [DataTestMethod, DataRow(123)]
         public void TestEntityCreate(int entityId)
         {
             var worker = new Worker
@@ -22,8 +31,7 @@ namespace BynderTest
         }
 
         [Ignore("Add product entityId here or adjust the test with an other field for other entitytype")]
-        [DataRow(123)]
-        [DataTestMethod]
+        [DataTestMethod, DataRow(123)]
         public void TestEntityUpdate(int entityId)
         {
             var worker = new Worker

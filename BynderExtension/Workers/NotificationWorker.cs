@@ -6,9 +6,19 @@ namespace Bynder.Workers
 {
     public class NotificationWorker : IWorker
     {
+        private readonly string[] _allowedSubjects = {
+                    "asset_bank.media.updated",
+                    "asset_bank.media.uploaded",
+                    "asset_bank.media.pre_archived",
+                    "asset_bank.media.upload",
+                    "asset_bank.media.create",
+                    "asset_bank.media.meta_updated"
+                };
+
         public class Result : WorkerResult
         {
             public string MediaId { get; set; }
+            public bool OnlyMetadataChanged { get; set; }
         }
 
         public Result Execute(string requestBody)
@@ -30,19 +40,13 @@ namespace Bynder.Workers
             // check if notification & notification topic is expected
             if (snsMessage.IsNotificationType)
             {
-                string[] allowedSubjects =
-                {
-                    "asset_bank.media.uploaded",
-                    "asset_bank.media.pre_archived",
-                    "asset_bank.media.upload",
-                    "asset_bank.media.create"
-                };
-
-                if (!Array.Exists(allowedSubjects, s => s.Equals(snsMessage.Subject.ToString())))
+                if (!Array.Exists(_allowedSubjects, s => s.Equals(snsMessage.Subject)))
                 {
                     result.Messages.Add($"AWS SNS - Not acting on subject {snsMessage.Subject}");
                     return result;
                 }
+
+                result.OnlyMetadataChanged = snsMessage.Subject.Equals("asset_bank.media.meta_updated");
 
                 dynamic innerMessage = JsonConvert.DeserializeObject(snsMessage.MessageText);
                 if (!string.IsNullOrEmpty(innerMessage?.media_id?.ToString()))

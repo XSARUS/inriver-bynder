@@ -1,9 +1,10 @@
-﻿using System;
-using Bynder.Workers;
-using inRiver.Remoting.Extension.Interface;
+﻿using inRiver.Remoting.Extension.Interface;
+using System;
 
 namespace Bynder.Extension
 {
+    using Workers;
+
     public class NotificationListener : Extension, IInboundDataExtension
     {
         /// <summary>
@@ -24,6 +25,7 @@ namespace Bynder.Extension
 
             try
             {
+                Context.Log(inRiver.Remoting.Log.LogLevel.Verbose, "notification: " + value);
                 // first, handle the notification
                 var notificationWorker = Container.GetInstance<NotificationWorker>();
                 var notificationResult = notificationWorker.Execute(value);
@@ -33,7 +35,7 @@ namespace Bynder.Extension
                 if (!string.IsNullOrEmpty(notificationResult.MediaId))
                 {
                     var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
-                    var updaterResult = assetWorker.Execute(notificationResult.MediaId);
+                    var updaterResult = assetWorker.Execute(notificationResult.MediaId, notificationResult.OnlyMetadataChanged);
                     resultMessages.AddRange(updaterResult.Messages);
                 }
 
@@ -44,6 +46,7 @@ namespace Bynder.Extension
             {
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
             }
+            Context.Log(inRiver.Remoting.Log.LogLevel.Verbose, result);
 
             return result;
         }

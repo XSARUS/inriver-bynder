@@ -1,5 +1,4 @@
-﻿using Bynder.Api.Model;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -8,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace Bynder.Api
 {
+    using Model;
+
     public class BynderClient : OAuthClient, IBynderClient
     {
         #region Fields
@@ -63,6 +64,34 @@ namespace Bynder.Api
             if (!string.IsNullOrWhiteSpace(resourceUrl)) deleteUrl += resourceUrl;
             return Delete(deleteUrl);
         }
+
+        public Metaproperty GetMetadataProperty(string metaDataPropertyId)
+        {
+            var result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/{metaDataPropertyId}/");
+            return JsonConvert.DeserializeObject<Metaproperty>(result);
+        }
+
+        /// <summary>
+        /// todo finish implementation of this method, now returns an empty list
+        /// </summary>
+        /// <param name="metaDataPropertyIds"></param>
+        /// <returns></returns>
+        public MetapropertyList GetMetadataProperties(List<string> metaDataPropertyIds = null)
+        {
+            string result;
+            if(metaDataPropertyIds == null)
+            {
+                result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/");
+            }
+            else
+            {
+                result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/?ids={string.Join(",", metaDataPropertyIds)}");
+            }
+
+            //var ok =  JsonConvert.DeserializeObject<List<Metaproperty>>(result); //todo for later, not using it yet
+            return new MetapropertyList();
+        }
+
         /// <summary>
         /// download asset
         /// </summary>
@@ -102,7 +131,7 @@ namespace Bynder.Api
         public Asset GetAssetByAssetId(string assetId)
         {
             var apiResult = GetWithRetry($"{_customerBynderUrl}/api/v4/media/{assetId}/?versions=1");
-            return JsonConvert.DeserializeObject<Asset>(apiResult);
+            return JsonConvert.DeserializeObject<Asset>(apiResult); 
         }
         /// <summary>
         /// get asset collection by query
@@ -166,7 +195,7 @@ namespace Bynder.Api
                 new KeyValuePair<string, string>("name", saveMediaQuery.Filename),
             };
 
-            string uri = null;
+            string uri;
             if (saveMediaQuery.MediaId == null)
             {
                 uri = $"api/v4/media/save/{saveMediaQuery.ImportId}/";
@@ -180,6 +209,7 @@ namespace Bynder.Api
 
             return (string.IsNullOrWhiteSpace(result)) ? null : JsonConvert.DeserializeObject<UploadResult>(result.ToString());
         }
+
         /// <summary>
         /// set meta properties for asset
         /// </summary>
@@ -196,7 +226,7 @@ namespace Bynder.Api
         /// <param name="assetId"></param>
         /// <param name="metapropertyDictionary"></param>
         /// <returns></returns>
-        public string SetMetaProperties(string assetId, Dictionary<string, string> metapropertyDictionary)
+        public string SetMetaProperties(string assetId, Dictionary<string, List<string>> metapropertyDictionary)
         {
             // defence:
             if (string.IsNullOrWhiteSpace(assetId) || !metapropertyDictionary.Any()) return null;

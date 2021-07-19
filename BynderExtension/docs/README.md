@@ -4,7 +4,7 @@
 
 When an asset is uploaded (newly created or updated) Bynder will send an AWS SNS Notification to inRiver.
 
-![Sequence diagram](img/inRiver Bynder integration overview-page1.png)
+![Sequence diagram](img/inRiver_Bynder_integration_overview-page1.png)
 
 The inRiver endpoint defined in `Bynder.Extenstion.NotificationListener` will listen for SNS messages with topics:
 
@@ -12,37 +12,51 @@ The inRiver endpoint defined in `Bynder.Extenstion.NotificationListener` will li
 * asset_bank.media.pre_archived
 * asset_bank.media.upload
 * asset_bank.media.create
+* asset_bank.media.meta_updated
 
 All topics will be treated the same: the Bynder `MediaId` is parsed from the message and starts the [AssetUpdated Worker](#AssetUpdatedWorker)
 
-Notice: property changes in Bynder currently do not trigger any events. Thus only when the file itself is changed it will be notified.
+Notice: property changes in Bynder currently do not trigger any events. Thus only when the file itself is changed it will be notified. todo: is this still relevant?
 
 ### AssetUpdatedWorker
 
-The AssetUpdated worker, in short, handles the process of newly created or updated. In more detail:
+The AssetUpdated worker, in short, handles the process of creates, updates and adds relations to an Entity based on values in the Asset. In more detail:
 
+#### Get Entity
 * The original filename is fetched from the Bynder API using `api/v4/media/id/?versions=1` path `.mediaItems[@type = 'original']/fileName`
 * The filename is evaluated against the regular expression as configured in `REGULAR_EXPRESSION_FOR_FILENAME`
 * When matched it will search for a Resource entity in inRiver which has the field `ResourceBynderId` set to the AssetID from Bynder (a GUID string)
-  * If not found: a new Resource entity will be created
-* The following values will be set on the Resource entity:
-  * `ResourceBynderId` : Bynder Asset ID
-  * `ResourceFilename` : filename from Bynder (currently prefixed with the asset ID to keep it unique)
-  * `ResourceBynderDownloadState` : "todo" 
-* All labeled regex groups starting with `Resource` will be put in matching Resource fields on the Resource entity. With this you can set an inRiver resource value based on parts of the filename
-* All labeled regex groups *not* starting with `Resource` will be processed; for each value:
-  * A `GetEntityByUniqueValue` search is done to see if there is any entity that matches. E.g. `ProductNumber=12345`
-  * If an entity is found and there is a linktype *from* this entitytype to the resource entitytype, e.g. `ProductResource` this link is created.
-  * You are able to create multiple links at once, but this is usually not the case as you have to have all the information in the filename.
+
+#### Update fields with metaproperty data
+* If only metadata has been updated (asset_bank.media.meta_updated) then all metaproperties on the Asset will be saved no the Entity 
+  * Metaproperties from metaproperty map will be used to match the metaproperties on the Asset with the Fields on the Entity
+  * supported metaproperty types are: AutoComplete, Date, Select(single, multivalue), Text, LongText
+  * Select options in Bynder should be the same (in the output) as the CVL keys in inRiver, so they can be matched directly in the CVL. The choice between a single select or multivalue property in Bynder, must be the same on the FieldType in inRiver (Multivalue checkbox).
+
+#### Create or update Entity and relations
+* If it was not only a metadata update, then create or update entity and create relations. The metadata properties will be procesed here as well.
+* If the Entity is not found, then a new Resource entity will be created
+* Set metaproperty data on the entity
+* Set data on entity thats retreived from filename 
+  * The following values will be set on the Resource entity:
+    * `ResourceBynderId` : Bynder Asset ID
+    * `ResourceFilename` : filename from Bynder (currently prefixed with the asset ID to keep it unique)
+    * `ResourceBynderDownloadState` : "todo" 
+  * All labeled regex groups starting with `Resource` will be put in matching Resource fields on the Resource entity. With this you can set an inRiver resource value based on parts of the filename
+* Add relations
+  * All labeled regex groups *not* starting with `Resource` will be processed; for each value:
+    * A `GetEntityByUniqueValue` search is done to see if there is any entity that matches. E.g. `ProductNumber=12345`
+    * If an entity is found and there is a linktype *from* this entitytype to the resource entitytype, e.g. `ProductResource` this link is created.
+    * You are able to create multiple links at once, but this is usually not the case as you have to have all the information in the filename.
 * inRiver -by default- will raise any events related to the modification, on which other parts of the integration will be triggered. These are not handled here but in the worker extension
-* The actual download of the file is also handled in the worker extension.
+* The actual download of the file is also handled in the download worker extension. Because of this reason the ResourceFileId can not be a mandatory field in the model.
 * End of process
 
 ## UC Manual / batch import
 
 The manual import process should be used to initially sync inRiver with Bynder, e.g. when an integration is just setup. This ensures that any asset in Bynder that matches the inRiver configuration will be fetched.
 
-![Sequence diagram](img/inRiver Bynder integration overview-page2.png)
+![Sequence diagram](img/inRiver_Bynder_integration_overview-page2.png)
 
 The process is defined in `Bynder.Extension.AssetLoader` and can be named accordingly in the inRiver extension configuration. 
 
@@ -59,7 +73,7 @@ For large collections in Bynder you may assume that this process will take a lon
 
 Many events lead to changes on the Resource entity. These events trigger the `Bynder.Extension.Worker` which is both configured as `IEntityListener` and `ILinkListener` to be able to catch all the required events.
 
-![Sequence diagram](img/inRiver Bynder integration overview-page3.png)
+![Sequence diagram](img/inRiver_Bynder_integration_overview-page3.png)
 
 The following workers will run:
 
@@ -105,13 +119,13 @@ This worker is responsible for updating the asset usage in Bynder.
 
 When a link is created or updated with a resource as Target, the metaproperties worker is called. See [Resource Metaproperty Update worker](#ResourceMetapropertyUpdateWorker).
 
-![Sequence diagram](img/inRiver Bynder integration overview-page4.png)
+![Sequence diagram](img/inRiver_Bynder_integration_overview-page4.png)
 
 ## UC inRiver "Other than Resource" Entity changed
 
 Many events lead to changes on the Resource entity. These events trigger the `Bynder.Extension.Worker` which is both configured as `IEntityListener` and `ILinkListener` to be able to catch all the required events.
 
-![Sequence diagram](img/inRiver Bynder integration overview-page5.png)
+![Sequence diagram](img/inRiver_Bynder_integration_overview-page5.png)
 
 When another entity than of type Resource is changed this may lead to metaproperty changes for linked Resource entities. This is handled in [Non-Resource Metaproperty Update worker](#NonResourceMetapropertyUpdateWorker)
 

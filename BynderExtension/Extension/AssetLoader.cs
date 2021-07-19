@@ -1,10 +1,11 @@
-﻿using Bynder.Api;
-using Bynder.Workers;
-using inRiver.Remoting.Extension.Interface;
+﻿using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Log;
 
 namespace Bynder.Extension
 {
+    using Api;
+    using Workers;
+
     public class AssetLoader : Extension, IScheduledExtension
     {
         /// <summary>
@@ -30,7 +31,7 @@ namespace Bynder.Extension
                 var assetCollection = bynderClient.GetAssetCollection(Context.Settings[Config.Settings.InitialAssetLoadUrlQuery]);
                 Context.Logger.Log(LogLevel.Information, $"Start processing {assetCollection.GetTotal()} assets.");
 
-                assetCollection.Media.ForEach(a => worker.Execute(a.Id));
+                assetCollection.Media.ForEach(a => worker.Execute(a.Id, false));
                 counter += assetCollection.Media.Count;
                 while (!assetCollection.IsLastPage())
                 {
@@ -38,7 +39,7 @@ namespace Bynder.Extension
                     assetCollection = bynderClient.GetAssetCollection(
                         Context.Settings[Config.Settings.InitialAssetLoadUrlQuery],
                         assetCollection.GetNextPage());
-                    assetCollection.Media.ForEach(a => worker.Execute(a.Id));
+                    assetCollection.Media.ForEach(a => worker.Execute(a.Id, false));
                     counter += assetCollection.Media.Count;
                     Context.Logger.Log(LogLevel.Information, $"Processed {counter} assets.");
                 }

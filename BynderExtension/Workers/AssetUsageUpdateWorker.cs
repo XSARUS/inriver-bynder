@@ -30,8 +30,8 @@ namespace Bynder.Workers
 
             // get settings, if missing return, nothing to do
             var settings = _inRiverContext.Settings;
-            if (!settings.TryGetValue(Config.Settings.inriverIntegrationId, out var integrationId) ||
-                !settings.TryGetValue(Config.Settings.inriverEntityUrl, out var inriverEntityUrl)) return;
+            if (!settings.TryGetValue(Config.Settings.InRiverIntegrationId, out var integrationId) ||
+                !settings.TryGetValue(Config.Settings.InRiverEntityUrl, out var inriverEntityUrl)) return;
 
             string formattedInriverResourceUrl = inriverEntityUrl.Replace("{entityId}", resourceEntity.Id.ToString());
 
