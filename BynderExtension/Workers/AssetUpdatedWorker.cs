@@ -328,6 +328,7 @@ namespace Bynder.Workers
 
         /// <summary>
         /// todo do all values need to match, does it only need certain values does it only have to match one?
+        /// It now processes the meta properties which are found in the conditions.
         /// </summary>
         /// <param name="asset"></param>
         /// <returns></returns>
@@ -350,35 +351,6 @@ namespace Bynder.Workers
 
             return true;
         }
-
-        //private bool EvaluateCondition(Entity resourceEntity, string valueToMatch, Metaproperty property, WorkerResult result)
-        //{
-        //    if (property == null)
-        //    {
-        //        return true;    // return true if property not found. todo or false?
-        //    }
-
-        //    var mergedVal = property.Values == null ? null : string.Join(_inRiverContext.Settings[Settings.MultivalueSeparator], property.Values);
-        //    var singleVal = property.Values.FirstOrDefault();
-
-        //    return Equals(valueToMatch, singleVal);
-        //    return Equals(valueToMatch, mergedVal);
-
-        //    //var field = resourceEntity.GetField(fieldTypeId);
-        //    //if (field == null)
-        //    //{
-        //    //    result.Messages.Add($"FieldType '{fieldTypeId}' in MetaPropertyMapping does not exist on Resource EntityType");
-        //    //    _inRiverContext.Logger.Log(LogLevel.Warning, $"FieldType '{fieldTypeId}' does not exist on Resource EntityType");
-
-        //    //    // return true if property not found. todo or false?
-        //    //    return true;
-        //    //}
-
-        //    var value = GetParsedMetadataValueForField(result, property, field);
-
-
-        //    return true;
-        //}
 
         private object GetParsedMetadataValueForField(WorkerResult result, Metaproperty property, Field field)
         {

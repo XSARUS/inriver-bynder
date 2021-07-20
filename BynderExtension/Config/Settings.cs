@@ -4,7 +4,7 @@
     {
         public const string AssetPropertyMap = "ASSET_PROPERTY_MAP";
         public const string BynderBrandName = "BYNDER_BRAND_NAME";
-        public const string ImportConditions = "IMPORT_CONDITIONS"; //todo maybe rename this 
+        public const string ImportConditions = "IMPORT_CONDITIONS";
         public const string InitialAssetLoadUrlQuery = "INITIAL_ASSET_LOAD_URL_QUERY";
         public const string InRiverEntityUrl = "INRIVER_RESOURCE_URL";
         public const string InRiverIntegrationId = "INRIVER_INTEGRATION_ID";
