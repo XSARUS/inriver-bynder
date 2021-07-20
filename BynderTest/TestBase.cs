@@ -42,7 +42,8 @@ namespace BynderTest
             {Bynder.Config.Settings.InRiverEntityUrl, "https://inriver.productmarketingcloud.com/app/enrich#entity/{entityId}/" },
             {Bynder.Config.Settings.BynderBrandName, "" },
             {Bynder.Config.Settings.LocaleStringLanguagesToSet, "en-GB, nl-NL" },
-            {Bynder.Config.Settings.MultivalueSeparator, ", " }
+            {Bynder.Config.Settings.MultivalueSeparator, ", " },
+            {Bynder.Config.Settings.ImportConditions, "[\r\n  {\r\n    \"propertyName\": \"synctoinriver\",\r\n    \"values\": [\r\n      \"True\"\r\n    ]\r\n  }\r\n]" }
         };
 
         [TestInitialize]

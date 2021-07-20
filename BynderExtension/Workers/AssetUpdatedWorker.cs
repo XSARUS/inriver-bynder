@@ -1,6 +1,7 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,6 +13,7 @@ namespace Bynder.Workers
     using Api;
     using Api.Model;
     using Config;
+    using Models;
     using Names;
     using Utils;
     using Utils.Extensions;
@@ -166,6 +168,15 @@ namespace Bynder.Workers
             _inRiverContext.Logger.Log(LogLevel.Error, "Could not find configured asset property Map");
             return new Dictionary<string, string>();
         }
+        private List<ImportCondition> GetImportConditions()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Settings.ImportConditions))
+            {
+                return JsonConvert.DeserializeObject<List<ImportCondition>>(_inRiverContext.Settings[Settings.ImportConditions]);
+            }
+            _inRiverContext.Logger.Log(LogLevel.Error, $"Could not find configured {Settings.ImportConditions}");
+            return new List<ImportCondition>();
+        }
 
         private Dictionary<string, string> GetConfiguredMetaPropertyMap()
         {
@@ -311,72 +322,126 @@ namespace Bynder.Workers
                     continue;
                 }
 
-                var mergedVal = property.Values == null ? null : string.Join(_inRiverContext.Settings[Settings.MultivalueSeparator], property.Values);
-                var singleVal = property.Values.FirstOrDefault();
+                field.Data = GetParsedMetadataValueForField(result, property, field);
+            }
+        }
 
-                switch (field.FieldType.DataType.ToLower())
-                {
-                    case "localestring":
-                        var languagesToSet = GetLanguagesToSet();
-                        var ls = (LocaleString)field.Data;
-                        if (ls == null)
-                        {
-                            ls = new LocaleString(_inRiverContext.ExtensionManager.UtilityService.GetAllLanguages());
-                        }
+        /// <summary>
+        /// todo do all values need to match, does it only need certain values does it only have to match one?
+        /// </summary>
+        /// <param name="asset"></param>
+        /// <returns></returns>
+        private bool AssetAppliesToConditions(Asset asset)
+        {
+            var conditions = GetImportConditions();
+            var metaPropertiesToProcess = asset.MetaProperties
+                .Select(x => new { property = x, condition = conditions.FirstOrDefault(y => y.PropertyName.Equals(x.Name))})
+                .Where(x=> x.condition != null)
+                .ToDictionary(x=> x.property.Values, x=> x.condition.Values);
 
-                        foreach (var lang in languagesToSet)
-                        {
-                            var culture = new CultureInfo(lang);
-                            if (!ls.ContainsCulture(culture)) continue;
-                            ls[culture] = mergedVal;
-                        }
+            foreach (var kvp in metaPropertiesToProcess)
+            {
+                // sort the values
+                kvp.Key.Sort();
+                kvp.Value.Sort();
 
-                        field.Data = ls;
-                        break;
-                    case "string":
-                        field.Data = mergedVal;
-                        break;
-                    case "cvl":
-                        if (field.FieldType.Multivalue)
-                        {
-                            field.Data = property.Values == null ? null : string.Join(";", property.Values);
-                        }
-                        else
-                        {
-                            LogMessageIfMultipleValuesForSingleField(result, property.Name, field, property.Values, singleVal, mergedVal);
-                            field.Data = singleVal;
-                        }
-                        break;
-                    case "datetime":
+                if (!Enumerable.SequenceEqual(kvp.Key, kvp.Value)) return false;
+            }
+
+            return true;
+        }
+
+        //private bool EvaluateCondition(Entity resourceEntity, string valueToMatch, Metaproperty property, WorkerResult result)
+        //{
+        //    if (property == null)
+        //    {
+        //        return true;    // return true if property not found. todo or false?
+        //    }
+
+        //    var mergedVal = property.Values == null ? null : string.Join(_inRiverContext.Settings[Settings.MultivalueSeparator], property.Values);
+        //    var singleVal = property.Values.FirstOrDefault();
+
+        //    return Equals(valueToMatch, singleVal);
+        //    return Equals(valueToMatch, mergedVal);
+
+        //    //var field = resourceEntity.GetField(fieldTypeId);
+        //    //if (field == null)
+        //    //{
+        //    //    result.Messages.Add($"FieldType '{fieldTypeId}' in MetaPropertyMapping does not exist on Resource EntityType");
+        //    //    _inRiverContext.Logger.Log(LogLevel.Warning, $"FieldType '{fieldTypeId}' does not exist on Resource EntityType");
+
+        //    //    // return true if property not found. todo or false?
+        //    //    return true;
+        //    //}
+
+        //    var value = GetParsedMetadataValueForField(result, property, field);
+
+
+        //    return true;
+        //}
+
+        private object GetParsedMetadataValueForField(WorkerResult result, Metaproperty property, Field field)
+        {
+            var mergedVal = property.Values == null ? null : string.Join(_inRiverContext.Settings[Settings.MultivalueSeparator], property.Values);
+            var singleVal = property.Values.FirstOrDefault();
+
+            switch (field.FieldType.DataType.ToLower())
+            {
+                case "localestring":
+                    var languagesToSet = GetLanguagesToSet();
+                    var ls = (LocaleString)field.Data;
+                    if (ls == null)
+                    {
+                        ls = new LocaleString(_inRiverContext.ExtensionManager.UtilityService.GetAllLanguages());
+                    }
+
+                    foreach (var lang in languagesToSet)
+                    {
+                        var culture = new CultureInfo(lang);
+                        if (!ls.ContainsCulture(culture)) continue;
+                        ls[culture] = mergedVal;
+                    }
+
+                    return ls;
+                case "string":
+                    return mergedVal;
+                case "cvl":
+                    if (field.FieldType.Multivalue)
+                    {
+                        return property.Values == null ? null : string.Join(";", property.Values);
+                    }
+                    else
+                    {
                         LogMessageIfMultipleValuesForSingleField(result, property.Name, field, property.Values, singleVal, mergedVal);
-                        if (string.IsNullOrEmpty(singleVal))
-                        {
-                            field.Data = null;
-                        }
-                        else if (singleVal.Contains('/')) // when using the date property
-                        {
-                            // 07/28/2017
-                            field.Data = singleVal.ConvertTo<DateTime?>(dateTimeFormat:"MM/dd/yyyy");
-                        }
-                        else // added this just to be sure, it is used in example outputs of the Bynder API
-                        {
-                            //2017-03-28T14:28:56Z yyyy-mm-ddThh:mm:ssZ (ISO 8601)
-                            // grab the UTC variant of the culture invariant datetime, because Bynder writes the DateTimes for its selected culture. So the given value of the datetime is the whole truth,
-                            // and does not have to be converted. The DateTime parse takes the local time so we need to grab ourself the UTC time.
-                            field.Data = singleVal.ConvertTo<DateTime?>()?.ToUniversalTime();
-                        }
-                        break;
-                    default:
-                        LogMessageIfMultipleValuesForSingleField(result, property.Name, field, property.Values, singleVal, mergedVal);
-                        field.Data = singleVal.ConvertTo(field.FieldType.DataType);
-                        break;
-                }
+                        return singleVal;
+                    }
+                case "datetime":
+                    LogMessageIfMultipleValuesForSingleField(result, property.Name, field, property.Values, singleVal, mergedVal);
+                    if (string.IsNullOrEmpty(singleVal))
+                    {
+                        return null;
+                    }
+                    else if (singleVal.Contains('/')) // when using the date property
+                    {
+                        // 07/28/2017
+                        return singleVal.ConvertTo<DateTime?>(dateTimeFormat: "MM/dd/yyyy");
+                    }
+                    else // added this just to be sure, it is used in example outputs of the Bynder API
+                    {
+                        //2017-03-28T14:28:56Z yyyy-mm-ddThh:mm:ssZ (ISO 8601)
+                        // grab the UTC variant of the culture invariant datetime, because Bynder writes the DateTimes for its selected culture. So the given value of the datetime is the whole truth,
+                        // and does not have to be converted. The DateTime parse takes the local time so we need to grab ourself the UTC time.
+                        return singleVal.ConvertTo<DateTime?>()?.ToUniversalTime();
+                    }
+                default:
+                    LogMessageIfMultipleValuesForSingleField(result, property.Name, field, property.Values, singleVal, mergedVal);
+                    return singleVal.ConvertTo(field.FieldType.DataType);
             }
         }
 
         private WorkerResult UpdateMetadata(WorkerResult result, Asset asset, Entity resourceEntity)
         {
-            _inRiverContext.Log(LogLevel.Verbose, "Update metadata only");
+            _inRiverContext.Log(LogLevel.Verbose, $"Update metadata only for Resource {resourceEntity.Id}");
             SetAssetProperties(resourceEntity, asset, result);
             SetMetapropertyData(resourceEntity, asset, result);
             resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
@@ -384,6 +449,12 @@ namespace Bynder.Workers
             return result;
         }
 
+        /// <summary>
+        /// Main method of the worker
+        /// </summary>
+        /// <param name="bynderAssetId"></param>
+        /// <param name="onlyUpdateMetadataHasUpdated"></param>
+        /// <returns></returns>
         public WorkerResult Execute(string bynderAssetId, bool onlyUpdateMetadataHasUpdated)
         {
             var result = new WorkerResult();
@@ -397,6 +468,13 @@ namespace Bynder.Workers
             if (!evaluatorResult.IsMatch())
             {
                 result.Messages.Add($"Not processing '{originalFileName}'; does not match regex.");
+                return result;
+            }
+
+            // evaluate conditions
+            if (!AssetAppliesToConditions(asset))
+            {
+                result.Messages.Add($"Not processing '{originalFileName}'; does not apply to import conditions.");
                 return result;
             }
 
