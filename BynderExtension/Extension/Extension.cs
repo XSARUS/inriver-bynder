@@ -29,6 +29,7 @@ namespace Bynder.Extension
                 settings.Add(Config.Settings.BynderBrandName, "");
                 settings.Add(Config.Settings.LocaleStringLanguagesToSet, "");
                 settings.Add(Config.Settings.MultivalueSeparator, ", ");
+                settings.Add(Config.Settings.ImportConditions, "[{\"propertyName\":\"synctoinriver\",\"values\":[\"True\"]}]");
                 return settings;
             }
         }
