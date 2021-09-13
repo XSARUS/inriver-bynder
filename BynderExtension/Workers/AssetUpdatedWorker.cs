@@ -330,7 +330,7 @@ namespace Bynder.Workers
         /// All values need to match.
         /// 
         /// When a value is null for a metaproperty on the Asset, then we don't receive the metaproperty from Bynder('s API response). 
-        /// When the metaproperty is not found and the condition for this property has no values or any value is null, then it will return true.
+        /// When the metaproperty is not found and the condition for this property has no values or the only value is null, then it will return true.
         /// </summary>
         /// <param name="asset"></param>
         /// <returns></returns>
@@ -356,8 +356,8 @@ namespace Bynder.Workers
             // metaproperty is not included in asset, when the value is null
             if (metaproperty == null)
             {
-                // check if there are conditions or if a condition value is null
-                if (condition.Values.Count == 0 || condition.Values.Any(x=> x == null)) return true;
+                // check if there are conditions or if the only condition value is null
+                if (condition.Values.Count == 0 || (condition.Values.Count == 1 && condition.Values.First() == null)) return true;
 
                 // return false, because the metaproperty does not have a value, but the condition does
                 return false;

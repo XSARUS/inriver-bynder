@@ -8,6 +8,6 @@ namespace Bynder.Models
         /// <summary>
         /// Values from bynder are always represented as array 
         /// </summary>
-        public List<string> Values { get; set; }
+        public List<string> Values { get; set; } = new List<string>();
     }
 }
