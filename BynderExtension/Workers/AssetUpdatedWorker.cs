@@ -327,29 +327,48 @@ namespace Bynder.Workers
         }
 
         /// <summary>
-        /// todo do all values need to match, does it only need certain values does it only have to match one?
-        /// It now processes the meta properties which are found in the conditions.
+        /// All values need to match.
+        /// 
+        /// When a value is null for a metaproperty on the Asset, then we don't receive the metaproperty from Bynder('s API response). 
+        /// When the metaproperty is not found and the condition for this property has no values or any value is null, then it will return true.
         /// </summary>
         /// <param name="asset"></param>
         /// <returns></returns>
         private bool AssetAppliesToConditions(Asset asset)
         {
             var conditions = GetImportConditions();
-            var metaPropertiesToProcess = asset.MetaProperties
-                .Select(x => new { property = x, condition = conditions.FirstOrDefault(y => y.PropertyName.Equals(x.Name))})
-                .Where(x=> x.condition != null)
-                .ToDictionary(x=> x.property.Values, x=> x.condition.Values);
 
-            foreach (var kvp in metaPropertiesToProcess)
+            // return true if no conditions found. Conditions are optional.
+            if (conditions.Count == 0) return true;
+
+            foreach(var condition in conditions)
             {
-                // sort the values
-                kvp.Key.Sort();
-                kvp.Value.Sort();
-
-                if (!Enumerable.SequenceEqual(kvp.Key, kvp.Value)) return false;
+                if (!GetConditionResult(asset, condition)) return false;
             }
 
             return true;
+        }
+
+        private bool GetConditionResult(Asset asset, ImportCondition condition)
+        {
+            var metaproperty = asset.MetaProperties.FirstOrDefault(x => x.Name.Equals(condition.PropertyName));
+
+            // metaproperty is not included in asset, when the value is null
+            if (metaproperty == null)
+            {
+                // check if there are conditions or if a condition value is null
+                if (condition.Values.Count == 0 || condition.Values.Any(x=> x == null)) return true;
+
+                // return false, because the metaproperty does not have a value, but the condition does
+                return false;
+            }
+
+            // sort the values
+            metaproperty.Values.Sort();
+            condition.Values.Sort();
+
+            // check if the sorted values are equal
+            return Enumerable.SequenceEqual(metaproperty.Values, condition.Values);
         }
 
         private object GetParsedMetadataValueForField(WorkerResult result, Metaproperty property, Field field)
@@ -446,9 +465,13 @@ namespace Bynder.Workers
             // evaluate conditions
             if (!AssetAppliesToConditions(asset))
             {
+                _inRiverContext.Log(LogLevel.Debug, $"Asset {bynderAssetId} does not apply to the conditions");
+
                 result.Messages.Add($"Not processing '{originalFileName}'; does not apply to import conditions.");
                 return result;
             }
+
+            _inRiverContext.Log(LogLevel.Debug, $"Asset {asset.Id} applies to conditions.");
 
             // find resourceEntity based on bynderAssetId
             Entity resourceEntity =
