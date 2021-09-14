@@ -1,11 +1,12 @@
-﻿using Bynder.Names;
-using Bynder.Utils.InRiver;
-using Bynder.Workers;
-using inRiver.Remoting.Extension.Interface;
+﻿using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Objects;
 
 namespace Bynder.Extension
 {
+    using Names;
+    using Utils.InRiver;
+    using Workers;
+
     public class Uploader : Extension, IEntityListener
     {
         #region Methods
@@ -24,6 +25,22 @@ namespace Bynder.Extension
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
             }
         }
+
+        public void EntityUpdated(int entityId, string[] fields)
+        {
+            try
+            {
+                if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
+                    EntityTypeIds.Resource, out var entity)) return;
+
+                Container.GetInstance<AssetUploadWorker>().Execute(entity);
+            }
+            catch (System.Exception ex)
+            {
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+            }
+        }
+
         #region NotImplementedMembers
         public void EntityCommentAdded(int entityId, int commentId)
         {
@@ -53,20 +70,6 @@ namespace Bynder.Extension
         public void EntityUnlocked(int entityId)
         {
             // Not implemented
-        }
-        public void EntityUpdated(int entityId, string[] fields)
-        {
-            try
-            {
-                if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
-                    EntityTypeIds.Resource, out var entity)) return;
-
-                Container.GetInstance<AssetUploadWorker>().Execute(entity);
-            }
-            catch (System.Exception ex)
-            {
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
-            }
         }
         #endregion
         #endregion Methods

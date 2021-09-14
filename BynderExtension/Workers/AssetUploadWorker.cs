@@ -42,7 +42,7 @@ namespace Bynder.Workers
         }
         private string GetBrandIdBasedOnSettingKey()
         {
-            if (!_inRiverContext.Settings.TryGetValue(Config.Settings.bynderBrandName, out var brandName)) return null;
+            if (!_inRiverContext.Settings.TryGetValue(Config.Settings.BynderBrandName, out var brandName)) return null;
 
             var brands = _bynderClient.GetAvailableBranches();
             return brands

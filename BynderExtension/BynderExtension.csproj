@@ -36,27 +36,9 @@
     <RemoveDir Directories="$(TestResultsFolderPath)" Condition="Exists('$(TestResultsFolderPath)')" />
   </Target>
   <ItemGroup>
-    <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
-      <HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="AWSSDK.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\packages\AWSSDK.Core.3.3.19\lib\net45\AWSSDK.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="AWSSDK.SimpleNotificationService, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\packages\AWSSDK.SimpleNotificationService.3.3.0.24\lib\net45\AWSSDK.SimpleNotificationService.dll</HintPath>
-    </Reference>
-    <Reference Include="inRiver.Remoting, Version=7.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\inRiver.Remoting.iPMC.7.3.19133.3\lib\net461\inRiver.Remoting.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.JScript" />
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="StructureMap, Version=4.6.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\StructureMap.4.6.1\lib\net45\StructureMap.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -89,10 +71,19 @@
     <Compile Include="Api\Model\S3File.cs" />
     <Compile Include="Api\OAuthClient.cs" />
     <Compile Include="Api\SettingNames.cs" />
+    <Compile Include="Converters\AssetJsonConverter.cs" />
     <Compile Include="Extension\AssetLoader.cs" />
     <Compile Include="Extension\Registry.cs" />
     <Compile Include="Extension\Extension.cs" />
     <Compile Include="Extension\Uploader.cs" />
+    <Compile Include="Models\ImportCondition.cs" />
+    <Compile Include="Utils\Extensions\CollectionExtensions.cs" />
+    <Compile Include="Utils\Extensions\StringExtensions.cs" />
+    <Compile Include="Utils\Extensions\StringToCollectionExtensions.cs" />
+    <Compile Include="Utils\Extensions\ParseExtensions.cs" />
+    <Compile Include="Utils\Extensions\TypeExtensions.cs" />
+    <Compile Include="Utils\Generics.cs" />
+    <Compile Include="Utils\Helpers\JsonHelper.cs" />
     <Compile Include="Utils\InRiver\DataServiceExtensions.cs" />
     <Compile Include="Workers\AssetDownloadWorker.cs" />
     <Compile Include="Workers\AssetUpdatedWorker.cs" />
@@ -126,20 +117,25 @@
     <None Include="docs\INRIVER-IPMC-CONFIGURATION.md" />
     <None Include="docs\LICENSE.md" />
     <None Include="docs\README.md" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\packages\AWSSDK.SimpleNotificationService.3.3.0.24\analyzers\dotnet\cs\AWSSDK.SimpleNotificationService.CodeAnalysis.dll" />
+    <Content Include="docs\img\inRiver_Bynder_integration_overview-page1.png" />
+    <Content Include="docs\img\inRiver_Bynder_integration_overview-page2.png" />
+    <Content Include="docs\img\inRiver_Bynder_integration_overview-page3.png" />
+    <Content Include="docs\img\inRiver_Bynder_integration_overview-page4.png" />
+    <Content Include="docs\img\inRiver_Bynder_integration_overview-page5.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="docs\img\inRiver Bynder integration overview-page1.png" />
-    <Content Include="docs\img\inRiver Bynder integration overview-page2.png" />
-    <Content Include="docs\img\inRiver Bynder integration overview-page3.png" />
-    <Content Include="docs\img\inRiver Bynder integration overview-page4.png" />
-    <Content Include="docs\img\inRiver Bynder integration overview-page5.png" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService">
+      <Version>3.3.0.24</Version>
+    </PackageReference>
+    <PackageReference Include="inRiver.Remoting.iPMC">
+      <Version>7.5.20197.1</Version>
+    </PackageReference>
+    <PackageReference Include="StructureMap">
+      <Version>4.6.1</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

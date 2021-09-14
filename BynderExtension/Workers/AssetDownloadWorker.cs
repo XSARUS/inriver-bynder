@@ -4,6 +4,7 @@ using Bynder.Names;
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
+using System.Collections.Generic;
 
 namespace Bynder.Workers
 {
@@ -26,9 +27,11 @@ namespace Bynder.Workers
                 resourceEntity = _inRiverContext.ExtensionManager.DataService.GetEntity(resourceEntity.Id, LoadLevel.DataOnly);
             }
 
-            string bynderDownloadState =
-                (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState)?.Data;
+            // get the state field
+            Field bynderDownloadStateField = resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState);
+            var bynderDownloadState = (string)bynderDownloadStateField?.Data;
 
+            // stop when state is not todo
             if (string.IsNullOrWhiteSpace(bynderDownloadState) || bynderDownloadState != BynderStates.Todo) return;
 
             string bynderId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderId)?.Data;
@@ -39,6 +42,10 @@ namespace Bynder.Workers
             if (asset == null)
             {
                 _inRiverContext.Log(LogLevel.Error, "Asset information is empty");
+
+                // set error state when the asset could not be found
+                bynderDownloadStateField.Data = BynderStates.Error;
+                _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderDownloadStateField });
                 return;
             }
 
@@ -60,10 +67,10 @@ namespace Bynder.Workers
             // set fieltypes for resource entity
             resourceEntity.GetField(FieldTypeIds.ResourceFileId).Data = newFileId;
             resourceEntity.GetField(FieldTypeIds.ResourceMimeType).Data = asset.GetOriginalMimeType();
-            resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState).Data = BynderStates.Done;
+            bynderDownloadStateField.Data = BynderStates.Done;
 
             _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
-            _inRiverContext.Logger.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
+            _inRiverContext.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
         }
     }
 }

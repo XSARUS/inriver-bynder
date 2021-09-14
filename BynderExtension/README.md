@@ -3,6 +3,7 @@
 The Bynder - inRiver integration, allows assets to be transfered from Bynder to inRiver IPMC and update Bynder assets with information from inRiver.
 
 ## Getting Started
+
 These instructions will get you a copy of the project up and running on your
 inRiver IPMC enviroment.
 
@@ -17,8 +18,13 @@ inRiver IPMC enviroment.
 
 ### Authors
 
-* Carlos Schipper - *development* - [Xsarus](https://www.xsarus.nl)
-* Bram Hoekman - *development* - [Xsarus](https://www.xsarus.nl)
+* Bram Hoekman - *Development*
+* Carlos Schipper - *Development*
+* Cornelis van Dam - *Development*
+* Maarten van Dijk - *Business Consultant*
+* Patrick Langendoen - *Development* 
+
+[Xsarus](https://www.xsarus.nl)
 
 ## License
 
