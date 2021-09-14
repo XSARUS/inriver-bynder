@@ -77,6 +77,7 @@
     <Compile Include="Extension\Registry.cs" />
     <Compile Include="Extension\Extension.cs" />
     <Compile Include="Extension\Uploader.cs" />
+    <Compile Include="Models\ImportCondition.cs" />
     <Compile Include="Utils\Extensions\CollectionExtensions.cs" />
     <Compile Include="Utils\Extensions\StringExtensions.cs" />
     <Compile Include="Utils\Extensions\StringToCollectionExtensions.cs" />
