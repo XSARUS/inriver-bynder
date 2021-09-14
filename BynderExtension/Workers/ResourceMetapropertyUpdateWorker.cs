@@ -41,7 +41,7 @@ namespace Bynder.Workers
             if (configuredMetaPropertyMap == null) return;
 
             // enrich metaproperties (metapropertyId => resourcefieldValue)
-            var newMetapropertyValues = new Dictionary<string, string>();
+            var newMetapropertyValues = new Dictionary<string, List<string>>();
             foreach (var metaProperty in configuredMetaPropertyMap)
             {
                 // check if configured fieldtype is on entity
@@ -49,7 +49,7 @@ namespace Bynder.Workers
                 if (field != null)
                 {
                     _inRiverContext.Logger.Log(LogLevel.Debug, $"Saving value for metaproperty {metaProperty.Key} ({metaProperty.Value}) (R)");
-                    newMetapropertyValues.Add(metaProperty.Key, (string)field.Data ?? "");
+                    newMetapropertyValues.Add(metaProperty.Key, new List<string> { (string)field.Data ?? "" });
                 }
             }
 
@@ -83,7 +83,7 @@ namespace Bynder.Workers
                     }
 
                     _inRiverContext.Logger.Log(LogLevel.Debug, $"Saving value for metaproperty {metaProperty.Key} ({metaProperty.Value}) (L)");
-                    newMetapropertyValues.Add(metaProperty.Key, string.Join(",", values));
+                    newMetapropertyValues.Add(metaProperty.Key, values);
                 }
             }
 

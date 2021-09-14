@@ -2,11 +2,20 @@
 {
     public struct Settings
     {
-        public const string RegularExpressionForFileName = "REGULAR_EXPRESSION_FOR_FILENAME";
-        public const string MetapropertyMap = "METAPROPERTY_MAP";
+        #region Fields
+
+        public const string AssetPropertyMap = "ASSET_PROPERTY_MAP";
+        public const string BynderBrandName = "BYNDER_BRAND_NAME";
+        public const string CreateMissingCvlKeys = "CREATE_MISSING_CVL_KEYS";
+        public const string ImportConditions = "IMPORT_CONDITIONS";
         public const string InitialAssetLoadUrlQuery = "INITIAL_ASSET_LOAD_URL_QUERY";
-        public const string inriverIntegrationId = "INRIVER_INTEGRATION_ID";
-        public const string inriverEntityUrl = "INRIVER_RESOURCE_URL";
-        public const string bynderBrandName = "BYNDER_BRAND_NAME";
+        public const string InRiverEntityUrl = "INRIVER_RESOURCE_URL";
+        public const string InRiverIntegrationId = "INRIVER_INTEGRATION_ID";
+        public const string LocaleStringLanguagesToSet = "LOCALESTRING_LANGUAGES_TO_SET";
+        public const string MetapropertyMap = "METAPROPERTY_MAP";
+        public const string MultivalueSeparator = "MULTIVALUE_SEPARATOR";
+        public const string RegularExpressionForFileName = "REGULAR_EXPRESSION_FOR_FILENAME";
+
+        #endregion Fields
     }
 }

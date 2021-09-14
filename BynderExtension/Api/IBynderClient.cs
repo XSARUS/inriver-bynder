@@ -13,7 +13,7 @@ namespace Bynder.Api
         AssetCollection GetAssetCollection(string query, int page = 1, int limit = 10);
         AssetDownloadLocation GetAssetDownloadLocation(string assetId);
         string SetMetaProperties(string assetId, MetapropertyList metapropertyList);
-        string SetMetaProperties(string assetId, Dictionary<string, string> metapropertyDictionary);
+        string SetMetaProperties(string assetId, Dictionary<string, List<string>> metapropertyDictionary);
         string GetClosestS3Endpoint();
         UploadRequest RequestUploadInformation(RequestUploadQuery requestUploadQuery);
         void UploadPart(string s3Endpoint, string filename, byte[] buffer, int bytesRead, uint chunkNumber, UploadRequest uploadRequest, uint numberOfChunks);
