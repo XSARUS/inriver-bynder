@@ -198,6 +198,18 @@ namespace Bynder.Workers
             return new List<string>();
         }
 
+        private bool GetConfiguredCreateMissingCvlKeys()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Settings.CreateMissingCvlKeys))
+            {
+                return string.Equals(_inRiverContext.Settings[Settings.CreateMissingCvlKeys], true.ToString(), StringComparison.InvariantCultureIgnoreCase);
+            }
+
+            _inRiverContext.Logger.Log(LogLevel.Error, $"Could not find configuration for '{Settings.CreateMissingCvlKeys}'");
+            
+            return false;
+        }
+
         private void LogMessageIfMultipleValuesForSingleField(WorkerResult result, string propertyName, Field field, List<string> values, string firstVal, string mergedVal)
         {
             if (values != null && values.Count > 1)
@@ -235,9 +247,8 @@ namespace Bynder.Workers
 
                 object propertyVal = assetProperty.GetValue(asset, null);
 
-
                 // for now we know that the Asset only holds List<string> so we do it this way, would be nicer to add this in the ConvertTo as well
-                bool isIEnumerable = propertyVal != null && propertyVal.GetType().IsIEnumerable() && propertyVal.GetType() != typeof(string);
+                bool isIEnumerable = propertyVal != null && propertyVal.GetType().IsIEnumerable() && !(propertyVal is string);
                 List<string> values;
                 if (isIEnumerable)
                 {
@@ -248,63 +259,10 @@ namespace Bynder.Workers
                     values = new List<string> { propertyVal.ConvertTo<string>() };
                 }
 
-                var mergedVal = string.Join(_inRiverContext.Settings[Settings.MultivalueSeparator], values);
-                var singleVal = values.FirstOrDefault();
-
-                switch (field.FieldType.DataType.ToLower())
-                {
-                    case "localestring":
-                        var languagesToSet = GetLanguagesToSet();
-                        var ls = (LocaleString)field.Data;
-                        if (ls == null)
-                        {
-                            ls = new LocaleString(_inRiverContext.ExtensionManager.UtilityService.GetAllLanguages());
-                        }
-
-                        foreach (var lang in languagesToSet)
-                        {
-                            var culture = new CultureInfo(lang);
-                            if (!ls.ContainsCulture(culture)) continue;
-                            ls[culture] = mergedVal;
-                        }
-
-                        field.Data = ls;
-                        break;
-                    case "string":
-                        field.Data = mergedVal;
-                        break;
-                    case "cvl":
-                        if (field.FieldType.Multivalue)
-                        {
-                            field.Data = string.Join(";", values);
-                        }
-                        else
-                        {
-                            LogMessageIfMultipleValuesForSingleField(result, assetProperty.Name, field, values, singleVal, mergedVal);
-                            field.Data = singleVal;
-                        }
-                        break;
-                    case "datetime":
-                        LogMessageIfMultipleValuesForSingleField(result, assetProperty.Name, field, values, singleVal, mergedVal);
-                        if (string.IsNullOrEmpty(singleVal))
-                        {
-                            field.Data = null;
-                        }
-                        else
-                        {
-                            // 2017-03-28T14:28:56Z yyyy-mm-ddThh:mm:ssZ (ISO 8601)
-                            // grab the UTC variant of the culture invariant datetime, because Bynder writes the DateTimes for its selected culture. So the given value of the datetime is the whole truth,
-                            // and does not have to be converted. The DateTime parse takes the local time so we need to grab ourself the UTC time.
-                            field.Data = singleVal.ConvertTo<DateTime?>()?.ToUniversalTime();
-                        }
-                        break;
-                    default:
-                        LogMessageIfMultipleValuesForSingleField(result, assetProperty.Name, field, values, singleVal, mergedVal);
-                        field.Data = singleVal.ConvertTo(field.FieldType.DataType);
-                        break;
-                }
+                field.Data = GetParsedValueForField(result, assetProperty.Name, values, field);            
             }
         }
+
         private void SetMetapropertyData(Entity resourceEntity, Asset asset, WorkerResult result)
         {
             _inRiverContext.Log(LogLevel.Verbose, $"Setting metaproperties on entity {resourceEntity.Id}");
@@ -322,7 +280,7 @@ namespace Bynder.Workers
                     continue;
                 }
 
-                field.Data = GetParsedMetadataValueForField(result, property, field);
+                field.Data = GetParsedValueForField(result, property.Name, property.Values, field);
             }
         }
 
@@ -371,10 +329,10 @@ namespace Bynder.Workers
             return Enumerable.SequenceEqual(metaproperty.Values, condition.Values);
         }
 
-        private object GetParsedMetadataValueForField(WorkerResult result, Metaproperty property, Field field)
+        private object GetParsedValueForField(WorkerResult result, string propertyName, List<string> values, Field field)
         {
-            var mergedVal = property.Values == null ? null : string.Join(_inRiverContext.Settings[Settings.MultivalueSeparator], property.Values);
-            var singleVal = property.Values.FirstOrDefault();
+            var mergedVal = values == null ? null : string.Join(_inRiverContext.Settings[Settings.MultivalueSeparator], values);
+            var singleVal = values?.FirstOrDefault();
 
             switch (field.FieldType.DataType.ToLower())
             {
@@ -397,17 +355,14 @@ namespace Bynder.Workers
                 case "string":
                     return mergedVal;
                 case "cvl":
-                    if (field.FieldType.Multivalue)
+                    var parsedCvlVal = GeParsedCvlValueForField(field, values, result, out singleVal);
+                    if (!field.FieldType.Multivalue)
                     {
-                        return property.Values == null ? null : string.Join(";", property.Values);
+                        LogMessageIfMultipleValuesForSingleField(result, propertyName, field, values, singleVal, mergedVal);
                     }
-                    else
-                    {
-                        LogMessageIfMultipleValuesForSingleField(result, property.Name, field, property.Values, singleVal, mergedVal);
-                        return singleVal;
-                    }
+                    return parsedCvlVal;
                 case "datetime":
-                    LogMessageIfMultipleValuesForSingleField(result, property.Name, field, property.Values, singleVal, mergedVal);
+                    LogMessageIfMultipleValuesForSingleField(result, propertyName, field, values, singleVal, mergedVal);
                     if (string.IsNullOrEmpty(singleVal))
                     {
                         return null;
@@ -425,9 +380,95 @@ namespace Bynder.Workers
                         return singleVal.ConvertTo<DateTime?>()?.ToUniversalTime();
                     }
                 default:
-                    LogMessageIfMultipleValuesForSingleField(result, property.Name, field, property.Values, singleVal, mergedVal);
+                    LogMessageIfMultipleValuesForSingleField(result, propertyName, field, values, singleVal, mergedVal);
                     return singleVal.ConvertTo(field.FieldType.DataType);
             }
+        }
+
+        /// <summary>
+        /// Returns the parsed cvl value.
+        /// Checks if the values exist in the CVL. If not they get added if the setting CREATE_MISSING_CVL_KEYS is true.
+        /// returns valid CVL values or null.
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="values"></param>
+        /// <param name="result"></param>
+        /// <param name="singleVal">returns the first valid CVL value</param>
+        /// <returns></returns>
+        private string GeParsedCvlValueForField(Field field, List<string> values, WorkerResult result, out string singleVal)
+        {
+            singleVal = string.Empty;
+
+            if (values == null || values.Count == 0)
+            {
+                return null;
+            }
+
+            List<string> validatedCvlKeys = new List<string>(values.Count);
+            List<CVLValue> cvlValues = _inRiverContext.ExtensionManager.ModelService.GetCVLValuesForCVL(field.FieldType.CVLId, true);
+
+            foreach (string cvlKey in values)
+            {
+                if (string.IsNullOrWhiteSpace(cvlKey))
+                {
+                    continue;
+                }
+
+                if (cvlValues.Any(c => c.Key.Equals(cvlKey)))
+                {
+                    validatedCvlKeys.Add(cvlKey);
+                    continue;
+                }
+
+                string cleanCvlKey = cvlKey.ToStringWithoutControlCharactersForCvlKey();
+                if (cvlValues.Any(c => c.Key.Equals(cleanCvlKey)))
+                {
+                    validatedCvlKeys.Add(cleanCvlKey);
+                    continue;
+                }
+
+                // create new CVL value when the setting CREATE_MISSING_CVL_KEYS is true
+                if (GetConfiguredCreateMissingCvlKeys())
+                {
+                    CVLValue newCvlValue = new CVLValue()
+                    {
+                        CVLId = field.FieldType.CVLId,
+                        Key = cleanCvlKey,
+                        Value = cvlKey
+                    };
+
+                    try
+                    {
+                        newCvlValue = _inRiverContext.ExtensionManager.ModelService.AddCVLValue(newCvlValue);
+                        cvlValues.Add(newCvlValue);
+                        validatedCvlKeys.Add(newCvlValue.Key);
+                    }
+                    catch (Exception e)
+                    {
+                        result.Messages.Add($"Could not add CVLKey '{cleanCvlKey}' ({cvlKey}).");
+                        _inRiverContext.Log(LogLevel.Error, $"Could not add CVLKey '{cleanCvlKey}' ({cvlKey}).",e);
+                    }
+                }
+                else
+                {
+                    result.Messages.Add($"Missing CVLKey '{cleanCvlKey}' ({cvlKey}) has not been added.");
+                }
+            }
+
+            if (validatedCvlKeys.Any())
+            {
+                if (field.FieldType.Multivalue)
+                {
+                    return string.Join(";", validatedCvlKeys);
+                }
+                else
+                {
+                    singleVal = validatedCvlKeys.FirstOrDefault();
+                    return singleVal;
+                }
+            }
+
+            return null; 
         }
 
         private WorkerResult UpdateMetadata(WorkerResult result, Asset asset, Entity resourceEntity)
