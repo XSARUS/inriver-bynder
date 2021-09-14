@@ -185,7 +185,7 @@ namespace Bynder.Api
 
             string result = Post($"{_customerBynderUrl}/api/upload/init", postData);
 
-            return (string.IsNullOrWhiteSpace(result)) ? null : JsonConvert.DeserializeObject<UploadRequest>(result.ToString());
+            return (string.IsNullOrWhiteSpace(result)) ? null : JsonConvert.DeserializeObject<UploadRequest>(result);
         }
         public UploadResult SaveMedia(SaveMediaQuery saveMediaQuery)
         {
@@ -207,7 +207,7 @@ namespace Bynder.Api
 
             string result = Post($"{_customerBynderUrl}/{uri}", postData);
 
-            return (string.IsNullOrWhiteSpace(result)) ? null : JsonConvert.DeserializeObject<UploadResult>(result.ToString());
+            return (string.IsNullOrWhiteSpace(result)) ? null : JsonConvert.DeserializeObject<UploadResult>(result);
         }
 
         /// <summary>
