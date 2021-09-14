@@ -60,7 +60,7 @@ Unfortunately you have to configure 4 extensions to make the integration complet
 | BYNDER_BRAND_NAME | Customer Brand Name | Used to set the BrandId in the upload of Assets. Can be found under Brand Management in Bynder or with the API by running the GetAvailableBranches() method on the BynderClient. |
 | LOCALESTRING_LANGUAGES_TO_SET | en-GB, nl-NL | Languages to set on the Entity, when a FieldType in the METAPROPERTY_MAP is of type LocaleString. Values in Bynder are not language specific, so the value on the property will be copied to the configured languages (in the AssetUpdatedWorker).|
 | MULTIVALUE_SEPARATOR | ,  | Separator which will be used to concat multiple values delivered by Bynder into a (locale)string field for metadataproperties. This separator will only be used on string and LocaleString fields, for CVL we concat the values with a semicolon(;), because that's what inRiver expects. |
-| CREATE_MISSING_CVL_KEYS| True | Allow extension to create missing CVL Keys
+| CREATE_MISSING_CVL_KEYS| True | Allow extension to create missing CVL Keys when true.
 
 Press Test on each connector (in the extensions page) to see if the connector works and your settings are valid
 

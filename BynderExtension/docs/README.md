@@ -8,6 +8,7 @@ When an asset is uploaded (newly created or updated) Bynder will send an AWS SNS
 
 The inRiver endpoint defined in `Bynder.Extenstion.NotificationListener` will listen for SNS messages with topics:
 
+* asset_bank.media.updated
 * asset_bank.media.uploaded
 * asset_bank.media.pre_archived
 * asset_bank.media.upload
@@ -16,7 +17,6 @@ The inRiver endpoint defined in `Bynder.Extenstion.NotificationListener` will li
 
 All topics will be treated the same: the Bynder `MediaId` is parsed from the message and starts the [AssetUpdated Worker](#AssetUpdatedWorker)
 
-Notice: property changes in Bynder currently do not trigger any events. Thus only when the file itself is changed it will be notified. todo: is this still relevant?
 
 ### AssetUpdatedWorker
 

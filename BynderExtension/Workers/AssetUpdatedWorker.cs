@@ -42,7 +42,7 @@ namespace Bynder.Workers
 
         #region Methods
 
-        private static void SetResourceFilenameData(Entity resourceEntity, Asset asset, Dictionary<FieldType, string> filenameData)
+        private void SetResourceFilenameData(Entity resourceEntity, Asset asset, Dictionary<FieldType, string> filenameData)
         {
             // status for new and existing ResourceEntity
             resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState).Data = BynderStates.Todo;
@@ -119,6 +119,29 @@ namespace Bynder.Workers
             }
         }
 
+        /// <summary>
+        /// All values need to match.
+        /// 
+        /// When a value is null for a metaproperty on the Asset, then we don't receive the metaproperty from Bynder('s API response). 
+        /// When the metaproperty is not found and the condition for this property has no values or the only value is null, then it will return true.
+        /// </summary>
+        /// <param name="asset"></param>
+        /// <returns></returns>
+        private bool AssetAppliesToConditions(Asset asset)
+        {
+            var conditions = GetImportConditions();
+
+            // return true if no conditions found. Conditions are optional.
+            if (conditions.Count == 0) return true;
+
+            foreach (var condition in conditions)
+            {
+                if (!GetConditionResult(asset, condition)) return false;
+            }
+
+            return true;
+        }
+
         private WorkerResult CreateOrUpdateEntityAndRelations(string bynderAssetId, WorkerResult result, Asset asset, FilenameEvaluator.Result evaluatorResult, Entity resourceEntity)
         {
             _inRiverContext.Log(LogLevel.Verbose, "Create or update entity, metadata and relations");
@@ -159,45 +182,133 @@ namespace Bynder.Workers
             return resourceEntity;
         }
 
+        /// <summary>
+        /// Returns the parsed cvl value.
+        /// Checks if the values exist in the CVL. If not they get added if the setting CREATE_MISSING_CVL_KEYS is true.
+        /// returns valid CVL values or null.
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="values"></param>
+        /// <param name="result"></param>
+        /// <param name="singleVal">returns the first valid CVL value</param>
+        /// <returns></returns>
+        private string GeParsedCvlValueForField(Field field, List<string> values, WorkerResult result, out string singleVal)
+        {
+            singleVal = string.Empty;
+
+            if (values == null || values.Count == 0)
+            {
+                return null;
+            }
+
+            List<string> validatedCvlKeys = new List<string>(values.Count);
+            List<CVLValue> cvlValues = _inRiverContext.ExtensionManager.ModelService.GetCVLValuesForCVL(field.FieldType.CVLId, true);
+
+            foreach (string cvlKey in values)
+            {
+                if (string.IsNullOrWhiteSpace(cvlKey))
+                {
+                    continue;
+                }
+
+                if (cvlValues.Any(c => c.Key.Equals(cvlKey)))
+                {
+                    validatedCvlKeys.Add(cvlKey);
+                    continue;
+                }
+
+                string cleanCvlKey = cvlKey.ToStringWithoutControlCharactersForCvlKey();
+                if (cvlValues.Any(c => c.Key.Equals(cleanCvlKey)))
+                {
+                    validatedCvlKeys.Add(cleanCvlKey);
+                    continue;
+                }
+
+                // create new CVL value when the setting CREATE_MISSING_CVL_KEYS is true
+                if (GetConfiguredCreateMissingCvlKeys())
+                {
+                    CVLValue newCvlValue = new CVLValue()
+                    {
+                        CVLId = field.FieldType.CVLId,
+                        Key = cleanCvlKey,
+                        Value = cvlKey
+                    };
+
+                    try
+                    {
+                        newCvlValue = _inRiverContext.ExtensionManager.ModelService.AddCVLValue(newCvlValue);
+                        cvlValues.Add(newCvlValue);
+                        validatedCvlKeys.Add(newCvlValue.Key);
+                    }
+                    catch (Exception e)
+                    {
+                        result.Messages.Add($"Could not add CVLKey '{cleanCvlKey}' ({cvlKey}).");
+                        _inRiverContext.Log(LogLevel.Error, $"Could not add CVLKey '{cleanCvlKey}' ({cvlKey}).", e);
+                    }
+                }
+                else
+                {
+                    result.Messages.Add($"Missing CVLKey '{cleanCvlKey}' ({cvlKey}) has not been added.");
+                }
+            }
+
+            if (validatedCvlKeys.Any())
+            {
+                if (field.FieldType.Multivalue)
+                {
+                    // cvlkeys are always separated by semicolon in inRiver
+                    return string.Join(";", validatedCvlKeys);
+                }
+                else
+                {
+                    singleVal = validatedCvlKeys.FirstOrDefault();
+                    return singleVal;
+                }
+            }
+
+            return null;
+        }
+
+        private bool GetConditionResult(Asset asset, ImportCondition condition)
+        {
+            var metaproperty = asset.MetaProperties.FirstOrDefault(x => x.Name.Equals(condition.PropertyName));
+
+            // metaproperty is not included in asset, when the value is null
+            if (metaproperty == null)
+            {
+                // check if there are conditions or if the only condition value is null
+                if (condition.Values.Count == 0 || (condition.Values.Count == 1 && condition.Values.First() == null)) return true;
+
+                // return false, because the metaproperty does not have a value, but the condition does
+                return false;
+            }
+
+            // sort the values
+            metaproperty.Values.Sort();
+            condition.Values.Sort();
+
+            // check if the sorted values are equal
+            return Enumerable.SequenceEqual(metaproperty.Values, condition.Values);
+        }
+
+        /// <summary>
+        /// Optional setting. Default is an empty dictionary
+        /// </summary>
+        /// <returns></returns>
         private Dictionary<string, string> GetConfiguredAssetPropertyMap()
         {
             if (_inRiverContext.Settings.ContainsKey(Settings.AssetPropertyMap))
             {
                 return _inRiverContext.Settings[Settings.AssetPropertyMap].ToDictionary<string, string>(',', '=');
             }
-            _inRiverContext.Logger.Log(LogLevel.Error, "Could not find configured asset property Map");
-            return new Dictionary<string, string>();
-        }
-        private List<ImportCondition> GetImportConditions()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.ImportConditions))
-            {
-                return JsonConvert.DeserializeObject<List<ImportCondition>>(_inRiverContext.Settings[Settings.ImportConditions]);
-            }
-            _inRiverContext.Logger.Log(LogLevel.Error, $"Could not find configured {Settings.ImportConditions}");
-            return new List<ImportCondition>();
-        }
-
-        private Dictionary<string, string> GetConfiguredMetaPropertyMap()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Config.Settings.MetapropertyMap))
-            {
-                return _inRiverContext.Settings[Config.Settings.MetapropertyMap].ToDictionary<string, string>(',', '=');
-            }
-            _inRiverContext.Logger.Log(LogLevel.Error, "Could not find configured metaproperty Map");
+            _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured asset property Map");
             return new Dictionary<string, string>();
         }
 
-        private IEnumerable<string> GetLanguagesToSet()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Config.Settings.LocaleStringLanguagesToSet))
-            {
-                return _inRiverContext.Settings[Config.Settings.LocaleStringLanguagesToSet].ConvertTo<IEnumerable<string>>() ?? new List<string>();
-            }
-            _inRiverContext.Logger.Log(LogLevel.Error, "Could not find LocaleString languages to set");
-            return new List<string>();
-        }
-
+        /// <summary>
+        /// Optional setting. Default is false.
+        /// </summary>
+        /// <returns></returns>
         private bool GetConfiguredCreateMissingCvlKeys()
         {
             if (_inRiverContext.Settings.ContainsKey(Settings.CreateMissingCvlKeys))
@@ -206,8 +317,119 @@ namespace Bynder.Workers
             }
 
             _inRiverContext.Logger.Log(LogLevel.Error, $"Could not find configuration for '{Settings.CreateMissingCvlKeys}'");
-            
+
             return false;
+        }
+
+        /// <summary>
+        /// Optional setting. Default is an empty dictionary.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, string> GetConfiguredMetaPropertyMap()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Settings.MetapropertyMap))
+            {
+                return _inRiverContext.Settings[Settings.MetapropertyMap].ToDictionary<string, string>(',', '=');
+            }
+            _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured metaproperty Map");
+            return new Dictionary<string, string>();
+        }
+
+        /// <summary>
+        /// Optional setting. Default is an empty list.
+        /// </summary>
+        /// <returns></returns>
+        private List<ImportCondition> GetImportConditions()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Settings.ImportConditions))
+            {
+                return JsonConvert.DeserializeObject<List<ImportCondition>>(_inRiverContext.Settings[Settings.ImportConditions]);
+            }
+            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ImportConditions}");
+            return new List<ImportCondition>();
+        }
+
+        /// <summary>
+        /// Optional setting. Default is an empty list.
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<string> GetLanguagesToSet()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Settings.LocaleStringLanguagesToSet))
+            {
+                return _inRiverContext.Settings[Settings.LocaleStringLanguagesToSet].ConvertTo<IEnumerable<string>>() ?? new List<string>();
+            }
+            _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find LocaleString languages to set");
+            return new List<string>();
+        }
+
+        /// <summary>
+        /// Optional setting. Default is an empty string.
+        /// </summary>
+        /// <returns></returns>
+        private string GetMultivalueSeparator()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Settings.MultivalueSeparator))
+            {
+                return _inRiverContext.Settings[Settings.MultivalueSeparator];
+            }
+            _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured multivalue separator");
+            return string.Empty;
+        }
+        private object GetParsedValueForField(WorkerResult result, string propertyName, List<string> values, Field field)
+        {
+            var mergedVal = values == null ? null : string.Join(GetMultivalueSeparator(), values);
+            var singleVal = values?.FirstOrDefault();
+
+            switch (field.FieldType.DataType.ToLower())
+            {
+                case "localestring":
+                    var languagesToSet = GetLanguagesToSet();
+                    var ls = (LocaleString)field.Data;
+                    if (ls == null)
+                    {
+                        ls = new LocaleString(_inRiverContext.ExtensionManager.UtilityService.GetAllLanguages());
+                    }
+
+                    foreach (var lang in languagesToSet)
+                    {
+                        var culture = new CultureInfo(lang);
+                        if (!ls.ContainsCulture(culture)) continue;
+                        ls[culture] = mergedVal;
+                    }
+
+                    return ls;
+                case "string":
+                    return mergedVal;
+                case "cvl":
+                    var parsedCvlVal = GeParsedCvlValueForField(field, values, result, out singleVal);
+                    if (!field.FieldType.Multivalue)
+                    {
+                        LogMessageIfMultipleValuesForSingleField(result, propertyName, field, values, singleVal, mergedVal);
+                    }
+                    return parsedCvlVal;
+                case "datetime":
+                    LogMessageIfMultipleValuesForSingleField(result, propertyName, field, values, singleVal, mergedVal);
+                    if (string.IsNullOrEmpty(singleVal))
+                    {
+                        return null;
+                    }
+                    else if (singleVal.Contains('/')) // when using the date property
+                    {
+                        // 07/28/2017
+                        return singleVal.ConvertTo<DateTime?>(dateTimeFormat: "MM/dd/yyyy");
+                    }
+                    else // added this just to be sure, it is used in example outputs of the Bynder API
+                    {
+                        //2017-03-28T14:28:56Z yyyy-mm-ddThh:mm:ssZ (ISO 8601)
+                        // grab the UTC variant of the culture invariant datetime, because Bynder writes the DateTimes for its selected culture. So the given value of the datetime is the whole truth,
+                        // and does not have to be converted. The DateTime parse takes the local time so we need to grab ourself the UTC time.
+                        return singleVal.ConvertTo<DateTime?>()?.ToUniversalTime();
+                    }
+                default:
+                    LogMessageIfMultipleValuesForSingleField(result, propertyName, field, values, singleVal, mergedVal);
+                    return singleVal.ConvertTo(field.FieldType.DataType);
+            }
         }
 
         private void LogMessageIfMultipleValuesForSingleField(WorkerResult result, string propertyName, Field field, List<string> values, string firstVal, string mergedVal)
@@ -283,194 +505,6 @@ namespace Bynder.Workers
                 field.Data = GetParsedValueForField(result, property.Name, property.Values, field);
             }
         }
-
-        /// <summary>
-        /// All values need to match.
-        /// 
-        /// When a value is null for a metaproperty on the Asset, then we don't receive the metaproperty from Bynder('s API response). 
-        /// When the metaproperty is not found and the condition for this property has no values or the only value is null, then it will return true.
-        /// </summary>
-        /// <param name="asset"></param>
-        /// <returns></returns>
-        private bool AssetAppliesToConditions(Asset asset)
-        {
-            var conditions = GetImportConditions();
-
-            // return true if no conditions found. Conditions are optional.
-            if (conditions.Count == 0) return true;
-
-            foreach(var condition in conditions)
-            {
-                if (!GetConditionResult(asset, condition)) return false;
-            }
-
-            return true;
-        }
-
-        private bool GetConditionResult(Asset asset, ImportCondition condition)
-        {
-            var metaproperty = asset.MetaProperties.FirstOrDefault(x => x.Name.Equals(condition.PropertyName));
-
-            // metaproperty is not included in asset, when the value is null
-            if (metaproperty == null)
-            {
-                // check if there are conditions or if the only condition value is null
-                if (condition.Values.Count == 0 || (condition.Values.Count == 1 && condition.Values.First() == null)) return true;
-
-                // return false, because the metaproperty does not have a value, but the condition does
-                return false;
-            }
-
-            // sort the values
-            metaproperty.Values.Sort();
-            condition.Values.Sort();
-
-            // check if the sorted values are equal
-            return Enumerable.SequenceEqual(metaproperty.Values, condition.Values);
-        }
-
-        private object GetParsedValueForField(WorkerResult result, string propertyName, List<string> values, Field field)
-        {
-            var mergedVal = values == null ? null : string.Join(_inRiverContext.Settings[Settings.MultivalueSeparator], values);
-            var singleVal = values?.FirstOrDefault();
-
-            switch (field.FieldType.DataType.ToLower())
-            {
-                case "localestring":
-                    var languagesToSet = GetLanguagesToSet();
-                    var ls = (LocaleString)field.Data;
-                    if (ls == null)
-                    {
-                        ls = new LocaleString(_inRiverContext.ExtensionManager.UtilityService.GetAllLanguages());
-                    }
-
-                    foreach (var lang in languagesToSet)
-                    {
-                        var culture = new CultureInfo(lang);
-                        if (!ls.ContainsCulture(culture)) continue;
-                        ls[culture] = mergedVal;
-                    }
-
-                    return ls;
-                case "string":
-                    return mergedVal;
-                case "cvl":
-                    var parsedCvlVal = GeParsedCvlValueForField(field, values, result, out singleVal);
-                    if (!field.FieldType.Multivalue)
-                    {
-                        LogMessageIfMultipleValuesForSingleField(result, propertyName, field, values, singleVal, mergedVal);
-                    }
-                    return parsedCvlVal;
-                case "datetime":
-                    LogMessageIfMultipleValuesForSingleField(result, propertyName, field, values, singleVal, mergedVal);
-                    if (string.IsNullOrEmpty(singleVal))
-                    {
-                        return null;
-                    }
-                    else if (singleVal.Contains('/')) // when using the date property
-                    {
-                        // 07/28/2017
-                        return singleVal.ConvertTo<DateTime?>(dateTimeFormat: "MM/dd/yyyy");
-                    }
-                    else // added this just to be sure, it is used in example outputs of the Bynder API
-                    {
-                        //2017-03-28T14:28:56Z yyyy-mm-ddThh:mm:ssZ (ISO 8601)
-                        // grab the UTC variant of the culture invariant datetime, because Bynder writes the DateTimes for its selected culture. So the given value of the datetime is the whole truth,
-                        // and does not have to be converted. The DateTime parse takes the local time so we need to grab ourself the UTC time.
-                        return singleVal.ConvertTo<DateTime?>()?.ToUniversalTime();
-                    }
-                default:
-                    LogMessageIfMultipleValuesForSingleField(result, propertyName, field, values, singleVal, mergedVal);
-                    return singleVal.ConvertTo(field.FieldType.DataType);
-            }
-        }
-
-        /// <summary>
-        /// Returns the parsed cvl value.
-        /// Checks if the values exist in the CVL. If not they get added if the setting CREATE_MISSING_CVL_KEYS is true.
-        /// returns valid CVL values or null.
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="values"></param>
-        /// <param name="result"></param>
-        /// <param name="singleVal">returns the first valid CVL value</param>
-        /// <returns></returns>
-        private string GeParsedCvlValueForField(Field field, List<string> values, WorkerResult result, out string singleVal)
-        {
-            singleVal = string.Empty;
-
-            if (values == null || values.Count == 0)
-            {
-                return null;
-            }
-
-            List<string> validatedCvlKeys = new List<string>(values.Count);
-            List<CVLValue> cvlValues = _inRiverContext.ExtensionManager.ModelService.GetCVLValuesForCVL(field.FieldType.CVLId, true);
-
-            foreach (string cvlKey in values)
-            {
-                if (string.IsNullOrWhiteSpace(cvlKey))
-                {
-                    continue;
-                }
-
-                if (cvlValues.Any(c => c.Key.Equals(cvlKey)))
-                {
-                    validatedCvlKeys.Add(cvlKey);
-                    continue;
-                }
-
-                string cleanCvlKey = cvlKey.ToStringWithoutControlCharactersForCvlKey();
-                if (cvlValues.Any(c => c.Key.Equals(cleanCvlKey)))
-                {
-                    validatedCvlKeys.Add(cleanCvlKey);
-                    continue;
-                }
-
-                // create new CVL value when the setting CREATE_MISSING_CVL_KEYS is true
-                if (GetConfiguredCreateMissingCvlKeys())
-                {
-                    CVLValue newCvlValue = new CVLValue()
-                    {
-                        CVLId = field.FieldType.CVLId,
-                        Key = cleanCvlKey,
-                        Value = cvlKey
-                    };
-
-                    try
-                    {
-                        newCvlValue = _inRiverContext.ExtensionManager.ModelService.AddCVLValue(newCvlValue);
-                        cvlValues.Add(newCvlValue);
-                        validatedCvlKeys.Add(newCvlValue.Key);
-                    }
-                    catch (Exception e)
-                    {
-                        result.Messages.Add($"Could not add CVLKey '{cleanCvlKey}' ({cvlKey}).");
-                        _inRiverContext.Log(LogLevel.Error, $"Could not add CVLKey '{cleanCvlKey}' ({cvlKey}).",e);
-                    }
-                }
-                else
-                {
-                    result.Messages.Add($"Missing CVLKey '{cleanCvlKey}' ({cvlKey}) has not been added.");
-                }
-            }
-
-            if (validatedCvlKeys.Any())
-            {
-                if (field.FieldType.Multivalue)
-                {
-                    return string.Join(";", validatedCvlKeys);
-                }
-                else
-                {
-                    singleVal = validatedCvlKeys.FirstOrDefault();
-                    return singleVal;
-                }
-            }
-
-            return null; 
-        }
-
         private WorkerResult UpdateMetadata(WorkerResult result, Asset asset, Entity resourceEntity)
         {
             _inRiverContext.Log(LogLevel.Verbose, $"Update metadata only for Resource {resourceEntity.Id}");
