@@ -12,6 +12,7 @@ namespace Bynder.Workers
 {
     using Api;
     using Api.Model;
+    using Enums;
     using Config;
     using Models;
     using Names;
@@ -283,12 +284,37 @@ namespace Bynder.Workers
                 return false;
             }
 
-            // sort the values
-            metaproperty.Values.Sort();
-            condition.Values.Sort();
-
-            // check if the sorted values are equal
-            return Enumerable.SequenceEqual(metaproperty.Values, condition.Values);
+            switch (condition.MatchType)
+            {
+                case MatchType.EqualSorted:
+                    // sort the values
+                    metaproperty.Values.Sort();
+                    condition.Values.Sort();
+                    // check if lists are equal
+                    return Enumerable.SequenceEqual(metaproperty.Values, condition.Values, StringComparer.Ordinal);
+                case MatchType.EqualSortedCaseInsensitive:
+                    // sort the values
+                    metaproperty.Values.Sort();
+                    condition.Values.Sort();
+                    // check if lists are equal
+                    return Enumerable.SequenceEqual(metaproperty.Values, condition.Values, StringComparer.OrdinalIgnoreCase);
+                case MatchType.Equal:
+                    return Enumerable.SequenceEqual(metaproperty.Values, condition.Values, StringComparer.Ordinal);
+                case MatchType.EqualCaseInsensitive:
+                    return Enumerable.SequenceEqual(metaproperty.Values, condition.Values, StringComparer.OrdinalIgnoreCase);
+                case MatchType.ContainsAny:
+                    return metaproperty.Values.Intersect(condition.Values).Any();
+                case MatchType.ContainsAnyCaseInsensitive:
+                    return metaproperty.Values.Select(x=> x.ToLower()).Intersect(condition.Values.Select(x => x.ToLower())).Any();
+                case MatchType.ContainsAll:
+                    return condition.Values.All(x => metaproperty.Values.Contains(x));
+                case MatchType.ContainsAllCaseInsensitive:
+                    var metapropertyValuesLowerCase = metaproperty.Values.Select(x => x.ToLower());
+                    var conditionValuesLowerCase = condition.Values.Select(x => x.ToLower());
+                    return conditionValuesLowerCase.All(x => metapropertyValuesLowerCase.Contains(x));
+                default:
+                    throw new NotSupportedException($"MatchType {condition.MatchType} is not yet supported to use for the import conditions!");
+            }
         }
 
         /// <summary>
