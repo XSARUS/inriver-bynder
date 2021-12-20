@@ -17,6 +17,8 @@ namespace Bynder.Workers
     using Names;
     using Utils;
     using Utils.Extensions;
+    using Utils.Helpers;
+    using Enums;
 
     public class AssetUpdatedWorker : IWorker
     {
@@ -142,13 +144,13 @@ namespace Bynder.Workers
             return true;
         }
 
-        private WorkerResult CreateOrUpdateEntityAndRelations(string bynderAssetId, WorkerResult result, Asset asset, FilenameEvaluator.Result evaluatorResult, Entity resourceEntity)
+        private WorkerResult CreateOrUpdateEntityAndRelations(WorkerResult result, Asset asset, FilenameEvaluator.Result evaluatorResult, Entity resourceEntity)
         {
-            _inRiverContext.Log(LogLevel.Verbose, "Create or update entity, metadata and relations");
+            _inRiverContext.Log(LogLevel.Verbose, $"Create or update entity, metadata and relations for bynder asset {asset.Id}");
 
             if (resourceEntity == null)
             {
-                resourceEntity = CreateResourceEntity(bynderAssetId, asset);
+                resourceEntity = CreateResourceEntity(asset);
             }
 
             SetAssetProperties(resourceEntity, asset, result);
@@ -168,17 +170,17 @@ namespace Bynder.Workers
             return result;
         }
 
-        private Entity CreateResourceEntity(string bynderAssetId, Asset asset)
+        private Entity CreateResourceEntity(Asset asset)
         {
             Entity resourceEntity;
             EntityType resourceType = _inRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
             resourceEntity = Entity.CreateEntity(resourceType);
 
             // add asset id to new ResourceEntity
-            resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = bynderAssetId;
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = asset.Id;
 
             // set filename (only for *new* resource)
-            resourceEntity.GetField(FieldTypeIds.ResourceFilename).Data = $"{bynderAssetId}_{asset.GetOriginalFileName()}";
+            resourceEntity.GetField(FieldTypeIds.ResourceFilename).Data = $"{asset.Id}_{asset.GetOriginalFileName()}";
             return resourceEntity;
         }
 
@@ -322,6 +324,22 @@ namespace Bynder.Workers
         }
 
         /// <summary>
+        /// Optional setting. Default is false.
+        /// </summary>
+        /// <returns></returns>
+        private bool GetDeleteResourceOnDeletedEvents()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Settings.DeleteResourceOnDeleteEvent))
+            {
+                return string.Equals(_inRiverContext.Settings[Settings.DeleteResourceOnDeleteEvent], true.ToString(), StringComparison.InvariantCultureIgnoreCase);
+            }
+
+            _inRiverContext.Logger.Log(LogLevel.Error, $"Could not find configuration for '{Settings.DeleteResourceOnDeleteEvent}'");
+
+            return false;
+        }
+
+        /// <summary>
         /// Optional setting. Default is an empty dictionary.
         /// </summary>
         /// <returns></returns>
@@ -347,6 +365,30 @@ namespace Bynder.Workers
             }
             _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ImportConditions}");
             return new List<ImportCondition>();
+        }
+
+        /// <summary>
+        /// Optional setting. Default is an empty list.
+        /// </summary>
+        /// <returns></returns>
+        private List<FieldValueCombination> GetFieldValueCombinations()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Settings.FieldValuesToSetOnArchiveEvent))
+            {
+                return JsonConvert.DeserializeObject<List<FieldValueCombination>>(_inRiverContext.Settings[Settings.FieldValuesToSetOnArchiveEvent]);
+            }
+            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.FieldValuesToSetOnArchiveEvent}");
+            return new List<FieldValueCombination>();
+        }
+
+        private TimestampSettings GetTimestampSettings()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Settings.TimestampSettings))
+            {
+                return JsonConvert.DeserializeObject<TimestampSettings> (_inRiverContext.Settings[Settings.TimestampSettings]);
+            }
+            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.TimestampSettings}");
+            return null;
         }
 
         /// <summary>
@@ -519,9 +561,9 @@ namespace Bynder.Workers
         /// Main method of the worker
         /// </summary>
         /// <param name="bynderAssetId"></param>
-        /// <param name="onlyUpdateMetadataHasUpdated"></param>
+        /// <param name="notificationType"></param>
         /// <returns></returns>
-        public WorkerResult Execute(string bynderAssetId, bool onlyUpdateMetadataHasUpdated)
+        public WorkerResult Execute(string bynderAssetId, NotificationType notificationType)
         {
             var result = new WorkerResult();
 
@@ -553,13 +595,136 @@ namespace Bynder.Workers
                 _inRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeIds.ResourceBynderId, bynderAssetId,
                     LoadLevel.DataAndLinks);
 
-            // only update metadata
-            if (resourceEntity != null && onlyUpdateMetadataHasUpdated)
+            // handle notification logic
+            switch (notificationType)
             {
-                return UpdateMetadata(result, asset, resourceEntity);
+                case NotificationType.DataUpsert:
+                    return CreateOrUpdateEntityAndRelations(result, asset, evaluatorResult, resourceEntity);
+
+                case NotificationType.MetadataUpdated:
+                    if (resourceEntity != null)
+                    {
+                        return UpdateMetadata(result, asset, resourceEntity);
+                    }
+                    else
+                    {
+                        return CreateOrUpdateEntityAndRelations(result, asset, evaluatorResult, resourceEntity);
+                    }
+
+                case NotificationType.IsArchived:
+                    if(resourceEntity != null)
+                    {
+                        return SetValuesOnResource(result, bynderAssetId, resourceEntity);
+                    }
+                    else
+                    {
+                        _inRiverContext.Log(LogLevel.Debug, $"Archived asset {bynderAssetId}, does not exist in inRiver as Resource.");
+                        result.Messages.Add($"Archived asset {bynderAssetId}, does not exist in inRiver as Resource.");
+
+                        return result;
+                    }
+
+                case NotificationType.IsDeleted:
+                    if (resourceEntity != null && GetDeleteResourceOnDeletedEvents())
+                    {
+                        return DeleteResource(result, bynderAssetId, resourceEntity.Id);
+                    }
+                    else
+                    {
+                        _inRiverContext.Log(LogLevel.Debug, $"Deleted asset {bynderAssetId}, does not exist in inRiver as Resource.");
+                        result.Messages.Add($"Deleted asset {bynderAssetId}, does not exist in inRiver as Resource.");
+
+                        return result;
+                    }
+                default:
+                    _inRiverContext.Log(LogLevel.Warning, $"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
+                    result.Messages.Add($"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
+
+                    return result;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        /// <param name="bynderAssetId"></param>
+        /// <param name="resourceEntity"></param>
+        /// <returns></returns>
+        private WorkerResult SetValuesOnResource(WorkerResult result, string bynderAssetId, Entity resourceEntity)
+        {
+            var fieldValueCombinations = GetFieldValueCombinations();
+            if (fieldValueCombinations.Count == 0)
+            {
+                _inRiverContext.Log(LogLevel.Verbose, $"No fieldvalue combinations found. Not updating resource for archived bynder asset {bynderAssetId}");
+                return result;
             }
 
-            return CreateOrUpdateEntityAndRelations(bynderAssetId, result, asset, evaluatorResult, resourceEntity);
+            var fieldsToUpdate = new List<Field>();
+            var timestampSettings = GetTimestampSettings();
+
+            foreach(var fvc in fieldValueCombinations)
+            {
+                if (string.IsNullOrWhiteSpace(fvc.FieldTypeId))
+                {
+                    _inRiverContext.Log(LogLevel.Verbose, $"Field value combination found without FieldTypeId setting filled in setting '{Settings.FieldValuesToSetOnArchiveEvent}'!");
+                    continue;
+                }
+
+                var field = resourceEntity.GetField(fvc.FieldTypeId);
+                if(field == null)
+                {
+                    _inRiverContext.Log(LogLevel.Verbose, $"Field '{fvc.FieldTypeId}' used in the setting '{Settings.FieldValuesToSetOnArchiveEvent}' does not exist on Resource!");
+                    continue;
+                }
+
+                if (fvc.SetTimestamp)
+                {
+                    if(timestampSettings == null)
+                    {
+                        _inRiverContext.Log(LogLevel.Verbose, $"Field value combination found with {nameof(FieldValueCombination.SetTimestamp)} on true, but the setting '{Settings.TimestampSettings}' is empty!");
+                        continue;
+                    }
+
+                    field.Data = DateTimeHelper.GetTimestamp(timestampSettings.TimstampType, timestampSettings.LocalTimeZone, timestampSettings.LocalDstEnabled);
+                }
+                else
+                {
+                    field.Data = fvc.Value.ConvertTo(field.FieldType.DataType);
+                }
+
+                fieldsToUpdate.Add(field);
+            }
+
+            if(fieldsToUpdate.Count > 0)
+            {
+                _inRiverContext.Log(LogLevel.Verbose, $"Setting values on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
+                resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldsToUpdate);
+                result.Messages.Add($"Updated field(s) on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
+            }
+            else
+            {
+                _inRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
+            }
+
+            return result;
+        }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        /// <param name="bynderAssetId"></param>
+        /// <param name="resourceEntityId"></param>
+        /// <returns></returns>
+        private WorkerResult DeleteResource(WorkerResult result, string bynderAssetId, int resourceEntityId)
+        {
+            _inRiverContext.Log(LogLevel.Verbose, $"Deleting Resource {resourceEntityId} for deleted bynder asset {bynderAssetId}");
+
+            _inRiverContext.ExtensionManager.DataService.DeleteEntity(resourceEntityId);
+            result.Messages.Add($"Deleted Resource {resourceEntityId} for deleted bynder asset {bynderAssetId}");
+
+            return result;
         }
 
         #endregion Methods
