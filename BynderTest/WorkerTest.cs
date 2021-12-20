@@ -13,7 +13,7 @@ namespace BynderTest
         {
             InRiverContext.Settings = TestSettings;
             var worker = new Bynder.Workers.AssetUpdatedWorker(InRiverContext, new BynderClient(BynderSettings), new Bynder.Utils.FilenameEvaluator(InRiverContext));
-            var updaterResult = worker.Execute(bynderAssetId, true);
+            var updaterResult = worker.Execute(bynderAssetId, Bynder.Enums.NotificationType.DataUpsert);
         }
 
         [Ignore("Add resource entityId here")]

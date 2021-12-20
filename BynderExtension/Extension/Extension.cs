@@ -31,6 +31,9 @@ namespace Bynder.Extension
                 settings.Add(Config.Settings.MultivalueSeparator, ", ");
                 settings.Add(Config.Settings.ImportConditions, "[{\"propertyName\":\"synctoinriver\",\"values\":[\"True\"]}]");
                 settings.Add(Config.Settings.CreateMissingCvlKeys, true.ToString());
+                settings.Add(Config.Settings.DeleteResourceOnDeleteEvent, false.ToString());
+                settings.Add(Config.Settings.FieldValuesToSetOnArchiveEvent, "");
+                settings.Add(Config.Settings.TimestampSettings, "");
                 return settings;
             }
         }

@@ -1,4 +1,5 @@
 ﻿using inRiver.Remoting.Extension.Interface;
+using inRiver.Remoting.Log;
 using System;
 
 namespace Bynder.Extension
@@ -25,7 +26,9 @@ namespace Bynder.Extension
 
             try
             {
-                Context.Log(inRiver.Remoting.Log.LogLevel.Verbose, "notification: " + value);
+                // log the incomining notification
+                Context.Log(LogLevel.Verbose, $"Notification: {value}");
+
                 // first, handle the notification
                 var notificationWorker = Container.GetInstance<NotificationWorker>();
                 var notificationResult = notificationWorker.Execute(value);
@@ -35,7 +38,7 @@ namespace Bynder.Extension
                 if (!string.IsNullOrEmpty(notificationResult.MediaId))
                 {
                     var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
-                    var updaterResult = assetWorker.Execute(notificationResult.MediaId, notificationResult.OnlyMetadataChanged);
+                    var updaterResult = assetWorker.Execute(notificationResult.MediaId, notificationResult.NotificationType);
                     resultMessages.AddRange(updaterResult.Messages);
                 }
 
@@ -44,9 +47,9 @@ namespace Bynder.Extension
             }
             catch (Exception ex)
             {
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
-            Context.Log(inRiver.Remoting.Log.LogLevel.Verbose, result);
+            Context.Log(LogLevel.Verbose, result);
 
             return result;
         }
