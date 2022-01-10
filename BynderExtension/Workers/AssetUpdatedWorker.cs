@@ -324,22 +324,6 @@ namespace Bynder.Workers
         }
 
         /// <summary>
-        /// Optional setting. Default is false.
-        /// </summary>
-        /// <returns></returns>
-        private bool GetDeleteResourceOnDeletedEvents()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.DeleteResourceOnDeleteEvent))
-            {
-                return string.Equals(_inRiverContext.Settings[Settings.DeleteResourceOnDeleteEvent], true.ToString(), StringComparison.InvariantCultureIgnoreCase);
-            }
-
-            _inRiverContext.Logger.Log(LogLevel.Error, $"Could not find configuration for '{Settings.DeleteResourceOnDeleteEvent}'");
-
-            return false;
-        }
-
-        /// <summary>
         /// Optional setting. Default is an empty dictionary.
         /// </summary>
         /// <returns></returns>
@@ -523,7 +507,7 @@ namespace Bynder.Workers
                     values = new List<string> { propertyVal.ConvertTo<string>() };
                 }
 
-                field.Data = GetParsedValueForField(result, assetProperty.Name, values, field);            
+                field.Data = GetParsedValueForField(result, assetProperty.Name, values, field);
             }
         }
 
@@ -624,18 +608,6 @@ namespace Bynder.Workers
                         return result;
                     }
 
-                case NotificationType.IsDeleted:
-                    if (resourceEntity != null && GetDeleteResourceOnDeletedEvents())
-                    {
-                        return DeleteResource(result, bynderAssetId, resourceEntity.Id);
-                    }
-                    else
-                    {
-                        _inRiverContext.Log(LogLevel.Debug, $"Deleted asset {bynderAssetId}, does not exist in inRiver as Resource.");
-                        result.Messages.Add($"Deleted asset {bynderAssetId}, does not exist in inRiver as Resource.");
-
-                        return result;
-                    }
                 default:
                     _inRiverContext.Log(LogLevel.Warning, $"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
                     result.Messages.Add($"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
@@ -706,23 +678,6 @@ namespace Bynder.Workers
             {
                 _inRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
             }
-
-            return result;
-        }
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        /// <param name="bynderAssetId"></param>
-        /// <param name="resourceEntityId"></param>
-        /// <returns></returns>
-        private WorkerResult DeleteResource(WorkerResult result, string bynderAssetId, int resourceEntityId)
-        {
-            _inRiverContext.Log(LogLevel.Verbose, $"Deleting Resource {resourceEntityId} for deleted bynder asset {bynderAssetId}");
-
-            _inRiverContext.ExtensionManager.DataService.DeleteEntity(resourceEntityId);
-            result.Messages.Add($"Deleted Resource {resourceEntityId} for deleted bynder asset {bynderAssetId}");
 
             return result;
         }
