@@ -4,6 +4,7 @@ using System;
 
 namespace Bynder.Extension
 {
+    using Bynder.Enums;
     using Workers;
 
     public class NotificationListener : Extension, IInboundDataExtension
@@ -37,9 +38,19 @@ namespace Bynder.Extension
                 // if the outcome of the notification contains a media Id, we need to start handling the asset
                 if (!string.IsNullOrEmpty(notificationResult.MediaId))
                 {
-                    var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
-                    var updaterResult = assetWorker.Execute(notificationResult.MediaId, notificationResult.NotificationType);
-                    resultMessages.AddRange(updaterResult.Messages);
+                    WorkerResult workerResult;
+                    if(notificationResult.NotificationType == NotificationType.IsDeleted)
+                    {
+                        var assetDeletedWorker = Container.GetInstance<AssetDeletedWorker>();
+                        workerResult = assetDeletedWorker.Execute(notificationResult.MediaId);
+                    }
+                    else
+                    {
+                        var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
+                        workerResult = assetWorker.Execute(notificationResult.MediaId, notificationResult.NotificationType);
+                    }
+
+                    resultMessages.AddRange(workerResult.Messages);
                 }
 
                 // return the outcome to the caller
