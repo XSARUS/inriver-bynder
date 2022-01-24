@@ -12,8 +12,14 @@ namespace Bynder.Workers
 {
     public class ResourceMetapropertyUpdateWorker : IWorker
     {
-        private readonly inRiverContext _inRiverContext;
+        #region Fields
+
         private readonly IBynderClient _bynderClient;
+        private readonly inRiverContext _inRiverContext;
+
+        #endregion Fields
+
+        #region Constructors
 
         public ResourceMetapropertyUpdateWorker(inRiverContext inRiverContext, IBynderClient bynderClient)
         {
@@ -21,9 +27,13 @@ namespace Bynder.Workers
             _bynderClient = bynderClient;
         }
 
+        #endregion Constructors
+
+        #region Methods
+
         public void Execute(Entity resourceEntity)
         {
-            // check if entity is resource and loadlevel is high enough
+            // check if entity is resource
             if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
 
             resourceEntity = _inRiverContext.ExtensionManager.DataService.EntityLoadLevel(resourceEntity, LoadLevel.DataOnly);
@@ -32,9 +42,11 @@ namespace Bynder.Workers
             string bynderId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderId)?.Data;
             if (string.IsNullOrWhiteSpace(bynderId)) return;
 
-            // only update bynder asset if resource has status 'Done'
-            string bynderStatus = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState)?.Data;
-            if (string.IsNullOrWhiteSpace(bynderStatus) || bynderStatus != BynderStates.Done) return;
+            // only update bynder asset if resource has been downloaded or uploaded
+            string bynderDownloadStatus = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState)?.Data;
+            string bynderUploadStatus = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState)?.Data;
+            if ((string.IsNullOrWhiteSpace(bynderDownloadStatus) && string.IsNullOrWhiteSpace(bynderUploadStatus))
+                || (bynderDownloadStatus != BynderStates.Done && bynderUploadStatus != BynderStates.Done)) return;
 
             // parse setting map in dictionary
             var configuredMetaPropertyMap = GetConfiguredMetaPropertyMap();
@@ -42,6 +54,37 @@ namespace Bynder.Workers
 
             // enrich metaproperties (metapropertyId => resourcefieldValue)
             var newMetapropertyValues = new Dictionary<string, List<string>>();
+            AddMetapropertyValuesForEntity(resourceEntity, configuredMetaPropertyMap, newMetapropertyValues);
+            AddMetapropertyValuesForLinks(resourceEntity, configuredMetaPropertyMap, newMetapropertyValues);
+
+            if (newMetapropertyValues.Any())
+            {
+                // inform bynder of the changes:
+                _inRiverContext.Logger.Log(LogLevel.Information, $"Update metaproperties {string.Join(";", newMetapropertyValues)}");
+                _bynderClient.SetMetaProperties(bynderId, newMetapropertyValues);
+            }
+            else
+            {
+                _inRiverContext.Logger.Log(LogLevel.Verbose, $"No metaproperties mapped or found");
+            }
+        }
+
+        public Dictionary<string, string> GetConfiguredMetaPropertyMap()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Config.Settings.MetapropertyMap))
+            {
+                return _inRiverContext.Settings[Config.Settings.MetapropertyMap]
+                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => x.Split('='))
+                    .ToDictionary(x => x[0], y => y[1]);
+            }
+
+            _inRiverContext.Logger.Log(LogLevel.Error, "Could not find configured metaproperty Map");
+            return new Dictionary<string, string>();
+        }
+
+        private void AddMetapropertyValuesForEntity(Entity resourceEntity, Dictionary<string, string> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
+        {
             foreach (var metaProperty in configuredMetaPropertyMap)
             {
                 // check if configured fieldtype is on entity
@@ -52,10 +95,10 @@ namespace Bynder.Workers
                     newMetapropertyValues.Add(metaProperty.Key, new List<string> { (string)field.Data ?? "" });
                 }
             }
+        }
 
-            // next: process inbound links for metaproperties not directly mapped to resource fields.
-
-            // get inbound links
+        private void AddMetapropertyValuesForLinks(Entity resourceEntity, Dictionary<string, string> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
+        {
             var inboundLinks =
                 _inRiverContext.ExtensionManager.DataService.GetInboundLinksForEntity(resourceEntity.Id);
 
@@ -86,31 +129,8 @@ namespace Bynder.Workers
                     newMetapropertyValues.Add(metaProperty.Key, values);
                 }
             }
-
-            if (newMetapropertyValues.Any())
-            {
-                // inform bynder of the changes:
-                _inRiverContext.Logger.Log(LogLevel.Information, $"Update metaproperties {string.Join(";", newMetapropertyValues)}");
-                _bynderClient.SetMetaProperties(bynderId, newMetapropertyValues);
-            }
-            else
-            {
-                _inRiverContext.Logger.Log(LogLevel.Verbose, $"No metaproperties mapped or found");
-            }
-
         }
 
-        public Dictionary<string, string> GetConfiguredMetaPropertyMap()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Config.Settings.MetapropertyMap))
-            {
-                return _inRiverContext.Settings[Config.Settings.MetapropertyMap]
-                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(x => x.Split('='))
-                    .ToDictionary(x => x[0], y => y[1]);
-            }
-            _inRiverContext.Logger.Log(LogLevel.Error, "Could not find configured metaproperty Map");
-            return new Dictionary<string, string>();
-        }
+        #endregion Methods
     }
 }

@@ -74,6 +74,7 @@
     <Compile Include="Converters\AssetJsonConverter.cs" />
     <Compile Include="Enums\MatchType.cs" />
     <Compile Include="Enums\NotificationType.cs" />
+    <Compile Include="Exceptions\MissingDataException.cs" />
     <Compile Include="Extension\AssetLoader.cs" />
     <Compile Include="Extension\Registry.cs" />
     <Compile Include="Extension\Extension.cs" />
