@@ -7,16 +7,26 @@ using inRiver.Remoting.Objects;
 
 namespace Bynder.Workers
 {
-    class AssetUsageUpdateWorker : IWorker
+    internal class AssetUsageUpdateWorker : IWorker
     {
-        private readonly inRiverContext _inRiverContext;
+        #region Fields
+
         private readonly IBynderClient _bynderBynderClient;
+        private readonly inRiverContext _inRiverContext;
+
+        #endregion Fields
+
+        #region Constructors
 
         public AssetUsageUpdateWorker(inRiverContext inRiverContext, IBynderClient bynderBynderClient)
         {
             _inRiverContext = inRiverContext;
             _bynderBynderClient = bynderBynderClient;
         }
+
+        #endregion Constructors
+
+        #region Methods
 
         public void Execute(Entity resourceEntity)
         {
@@ -42,5 +52,7 @@ namespace Bynder.Workers
             // and set new one
             _bynderBynderClient.CreateAssetUsage(assetId, integrationId, formattedInriverResourceUrl);
         }
+
+        #endregion Methods
     }
 }

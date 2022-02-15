@@ -10,7 +10,6 @@ namespace Bynder.Workers
 
     public class AssetDeletedWorker : IWorker
     {
-
         #region Fields
 
         private readonly inRiverContext _inRiverContext;
@@ -73,12 +72,11 @@ namespace Bynder.Workers
                 return string.Equals(_inRiverContext.Settings[Settings.DeleteResourceOnDeleteEvent], true.ToString(), StringComparison.InvariantCultureIgnoreCase);
             }
 
-            _inRiverContext.Logger.Log(LogLevel.Error, $"Could not find configuration for '{Settings.DeleteResourceOnDeleteEvent}'");
+            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.DeleteResourceOnDeleteEvent}'. Using default value '{false}'");
 
             return false;
         }
 
         #endregion Methods
-
     }
 }

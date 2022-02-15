@@ -5,18 +5,18 @@
         /// <summary>
         /// Upload, create, update
         /// </summary>
-        DataUpsert, 
-        
+        DataUpsert,
+
         /// <summary>
         /// Only metadata updated. May also create a resource when it does not exist yet in inRiver.
         /// </summary>
-        MetadataUpdated, 
-        
+        MetadataUpdated,
+
         /// <summary>
         /// Archived
         /// </summary>
-        IsArchived, 
-        
+        IsArchived,
+
         /// <summary>
         /// Deleted
         /// </summary>

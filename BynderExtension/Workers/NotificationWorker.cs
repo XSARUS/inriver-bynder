@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Amazon.SimpleNotificationService.Util;
+﻿using Amazon.SimpleNotificationService.Util;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 
 namespace Bynder.Workers
 {
@@ -9,11 +9,13 @@ namespace Bynder.Workers
 
     public class NotificationWorker : IWorker
     {
+        #region Fields
+
         private readonly Dictionary<string, NotificationType> _notificationMapping = new Dictionary<string, NotificationType>
         {
             { "asset_bank.media.updated", NotificationType.DataUpsert },
             { "asset_bank.media.uploaded", NotificationType.DataUpsert },
-            { "asset_bank.media.pre_archived", NotificationType.DataUpsert }, //todo update this?
+            { "asset_bank.media.pre_archived", NotificationType.DataUpsert }, //todo is this correct?
             { "asset_bank.media.upload", NotificationType.DataUpsert },
             { "asset_bank.media.create", NotificationType.DataUpsert },
             { "asset_bank.media.meta_updated", NotificationType.MetadataUpdated },
@@ -21,11 +23,9 @@ namespace Bynder.Workers
             { "asset_bank.media.archived", NotificationType.IsArchived },
         };
 
-        public class Result : WorkerResult
-        {
-            public string MediaId { get; set; }
-            public NotificationType NotificationType { get; set; }
-        }
+        #endregion Fields
+
+        #region Methods
 
         public Result Execute(string requestBody)
         {
@@ -66,6 +66,21 @@ namespace Bynder.Workers
 
             return result;
         }
-    }
 
+        #endregion Methods
+
+        #region Classes
+
+        public class Result : WorkerResult
+        {
+            #region Properties
+
+            public string MediaId { get; set; }
+            public NotificationType NotificationType { get; set; }
+
+            #endregion Properties
+        }
+
+        #endregion Classes
+    }
 }

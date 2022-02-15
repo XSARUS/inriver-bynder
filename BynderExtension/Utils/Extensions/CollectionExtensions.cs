@@ -5,6 +5,8 @@ namespace Bynder.Utils.Extensions
 {
     public static class CollectionExtensions
     {
+        #region Methods
+
         /// <summary>
         /// IEnumerable of strings to dictionary with a List of values. Grouped keys.
         /// </summary>
@@ -32,5 +34,7 @@ namespace Bynder.Utils.Extensions
                             pair => pair.Select(g => g[1].ConvertTo<TListVal>()).Distinct().ToList());
             return output;
         }
+
+        #endregion Methods
     }
 }

@@ -9,6 +9,8 @@ namespace Bynder.Extension
 
     public class AssetLoader : Extension, IScheduledExtension
     {
+        #region Methods
+
         /// <summary>
         /// Get a list of all assetIds from Bynder using the configured filter Query
         /// which will be executed against api/v4/media/?-----
@@ -51,5 +53,7 @@ namespace Bynder.Extension
                 Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
         }
+
+        #endregion Methods
     }
 }

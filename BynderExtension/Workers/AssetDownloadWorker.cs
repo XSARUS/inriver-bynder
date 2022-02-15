@@ -8,16 +8,26 @@ using System.Collections.Generic;
 
 namespace Bynder.Workers
 {
-    class AssetDownloadWorker : IWorker
+    internal class AssetDownloadWorker : IWorker
     {
-        private readonly inRiverContext _inRiverContext;
+        #region Fields
+
         private readonly IBynderClient _bynderClient;
+        private readonly inRiverContext _inRiverContext;
+
+        #endregion Fields
+
+        #region Constructors
 
         public AssetDownloadWorker(inRiverContext inRiverContext, IBynderClient bynderClient = null)
         {
             _inRiverContext = inRiverContext;
             _bynderClient = bynderClient;
         }
+
+        #endregion Constructors
+
+        #region Methods
 
         public void Execute(Entity resourceEntity)
         {
@@ -72,5 +82,7 @@ namespace Bynder.Workers
             _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
             _inRiverContext.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
         }
+
+        #endregion Methods
     }
 }

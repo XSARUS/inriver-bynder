@@ -5,45 +5,7 @@ namespace Bynder.Utils.Helpers
 {
     public static class JsonHelper
     {
-
         #region Methods
-
-        /// <summary>
-        /// Gets the Iso dateTime from the token
-        /// </summary>
-        private static string GetIsoDateTimeString(JToken token)
-        {
-            if (token.Type != JTokenType.Date)
-            {
-                return null;
-            }
-
-            return ((DateTime)((JValue)token).Value).ToString(Generics.GENERAL_FORMAT_DATETIME);
-        }
-
-        private static string GetFloatString(JToken token)
-        {
-            if (token.Type != JTokenType.Float)
-            {
-                return null;
-            }
-
-            decimal number = token.Value<decimal>();
-
-            return number.ToString("0.0######", System.Globalization.CultureInfo.InvariantCulture); // At least 1 decimal and dot as decimal separator
-        }
-
-        private static string GetBooleanString(JToken token, bool forceType = true)
-        {
-            if (forceType && token.Type != JTokenType.Boolean)
-            {
-                return null;
-            }
-
-            bool boolValue = token.Value<bool>();
-
-            return boolValue.ToString();
-        }
 
         public static string GetValueAsString(JToken token)
         {
@@ -71,7 +33,8 @@ namespace Bynder.Utils.Helpers
                 case JTokenType.Boolean:
                     return GetBooleanString(token);
 
-                    //todo need to implement this? depends on what will be send as value for the metaproperty types in bynder
+                // We do not need to implement this for now.
+                // It depends on what will be send as value for the metaproperty types in bynder. We have not seen the code reach the object yet.
                 case JTokenType.Object:
                     throw new NotImplementedException("no implementation for object yet");
 
@@ -82,7 +45,43 @@ namespace Bynder.Utils.Helpers
 
         public static string GetValueAsString(JProperty property) => GetValueAsString(property.Value);
 
-        #endregion Methods
+        private static string GetBooleanString(JToken token, bool forceType = true)
+        {
+            if (forceType && token.Type != JTokenType.Boolean)
+            {
+                return null;
+            }
 
+            bool boolValue = token.Value<bool>();
+
+            return boolValue.ToString();
+        }
+
+        private static string GetFloatString(JToken token)
+        {
+            if (token.Type != JTokenType.Float)
+            {
+                return null;
+            }
+
+            decimal number = token.Value<decimal>();
+
+            return number.ToString("0.0######", System.Globalization.CultureInfo.InvariantCulture); // At least 1 decimal and dot as decimal separator
+        }
+
+        /// <summary>
+        /// Gets the Iso dateTime from the token
+        /// </summary>
+        private static string GetIsoDateTimeString(JToken token)
+        {
+            if (token.Type != JTokenType.Date)
+            {
+                return null;
+            }
+
+            return ((DateTime)((JValue)token).Value).ToString(Generics.GENERAL_FORMAT_DATETIME);
+        }
+
+        #endregion Methods
     }
 }

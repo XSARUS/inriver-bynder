@@ -22,7 +22,6 @@ namespace Bynder.Workers
 
     public class AssetUpdatedWorker : IWorker
     {
-
         #region Fields
 
         private readonly IBynderClient _bynderClient;
@@ -44,19 +43,79 @@ namespace Bynder.Workers
 
         #region Methods
 
-        private void SetResourceFilenameData(Entity resourceEntity, Asset asset, Dictionary<FieldType, string> filenameData)
+        /// <summary>
+        /// Main method of the worker
+        /// </summary>
+        /// <param name="bynderAssetId"></param>
+        /// <param name="notificationType"></param>
+        /// <returns></returns>
+        public WorkerResult Execute(string bynderAssetId, NotificationType notificationType)
         {
-            // status for new and existing ResourceEntity
-            resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState).Data = BynderStates.Todo;
+            var result = new WorkerResult();
 
-            // resource fields from regular expression created from filename
-            foreach (var keyValuePair in filenameData)
+            // get original filename, as we need to evaluate this for further processing
+            var asset = _bynderClient.GetAssetByAssetId(bynderAssetId);
+
+            // evaluate filename
+            string originalFileName = asset.GetOriginalFileName();
+            var evaluatorResult = _fileNameEvaluator.Evaluate(originalFileName);
+            if (!evaluatorResult.IsMatch())
             {
-                resourceEntity.GetField(keyValuePair.Key.Id).Data = keyValuePair.Value;
+                result.Messages.Add($"Not processing '{originalFileName}'; does not match regex.");
+                return result;
             }
 
-            // save IdHash for re-creation of public CDN Urls in inRiver
-            resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
+            // evaluate conditions
+            if (!AssetAppliesToConditions(asset))
+            {
+                _inRiverContext.Log(LogLevel.Debug, $"Asset {bynderAssetId} does not apply to the conditions");
+
+                result.Messages.Add($"Not processing '{originalFileName}'; does not apply to import conditions.");
+                return result;
+            }
+
+            _inRiverContext.Log(LogLevel.Debug, $"Asset {asset.Id} applies to conditions.");
+
+            // find resourceEntity based on bynderAssetId
+            Entity resourceEntity =
+                _inRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeIds.ResourceBynderId, bynderAssetId,
+                    LoadLevel.DataAndLinks);
+
+            // handle notification logic
+            switch (notificationType)
+            {
+                case NotificationType.DataUpsert:
+                    return CreateOrUpdateEntityAndRelations(result, asset, evaluatorResult, resourceEntity);
+
+                case NotificationType.MetadataUpdated:
+                    if (resourceEntity != null)
+                    {
+                        return UpdateMetadata(result, asset, resourceEntity);
+                    }
+                    else
+                    {
+                        return CreateOrUpdateEntityAndRelations(result, asset, evaluatorResult, resourceEntity);
+                    }
+
+                case NotificationType.IsArchived:
+                    if (resourceEntity != null)
+                    {
+                        return SetValuesOnResource(result, bynderAssetId, resourceEntity);
+                    }
+                    else
+                    {
+                        _inRiverContext.Log(LogLevel.Debug, $"Archived asset {bynderAssetId}, does not exist in inRiver as Resource.");
+                        result.Messages.Add($"Archived asset {bynderAssetId}, does not exist in inRiver as Resource.");
+
+                        return result;
+                    }
+
+                default:
+                    _inRiverContext.Log(LogLevel.Warning, $"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
+                    result.Messages.Add($"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
+
+                    return result;
+            }
         }
 
         private Entity AddOrUpdateEntityInInRiver(Entity resourceEntity, StringBuilder resultString)
@@ -123,8 +182,8 @@ namespace Bynder.Workers
 
         /// <summary>
         /// All values need to match.
-        /// 
-        /// When a value is null for a metaproperty on the Asset, then we don't receive the metaproperty from Bynder('s API response). 
+        ///
+        /// When a value is null for a metaproperty on the Asset, then we don't receive the metaproperty from Bynder('s API response).
         /// When the metaproperty is not found and the condition for this property has no values or the only value is null, then it will return true.
         /// </summary>
         /// <param name="asset"></param>
@@ -159,7 +218,6 @@ namespace Bynder.Workers
             var filenameData = evaluatorResult.GetResourceDataInFilename();
             SetResourceFilenameData(resourceEntity, asset, filenameData);
 
-            // todo why stringbuilder, why not add the messages to the workerResult?
             var resultString = new StringBuilder();
             resourceEntity = AddOrUpdateEntityInInRiver(resourceEntity, resultString);
 
@@ -293,26 +351,34 @@ namespace Bynder.Workers
                     condition.Values.Sort();
                     // check if lists are equal
                     return Enumerable.SequenceEqual(metaproperty.Values, condition.Values, StringComparer.Ordinal);
+
                 case MatchType.EqualSortedCaseInsensitive:
                     // sort the values
                     metaproperty.Values.Sort();
                     condition.Values.Sort();
                     // check if lists are equal
                     return Enumerable.SequenceEqual(metaproperty.Values, condition.Values, StringComparer.OrdinalIgnoreCase);
+
                 case MatchType.Equal:
                     return Enumerable.SequenceEqual(metaproperty.Values, condition.Values, StringComparer.Ordinal);
+
                 case MatchType.EqualCaseInsensitive:
                     return Enumerable.SequenceEqual(metaproperty.Values, condition.Values, StringComparer.OrdinalIgnoreCase);
+
                 case MatchType.ContainsAny:
                     return metaproperty.Values.Intersect(condition.Values).Any();
+
                 case MatchType.ContainsAnyCaseInsensitive:
-                    return metaproperty.Values.Select(x=> x.ToLower()).Intersect(condition.Values.Select(x => x.ToLower())).Any();
+                    return metaproperty.Values.Select(x => x.ToLower()).Intersect(condition.Values.Select(x => x.ToLower())).Any();
+
                 case MatchType.ContainsAll:
                     return condition.Values.All(x => metaproperty.Values.Contains(x));
+
                 case MatchType.ContainsAllCaseInsensitive:
                     var metapropertyValuesLowerCase = metaproperty.Values.Select(x => x.ToLower());
                     var conditionValuesLowerCase = condition.Values.Select(x => x.ToLower());
                     return conditionValuesLowerCase.All(x => metapropertyValuesLowerCase.Contains(x));
+
                 default:
                     throw new NotSupportedException($"MatchType {condition.MatchType} is not yet supported to use for the import conditions!");
             }
@@ -366,20 +432,6 @@ namespace Bynder.Workers
         /// Optional setting. Default is an empty list.
         /// </summary>
         /// <returns></returns>
-        private List<ImportCondition> GetImportConditions()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.ImportConditions))
-            {
-                return JsonConvert.DeserializeObject<List<ImportCondition>>(_inRiverContext.Settings[Settings.ImportConditions]);
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ImportConditions}");
-            return new List<ImportCondition>();
-        }
-
-        /// <summary>
-        /// Optional setting. Default is an empty list.
-        /// </summary>
-        /// <returns></returns>
         private List<FieldValueCombination> GetFieldValueCombinations()
         {
             if (_inRiverContext.Settings.ContainsKey(Settings.FieldValuesToSetOnArchiveEvent))
@@ -390,14 +442,18 @@ namespace Bynder.Workers
             return new List<FieldValueCombination>();
         }
 
-        private TimestampSettings GetTimestampSettings()
+        /// <summary>
+        /// Optional setting. Default is an empty list.
+        /// </summary>
+        /// <returns></returns>
+        private List<ImportCondition> GetImportConditions()
         {
-            if (_inRiverContext.Settings.ContainsKey(Settings.TimestampSettings))
+            if (_inRiverContext.Settings.ContainsKey(Settings.ImportConditions))
             {
-                return JsonConvert.DeserializeObject<TimestampSettings> (_inRiverContext.Settings[Settings.TimestampSettings]);
+                return JsonConvert.DeserializeObject<List<ImportCondition>>(_inRiverContext.Settings[Settings.ImportConditions]);
             }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.TimestampSettings}");
-            return null;
+            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ImportConditions}");
+            return new List<ImportCondition>();
         }
 
         /// <summary>
@@ -427,6 +483,7 @@ namespace Bynder.Workers
             _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured multivalue separator");
             return string.Empty;
         }
+
         private object GetParsedValueForField(WorkerResult result, string propertyName, List<string> values, Field field)
         {
             var mergedVal = values == null ? null : string.Join(GetMultivalueSeparator(), values);
@@ -450,8 +507,10 @@ namespace Bynder.Workers
                     }
 
                     return ls;
+
                 case "string":
                     return mergedVal;
+
                 case "cvl":
                     var parsedCvlVal = GeParsedCvlValueForField(field, values, result, out singleVal);
                     if (!field.FieldType.Multivalue)
@@ -459,6 +518,7 @@ namespace Bynder.Workers
                         LogMessageIfMultipleValuesForSingleField(result, propertyName, field, values, singleVal, mergedVal);
                     }
                     return parsedCvlVal;
+
                 case "datetime":
                     LogMessageIfMultipleValuesForSingleField(result, propertyName, field, values, singleVal, mergedVal);
                     if (string.IsNullOrEmpty(singleVal))
@@ -481,6 +541,16 @@ namespace Bynder.Workers
                     LogMessageIfMultipleValuesForSingleField(result, propertyName, field, values, singleVal, mergedVal);
                     return singleVal.ConvertTo(field.FieldType.DataType);
             }
+        }
+
+        private TimestampSettings GetTimestampSettings()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Settings.TimestampSettings))
+            {
+                return JsonConvert.DeserializeObject<TimestampSettings>(_inRiverContext.Settings[Settings.TimestampSettings]);
+            }
+            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.TimestampSettings}");
+            return null;
         }
 
         private void LogMessageIfMultipleValuesForSingleField(WorkerResult result, string propertyName, Field field, List<string> values, string firstVal, string mergedVal)
@@ -556,93 +626,24 @@ namespace Bynder.Workers
                 field.Data = GetParsedValueForField(result, property.Name, property.Values, field);
             }
         }
-        private WorkerResult UpdateMetadata(WorkerResult result, Asset asset, Entity resourceEntity)
+
+        private void SetResourceFilenameData(Entity resourceEntity, Asset asset, Dictionary<FieldType, string> filenameData)
         {
-            _inRiverContext.Log(LogLevel.Verbose, $"Update metadata only for Resource {resourceEntity.Id}");
-            SetAssetProperties(resourceEntity, asset, result);
-            SetMetapropertyData(resourceEntity, asset, result);
-            resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
-            result.Messages.Add($"Resource {resourceEntity.Id} updated");
-            return result;
+            // status for new and existing ResourceEntity
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState).Data = BynderStates.Todo;
+
+            // resource fields from regular expression created from filename
+            foreach (var keyValuePair in filenameData)
+            {
+                resourceEntity.GetField(keyValuePair.Key.Id).Data = keyValuePair.Value;
+            }
+
+            // save IdHash for re-creation of public CDN Urls in inRiver
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
         }
 
         /// <summary>
-        /// Main method of the worker
-        /// </summary>
-        /// <param name="bynderAssetId"></param>
-        /// <param name="notificationType"></param>
-        /// <returns></returns>
-        public WorkerResult Execute(string bynderAssetId, NotificationType notificationType)
-        {
-            var result = new WorkerResult();
-
-            // get original filename, as we need to evaluate this for further processing
-            var asset = _bynderClient.GetAssetByAssetId(bynderAssetId);
-
-            // evaluate filename
-            string originalFileName = asset.GetOriginalFileName();
-            var evaluatorResult = _fileNameEvaluator.Evaluate(originalFileName);
-            if (!evaluatorResult.IsMatch())
-            {
-                result.Messages.Add($"Not processing '{originalFileName}'; does not match regex.");
-                return result;
-            }
-
-            // evaluate conditions
-            if (!AssetAppliesToConditions(asset))
-            {
-                _inRiverContext.Log(LogLevel.Debug, $"Asset {bynderAssetId} does not apply to the conditions");
-
-                result.Messages.Add($"Not processing '{originalFileName}'; does not apply to import conditions.");
-                return result;
-            }
-
-            _inRiverContext.Log(LogLevel.Debug, $"Asset {asset.Id} applies to conditions.");
-
-            // find resourceEntity based on bynderAssetId
-            Entity resourceEntity =
-                _inRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeIds.ResourceBynderId, bynderAssetId,
-                    LoadLevel.DataAndLinks);
-
-            // handle notification logic
-            switch (notificationType)
-            {
-                case NotificationType.DataUpsert:
-                    return CreateOrUpdateEntityAndRelations(result, asset, evaluatorResult, resourceEntity);
-
-                case NotificationType.MetadataUpdated:
-                    if (resourceEntity != null)
-                    {
-                        return UpdateMetadata(result, asset, resourceEntity);
-                    }
-                    else
-                    {
-                        return CreateOrUpdateEntityAndRelations(result, asset, evaluatorResult, resourceEntity);
-                    }
-
-                case NotificationType.IsArchived:
-                    if(resourceEntity != null)
-                    {
-                        return SetValuesOnResource(result, bynderAssetId, resourceEntity);
-                    }
-                    else
-                    {
-                        _inRiverContext.Log(LogLevel.Debug, $"Archived asset {bynderAssetId}, does not exist in inRiver as Resource.");
-                        result.Messages.Add($"Archived asset {bynderAssetId}, does not exist in inRiver as Resource.");
-
-                        return result;
-                    }
-
-                default:
-                    _inRiverContext.Log(LogLevel.Warning, $"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
-                    result.Messages.Add($"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
-
-                    return result;
-            }
-        }
-
-        /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="result"></param>
         /// <param name="bynderAssetId"></param>
@@ -660,7 +661,7 @@ namespace Bynder.Workers
             var fieldsToUpdate = new List<Field>();
             var timestampSettings = GetTimestampSettings();
 
-            foreach(var fvc in fieldValueCombinations)
+            foreach (var fvc in fieldValueCombinations)
             {
                 if (string.IsNullOrWhiteSpace(fvc.FieldTypeId))
                 {
@@ -669,7 +670,7 @@ namespace Bynder.Workers
                 }
 
                 var field = resourceEntity.GetField(fvc.FieldTypeId);
-                if(field == null)
+                if (field == null)
                 {
                     _inRiverContext.Log(LogLevel.Verbose, $"Field '{fvc.FieldTypeId}' used in the setting '{Settings.FieldValuesToSetOnArchiveEvent}' does not exist on Resource!");
                     continue;
@@ -677,7 +678,7 @@ namespace Bynder.Workers
 
                 if (fvc.SetTimestamp)
                 {
-                    if(timestampSettings == null)
+                    if (timestampSettings == null)
                     {
                         _inRiverContext.Log(LogLevel.Verbose, $"Field value combination found with {nameof(FieldValueCombination.SetTimestamp)} on true, but the setting '{Settings.TimestampSettings}' is empty!");
                         continue;
@@ -693,7 +694,7 @@ namespace Bynder.Workers
                 fieldsToUpdate.Add(field);
             }
 
-            if(fieldsToUpdate.Count > 0)
+            if (fieldsToUpdate.Count > 0)
             {
                 _inRiverContext.Log(LogLevel.Verbose, $"Setting values on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
                 resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldsToUpdate);
@@ -707,7 +708,16 @@ namespace Bynder.Workers
             return result;
         }
 
-        #endregion Methods
+        private WorkerResult UpdateMetadata(WorkerResult result, Asset asset, Entity resourceEntity)
+        {
+            _inRiverContext.Log(LogLevel.Verbose, $"Update metadata only for Resource {resourceEntity.Id}");
+            SetAssetProperties(resourceEntity, asset, result);
+            SetMetapropertyData(resourceEntity, asset, result);
+            resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
+            result.Messages.Add($"Resource {resourceEntity.Id} updated");
+            return result;
+        }
 
+        #endregion Methods
     }
 }

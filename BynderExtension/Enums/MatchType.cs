@@ -2,13 +2,13 @@
 {
     public enum MatchType
     {
-        EqualSorted, 
-        EqualSortedCaseInsensitive, 
-        Equal, 
-        EqualCaseInsensitive, 
-        ContainsAll, 
-        ContainsAllCaseInsensitive, 
-        ContainsAny, 
+        EqualSorted,
+        EqualSortedCaseInsensitive,
+        Equal,
+        EqualCaseInsensitive,
+        ContainsAll,
+        ContainsAllCaseInsensitive,
+        ContainsAny,
         ContainsAnyCaseInsensitive
     }
 }

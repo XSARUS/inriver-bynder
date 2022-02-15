@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Bynder.Api;
+﻿using Bynder.Api;
 using Bynder.Names;
 using Bynder.Utils.InRiver;
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Bynder.Workers
 {

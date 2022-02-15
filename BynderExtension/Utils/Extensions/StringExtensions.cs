@@ -8,22 +8,7 @@ namespace Bynder.Utils.Extensions
 {
     public static class StringExtensions
     {
-        public static string ToCamelCase(this string value)
-        {
-            Regex pattern = new Regex(@"[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+");
-            var matches = pattern.Matches(value).OfType<Match>().Select(m => m.Groups[0].Value).ToArray();
-
-            return new string(
-              new CultureInfo("en-US", false)
-                .TextInfo
-                .ToTitleCase(
-                  string.Join(" ", matches).ToLower()
-                )
-                .Replace(@" ", "")
-                .Select((x, i) => i == 0 ? char.ToLower(x) : x)
-                .ToArray()
-            );
-        }
+        #region Fields
 
         private static readonly List<char> ControlChars = new List<char>()
         {
@@ -61,6 +46,10 @@ namespace Bynder.Utils.Extensions
             '\u001F',
         };
 
+        #endregion Fields
+
+        #region Methods
+
         public static string RemoveControlCharacters(this string input)
         {
             if (input == null)
@@ -71,6 +60,23 @@ namespace Bynder.Utils.Extensions
             IEnumerable<char> filtered = input.Where(currentChar => !ControlChars.Contains(currentChar));
 
             return new string(filtered.ToArray());
+        }
+
+        public static string ToCamelCase(this string value)
+        {
+            Regex pattern = new Regex(@"[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+");
+            var matches = pattern.Matches(value).OfType<Match>().Select(m => m.Groups[0].Value).ToArray();
+
+            return new string(
+              new CultureInfo("en-US", false)
+                .TextInfo
+                .ToTitleCase(
+                  string.Join(" ", matches).ToLower()
+                )
+                .Replace(@" ", "")
+                .Select((x, i) => i == 0 ? char.ToLower(x) : x)
+                .ToArray()
+            );
         }
 
         public static string ToStringWithoutControlCharactersForCvlKey(this string input)
@@ -84,5 +90,7 @@ namespace Bynder.Utils.Extensions
 
             return value;
         }
+
+        #endregion Methods
     }
 }

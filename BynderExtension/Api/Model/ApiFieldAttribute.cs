@@ -5,6 +5,22 @@ namespace Bynder.Api.Model
     [AttributeUsage(AttributeTargets.Property)]
     public class ApiFieldAttribute : Attribute
     {
+        #region Properties
+
+        /// <summary>
+        /// Name of the property in the API documentation.
+        /// </summary>
+        public string ApiName { get; private set; }
+
+        /// <summary>
+        /// Converter to be used to convert the property
+        /// </summary>
+        public Type Converter { get; set; }
+
+        #endregion Properties
+
+        #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the class
         /// </summary>
@@ -14,14 +30,6 @@ namespace Bynder.Api.Model
             ApiName = name;
         }
 
-        /// <summary>
-        /// Converter to be used to convert the property
-        /// </summary>
-        public Type Converter { get; set; }
-
-        /// <summary>
-        /// Name of the property in the API documentation.
-        /// </summary>
-        public string ApiName { get; private set; }
+        #endregion Constructors
     }
 }

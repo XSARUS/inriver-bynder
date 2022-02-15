@@ -9,12 +9,21 @@ namespace Bynder.Extension
 
     public class NotificationListener : Extension, IInboundDataExtension
     {
+        #region Methods
+
         /// <summary>
         /// called on POST
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
         public string Add(string value) => Update(value);
+
+        /// <summary>
+        /// called on DELETE - no implementation
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public string Delete(string value) => string.Empty;
 
         /// <summary>
         /// called on PUT/POST
@@ -39,7 +48,7 @@ namespace Bynder.Extension
                 if (!string.IsNullOrEmpty(notificationResult.MediaId))
                 {
                     WorkerResult workerResult;
-                    if(notificationResult.NotificationType == NotificationType.IsDeleted)
+                    if (notificationResult.NotificationType == NotificationType.IsDeleted)
                     {
                         var assetDeletedWorker = Container.GetInstance<AssetDeletedWorker>();
                         workerResult = assetDeletedWorker.Execute(notificationResult.MediaId);
@@ -65,12 +74,6 @@ namespace Bynder.Extension
             return result;
         }
 
-        /// <summary>
-        /// called on DELETE - no implementation
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public string Delete(string value) => string.Empty;
-
+        #endregion Methods
     }
 }

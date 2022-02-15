@@ -2,6 +2,8 @@
 {
     public struct FieldTypeIds
     {
+        #region Fields
+
         public const string ResourceBynderAssetId = "ResourceBynderId";
         public const string ResourceBynderDownloadState = "ResourceBynderDownloadState";
         public const string ResourceBynderId = "ResourceBynderId";
@@ -10,5 +12,7 @@
         public const string ResourceFileId = "ResourceFileId";
         public const string ResourceFilename = "ResourceFilename";
         public const string ResourceMimeType = "ResourceMimeType";
+
+        #endregion Fields
     }
 }

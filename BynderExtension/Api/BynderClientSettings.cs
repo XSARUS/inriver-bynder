@@ -5,11 +5,17 @@ namespace Bynder.Api
 {
     public class BynderClientSettings
     {
-        public string CustomerBynderUrl { get; set; }
+        #region Properties
+
         public string ConsumerKey { get; set; }
         public string ConsumerSecret { get; set; }
+        public string CustomerBynderUrl { get; set; }
         public string Token { get; set; }
         public string TokenSecret { get; set; }
+
+        #endregion Properties
+
+        #region Methods
 
         public static BynderClientSettings Create(Dictionary<string, string> connectorSettings)
         {
@@ -31,5 +37,7 @@ namespace Bynder.Api
                     e.InnerException);
             }
         }
+
+        #endregion Methods
     }
 }

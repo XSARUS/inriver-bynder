@@ -6,6 +6,8 @@ namespace Bynder.Utils.Extensions
 {
     public static class StringToCollectionExtensions
     {
+        #region Methods
+
         /// <summary>
         /// String to dictionary. One unique key per string.
         /// </summary>
@@ -23,17 +25,6 @@ namespace Bynder.Utils.Extensions
                     pair => pair[0].ConvertTo<TKey>(),
                     pair => pair.ElementAtOrDefault(1).ConvertTo<TVal>()
             );
-        }
-
-        /// <summary>
-        /// Splits string into a collection. Empty List if string is null.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="parameterSeparator"></param>
-        /// <returns>Collection of strings</returns>
-        public static List<T> ToList<T>(this string input, char parameterSeparator)
-        {
-            return input.ToIEnumerable<T>(parameterSeparator).ToList();
         }
 
         /// <summary>
@@ -79,5 +70,18 @@ namespace Bynder.Utils.Extensions
                     .Where(x => !string.IsNullOrEmpty(x))
                     .Select(x => x.ConvertTo<T>());
         }
+
+        /// <summary>
+        /// Splits string into a collection. Empty List if string is null.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="parameterSeparator"></param>
+        /// <returns>Collection of strings</returns>
+        public static List<T> ToList<T>(this string input, char parameterSeparator)
+        {
+            return input.ToIEnumerable<T>(parameterSeparator).ToList();
+        }
+
+        #endregion Methods
     }
 }

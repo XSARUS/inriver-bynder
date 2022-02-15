@@ -1,17 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using Bynder.Api;
+﻿using Bynder.Api;
 using Bynder.Workers;
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using StructureMap;
+using System;
+using System.Collections.Generic;
 
 namespace Bynder.Extension
 {
     public abstract class Extension
     {
+        #region Fields
+
         private Container _container;
-        protected Container Container => _container ?? (_container = new Container(new Registry(Context)));
+
+        #endregion Fields
+
+        #region Properties
 
         public inRiverContext Context { get; set; }
 
@@ -38,6 +43,12 @@ namespace Bynder.Extension
             }
         }
 
+        protected Container Container => _container ?? (_container = new Container(new Registry(Context)));
+
+        #endregion Properties
+
+        #region Methods
+
         /// <summary>
         /// test method for extension - called from control panel
         /// </summary>
@@ -55,5 +66,6 @@ namespace Bynder.Extension
             return string.Join(Environment.NewLine, result.Messages);
         }
 
+        #endregion Methods
     }
 }

@@ -8,11 +8,30 @@ namespace Bynder.Api
 {
     public class OAuthClient
     {
+        #region Fields
+
         protected OAuth.Manager OAuthManager;
 
-        public void InitializeManager(string consumerKey, string consumerSecret, string token, string tokenSecret)
+        #endregion Fields
+
+        #region Methods
+
+        /// <summary>
+        /// make a DELETE call
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <returns></returns>
+        public string Delete(string uri)
         {
-            OAuthManager = new OAuth.Manager(consumerKey, consumerSecret, token, tokenSecret);
+            var response = SendRequest(
+                new HttpRequestMessage()
+                {
+                    RequestUri = new Uri(uri),
+                    Method = HttpMethod.Delete
+                }
+            );
+            response.EnsureSuccessStatusCode();
+            return response.Content.ReadAsStringAsync().Result;
         }
 
         /// <summary>
@@ -64,6 +83,11 @@ namespace Bynder.Api
             }
         }
 
+        public void InitializeManager(string consumerKey, string consumerSecret, string token, string tokenSecret)
+        {
+            OAuthManager = new OAuth.Manager(consumerKey, consumerSecret, token, tokenSecret);
+        }
+
         /// <summary>
         /// make a POST using raw string body
         /// </summary>
@@ -106,24 +130,6 @@ namespace Bynder.Api
         }
 
         /// <summary>
-        /// make a DELETE call
-        /// </summary>
-        /// <param name="uri"></param>
-        /// <returns></returns>
-        public string Delete(string uri)
-        {
-            var response = SendRequest(
-                new HttpRequestMessage()
-                {
-                    RequestUri = new Uri(uri),
-                    Method = HttpMethod.Delete
-                }
-            );
-            response.EnsureSuccessStatusCode();
-            return response.Content.ReadAsStringAsync().Result;
-        }
-
-        /// <summary>
         /// sign and send the http request, return the response
         /// </summary>
         /// <param name="requestMessage"></param>
@@ -152,5 +158,7 @@ namespace Bynder.Api
             if (OAuthManager == null) throw new Exception("OAuthManager is not initialized");
             message.Headers.Add(HttpRequestHeader.Authorization.ToString(), OAuthManager.GenerateAuthzHeader(uri, message.Method.Method));
         }
+
+        #endregion Methods
     }
 }

@@ -2,7 +2,11 @@
 {
     public struct EntityTypeIds
     {
-        public const string Resource = "Resource";
+        #region Fields
+
         public const string Product = "Product";
+        public const string Resource = "Resource";
+
+        #endregion Fields
     }
 }
