@@ -2,6 +2,8 @@
 {
     public class SaveMediaQuery
     {
+        #region Properties
+
         /// <summary>
         /// Brand id we want to save media to
         /// </summary>
@@ -21,9 +23,11 @@
 
         /// <summary>
         /// Media id. If specified it will add the asset as new version
-        /// of the specified media. Otherwise a new media will be added to 
+        /// of the specified media. Otherwise a new media will be added to
         /// the asset bank
         /// </summary>
         public string MediaId { get; set; }
+
+        #endregion Properties
     }
 }

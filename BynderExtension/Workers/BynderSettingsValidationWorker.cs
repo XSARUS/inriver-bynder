@@ -1,18 +1,28 @@
-﻿using System;
-using Bynder.Api;
+﻿using Bynder.Api;
 using inRiver.Remoting.Extension;
+using System;
 
 namespace Bynder.Workers
 {
-    class BynderSettingsValidationWorker : IWorker
+    internal class BynderSettingsValidationWorker : IWorker
     {
+        #region Fields
+
         private readonly inRiverContext _inRiverContext;
         private WorkerResult _workerResult;
+
+        #endregion Fields
+
+        #region Constructors
 
         public BynderSettingsValidationWorker(inRiverContext inRiverContext)
         {
             _inRiverContext = inRiverContext;
         }
+
+        #endregion Constructors
+
+        #region Methods
 
         /// <summary>
         /// check the necesaary prereqs for the bynder-inriver integration
@@ -62,5 +72,6 @@ namespace Bynder.Workers
                 : $"ERROR: BynderClient URL '{url}' is not valid");
         }
 
+        #endregion Methods
     }
 }

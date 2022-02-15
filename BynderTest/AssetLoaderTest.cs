@@ -5,6 +5,8 @@ namespace BynderTest
     [TestClass]
     public class AssetLoaderTest : TestBase
     {
+        #region Methods
+
         [TestMethod]
         public void TestAssetLoader()
         {
@@ -15,5 +17,7 @@ namespace BynderTest
             initialLoader.Context.Settings = TestSettings;
             initialLoader.Execute(true);
         }
+
+        #endregion Methods
     }
 }

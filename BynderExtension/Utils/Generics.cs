@@ -5,6 +5,9 @@ namespace Bynder.Utils
 {
     public static class Generics
     {
+        #region Fields
+
+        public const string DecimalSeparator = ",";
         public const string GENERAL_FORMAT_DATETIME = "yyyy-MM-ddTHH:mm:ssZ"; // ISO8601, or "yyyy-MM-dd'T'HH:mm:ss'Z'"
 
         /// <summary>
@@ -12,7 +15,15 @@ namespace Bynder.Utils
         /// </summary>
         public const int MaxConcurrentThreadCount = 4;
 
+        public const string ThousandsSeparator = ".";
+        public static readonly CultureInfo CultureInfo = CultureInfo.InvariantCulture;
         private static NumberFormatInfo _decimalFormat;
+        private static Encoding _encoding;
+
+        #endregion Fields
+
+        #region Properties
+
         public static NumberFormatInfo DecimalFormat
         {
             get
@@ -31,10 +42,6 @@ namespace Bynder.Utils
             }
         }
 
-        public const string ThousandsSeparator = ".";
-        public const string DecimalSeparator = ",";
-
-        private static Encoding _encoding;
         public static Encoding Encoding
         {
             get
@@ -49,6 +56,6 @@ namespace Bynder.Utils
             }
         }
 
-        public static readonly CultureInfo CultureInfo = CultureInfo.InvariantCulture;
+        #endregion Properties
     }
 }

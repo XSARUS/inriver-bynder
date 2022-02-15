@@ -1,22 +1,32 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using Bynder.Config;
+﻿using Bynder.Config;
 using Bynder.Names;
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Bynder.Utils
 {
     public class FilenameEvaluator
     {
+        #region Fields
+
         private readonly inRiverContext _inRiverContext;
+
+        #endregion Fields
+
+        #region Constructors
 
         public FilenameEvaluator(inRiverContext inRiverContext)
         {
             _inRiverContext = inRiverContext;
         }
+
+        #endregion Constructors
+
+        #region Methods
 
         /// <summary>
         /// evaluate fileName based on settings
@@ -46,18 +56,34 @@ namespace Bynder.Utils
             return result;
         }
 
+        #endregion Methods
+
+        #region Classes
 
         public class Result
         {
+            #region Properties
+
+            public Dictionary<FieldType, string> EntityDataInFilename { get; set; }
             public string Filename { get; set; }
             public Match Match { get; set; }
-            public Dictionary<FieldType, string> EntityDataInFilename { get; set; }
 
-            public bool IsMatch() => Match.Success;
+            #endregion Properties
+
+            #region Constructors
 
             public Result()
             {
                 EntityDataInFilename = new Dictionary<FieldType, string>();
+            }
+
+            #endregion Constructors
+
+            #region Methods
+
+            public string GetLinkSourceEntityId()
+            {
+                return string.Empty;
             }
 
             public Dictionary<string, string> GetLinkType()
@@ -65,9 +91,10 @@ namespace Bynder.Utils
                 return new Dictionary<string, string>();
             }
 
-            public string GetLinkSourceEntityId()
+            public Dictionary<FieldType, string> GetRelatedEntityDataInFilename()
             {
-                return string.Empty;
+                return EntityDataInFilename.Where(kv => kv.Key.EntityTypeId != EntityTypeIds.Resource)
+                    .ToDictionary(kv => kv.Key, kv => kv.Value);
             }
 
             public Dictionary<FieldType, string> GetResourceDataInFilename()
@@ -76,11 +103,11 @@ namespace Bynder.Utils
                     .ToDictionary(kv => kv.Key, kv => kv.Value);
             }
 
-            public Dictionary<FieldType, string> GetRelatedEntityDataInFilename()
-            {
-                return EntityDataInFilename.Where(kv => kv.Key.EntityTypeId != EntityTypeIds.Resource)
-                    .ToDictionary(kv => kv.Key, kv => kv.Value);
-            }
+            public bool IsMatch() => Match.Success;
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

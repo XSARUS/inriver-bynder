@@ -5,8 +5,10 @@ using inRiver.Remoting.Extension;
 
 namespace Bynder.Extension
 {
-    class Registry : StructureMap.Registry
+    internal class Registry : StructureMap.Registry
     {
+        #region Constructors
+
         public Registry(inRiverContext inRiverContext)
         {
             // inRiver Context
@@ -29,5 +31,7 @@ namespace Bynder.Extension
             }
             );
         }
+
+        #endregion Constructors
     }
 }

@@ -4,11 +4,13 @@ namespace Bynder.Api.Model
 {
     public class UploadRequest
     {
+        #region Properties
+
         /// <summary>
-        /// S3 file name
+        /// Amazon parameters information <see cref="MultipartParameters"/>
         /// </summary>
-        [JsonProperty("s3_filename")]
-        public string S3Filename { get; set; }
+        [JsonProperty("multipart_params")]
+        public MultipartParameters MultipartParams { get; set; }
 
         /// <summary>
         /// S3 file information. <see cref="S3File"/>
@@ -17,9 +19,11 @@ namespace Bynder.Api.Model
         public S3File S3File { get; set; }
 
         /// <summary>
-        /// Amazon parameters information <see cref="MultipartParameters"/>
+        /// S3 file name
         /// </summary>
-        [JsonProperty("multipart_params")]
-        public MultipartParameters MultipartParams { get; set; }
+        [JsonProperty("s3_filename")]
+        public string S3Filename { get; set; }
+
+        #endregion Properties
     }
 }

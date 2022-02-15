@@ -7,6 +7,7 @@ namespace BynderTest
     [TestClass]
     public class JsonConvertTest
     {
+        #region Methods
 
         [TestMethod]
         public void TestConverion()
@@ -20,5 +21,7 @@ namespace BynderTest
             string assetWithMetaproperties = "";
             Assert.AreEqual(assetWithMetaproperties, assetString);
         }
+
+        #endregion Methods
     }
 }

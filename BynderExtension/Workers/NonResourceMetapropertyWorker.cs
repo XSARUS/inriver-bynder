@@ -1,20 +1,30 @@
-﻿using System.Linq;
-using Bynder.Names;
+﻿using Bynder.Names;
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Objects;
+using System.Linq;
 
 namespace Bynder.Workers
 {
     public class NonResourceMetapropertyWorker : IWorker
     {
+        #region Fields
+
         private readonly inRiverContext _inRiverContext;
         private readonly ResourceMetapropertyUpdateWorker _resourceMetapropertyUpdateWorker;
+
+        #endregion Fields
+
+        #region Constructors
 
         public NonResourceMetapropertyWorker(inRiverContext inRiverContext, ResourceMetapropertyUpdateWorker resourceMetapropertyUpdateWorker)
         {
             _inRiverContext = inRiverContext;
             _resourceMetapropertyUpdateWorker = resourceMetapropertyUpdateWorker;
         }
+
+        #endregion Constructors
+
+        #region Methods
 
         public void Execute(Entity entity, string[] fields)
         {
@@ -41,5 +51,7 @@ namespace Bynder.Workers
                 }
             }
         }
+
+        #endregion Methods
     }
 }

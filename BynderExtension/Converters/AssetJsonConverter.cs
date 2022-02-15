@@ -10,18 +10,28 @@ namespace Bynder.Converters
 
     public class AssetJsonConverter : JsonConverter
     {
+        #region Fields
+
         private const string _propertyPrefix = "property_";
 
+        #endregion Fields
+
+        #region Properties
+
+        public override bool CanWrite => false;
         private Type _type => typeof(Asset);
+
+        #endregion Properties
+
+        #region Methods
 
         public override bool CanConvert(Type objectType)
         {
             return _type.IsAssignableFrom(objectType);
         }
 
-
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {            
+        {
             // Load JObject from stream
             JObject jObject = JObject.Load(reader);
             var properties = jObject.Properties().ToList();
@@ -40,14 +50,10 @@ namespace Bynder.Converters
             return asset;
         }
 
-        private MetapropertyList GetMetapropertyList(List<JProperty> properties)
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            var propertyTokens = properties.Where(x => x.Name.StartsWith(_propertyPrefix));
-            var metaProperties= propertyTokens.Select(jProperty => 
-                // property values are always send as array
-                new Metaproperty { Name = jProperty.Name.Substring(jProperty.Name.IndexOf(_propertyPrefix) + _propertyPrefix.Length), Values = GetValueAsStringList(jProperty.Value)
-            });
-            return new MetapropertyList(metaProperties);
+            // will execute default behaviour
+            throw new NotImplementedException();
         }
 
         private static List<string> GetValueAsStringList(JToken token)
@@ -63,7 +69,8 @@ namespace Bynder.Converters
                     var arr = (JArray)token;
                     return arr.ToObject<List<string>>();
 
-                //todo need to implement this? depends on what will be send as value for the metaproperty types in bynder. Have only seen strings and string arrays.
+                // We do not need to implement this for now.
+                // It depends on what will be send as value for the metaproperty types in bynder. We have only seen strings and string arrays.
                 case JTokenType.Object:
                     throw new NotImplementedException("No implementation to process JToken Object yet");
 
@@ -72,12 +79,19 @@ namespace Bynder.Converters
             }
         }
 
-        public override bool CanWrite => false;
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        private MetapropertyList GetMetapropertyList(List<JProperty> properties)
         {
-            // will execute default behaviour
-            throw new NotImplementedException();
+            var propertyTokens = properties.Where(x => x.Name.StartsWith(_propertyPrefix));
+            var metaProperties = propertyTokens.Select(jProperty =>
+                 // property values are always send as array
+                 new Metaproperty
+                 {
+                     Name = jProperty.Name.Substring(jProperty.Name.IndexOf(_propertyPrefix) + _propertyPrefix.Length),
+                     Values = GetValueAsStringList(jProperty.Value)
+                 });
+            return new MetapropertyList(metaProperties);
         }
+
+        #endregion Methods
     }
 }

@@ -12,11 +12,14 @@ namespace Bynder.Api
     public class BynderClient : OAuthClient, IBynderClient
     {
         #region Fields
+
         //private const string PLUGIN_GETBYNDER_URI = "https://plugin.getbynder.com/";
         private readonly string _customerBynderUrl;
+
         #endregion Fields
 
         #region Constructors
+
         /// <summary>
         /// constructor
         /// </summary>
@@ -26,9 +29,11 @@ namespace Bynder.Api
             _customerBynderUrl = settings.CustomerBynderUrl;
             InitializeManager(settings.ConsumerKey, settings.ConsumerSecret, settings.Token, settings.TokenSecret);
         }
+
         #endregion Constructors
 
         #region Methods
+
         /// <summary>
         /// create asset usage
         /// </summary>
@@ -50,6 +55,7 @@ namespace Bynder.Api
             }
             return Post($"{_customerBynderUrl}/api/media/usage", postData);
         }
+
         /// <summary>
         /// delete asset usage
         /// </summary>
@@ -65,33 +71,6 @@ namespace Bynder.Api
             return Delete(deleteUrl);
         }
 
-        public Metaproperty GetMetadataProperty(string metaDataPropertyId)
-        {
-            var result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/{metaDataPropertyId}/");
-            return JsonConvert.DeserializeObject<Metaproperty>(result);
-        }
-
-        /// <summary>
-        /// todo finish implementation of this method, now returns an empty list
-        /// </summary>
-        /// <param name="metaDataPropertyIds"></param>
-        /// <returns></returns>
-        public MetapropertyList GetMetadataProperties(List<string> metaDataPropertyIds = null)
-        {
-            string result;
-            if(metaDataPropertyIds == null)
-            {
-                result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/");
-            }
-            else
-            {
-                result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/?ids={string.Join(",", metaDataPropertyIds)}");
-            }
-
-            //var ok =  JsonConvert.DeserializeObject<List<Metaproperty>>(result); //todo for later, not using it yet
-            return new MetapropertyList();
-        }
-
         /// <summary>
         /// download asset
         /// </summary>
@@ -102,6 +81,7 @@ namespace Bynder.Api
             var assetDownloadLocation = GetAssetDownloadLocation(assetId);
             return new WebClient().DownloadData(assetDownloadLocation.S3_File);
         }
+
         public FinalizeResponse FinalizeUpload(UploadRequest uploadRequest, uint chunkNumber)
         {
             var postData = new List<KeyValuePair<string, string>>
@@ -114,6 +94,7 @@ namespace Bynder.Api
             string result = Post($"{_customerBynderUrl}/api/v4/upload/{uploadRequest.S3File.UploadId}/", postData);
             return JsonConvert.DeserializeObject<FinalizeResponse>(result);
         }
+
         /// <summary>
         /// get account information
         /// </summary>
@@ -123,6 +104,7 @@ namespace Bynder.Api
             var apiResult = Get($"{_customerBynderUrl}/api/v4/account/");
             return JsonConvert.DeserializeObject<Account>(apiResult);
         }
+
         /// <summary>
         /// get asset by asset Id
         /// </summary>
@@ -131,8 +113,9 @@ namespace Bynder.Api
         public Asset GetAssetByAssetId(string assetId)
         {
             var apiResult = GetWithRetry($"{_customerBynderUrl}/api/v4/media/{assetId}/?versions=1");
-            return JsonConvert.DeserializeObject<Asset>(apiResult); 
+            return JsonConvert.DeserializeObject<Asset>(apiResult);
         }
+
         /// <summary>
         /// get asset collection by query
         /// </summary>
@@ -150,6 +133,7 @@ namespace Bynder.Api
             collection.Limit = limit;
             return collection;
         }
+
         /// <summary>
         /// get asset download location
         /// </summary>
@@ -160,21 +144,52 @@ namespace Bynder.Api
             var apiResult = GetWithRetry($"{_customerBynderUrl}/api/v4/media/{assetId}/download/");
             return JsonConvert.DeserializeObject<AssetDownloadLocation>(apiResult);
         }
+
         public IList<BrandResponse> GetAvailableBranches()
         {
             string result = Get($"{_customerBynderUrl}/api/v4/brands/");
             return JsonConvert.DeserializeObject<IList<BrandResponse>>(result);
         }
+
         public string GetClosestS3Endpoint()
         {
             string result = Get($"{_customerBynderUrl}/api/upload/endpoint");
             return JsonConvert.DeserializeObject<string>(result);
         }
+
+        /// <summary>
+        /// todo finish implementation of this method, now returns an empty list
+        /// </summary>
+        /// <param name="metaDataPropertyIds"></param>
+        /// <returns></returns>
+        public MetapropertyList GetMetadataProperties(List<string> metaDataPropertyIds = null)
+        {
+            string result;
+            if (metaDataPropertyIds == null)
+            {
+                result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/");
+            }
+            else
+            {
+                result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/?ids={string.Join(",", metaDataPropertyIds)}");
+            }
+
+            //return JsonConvert.DeserializeObject<List<Metaproperty>>(result); //todo for later, we are not using it yet
+            return new MetapropertyList();
+        }
+
+        public Metaproperty GetMetadataProperty(string metaDataPropertyId)
+        {
+            var result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/{metaDataPropertyId}/");
+            return JsonConvert.DeserializeObject<Metaproperty>(result);
+        }
+
         public PollResponse PollStatus(IList<string> items)
         {
             var result = Get($"{_customerBynderUrl}/api/v4/upload/poll/?items={string.Join(",", items)}");
             return JsonConvert.DeserializeObject<PollResponse>(result);
         }
+
         public UploadRequest RequestUploadInformation(RequestUploadQuery requestUploadQuery)
         {
             if (requestUploadQuery == null || string.IsNullOrWhiteSpace(requestUploadQuery.Filename)) return null;
@@ -187,6 +202,7 @@ namespace Bynder.Api
 
             return (string.IsNullOrWhiteSpace(result)) ? null : JsonConvert.DeserializeObject<UploadRequest>(result);
         }
+
         public UploadResult SaveMedia(SaveMediaQuery saveMediaQuery)
         {
             var postData = new List<KeyValuePair<string, string>>
@@ -220,6 +236,7 @@ namespace Bynder.Api
         {
             return Post($"{_customerBynderUrl}/api/v4/media/{assetId}/", metapropertyList.GetPostData());
         }
+
         /// <summary>
         /// set meta properties for asset
         /// </summary>
@@ -246,6 +263,7 @@ namespace Bynder.Api
 
             Post($"{_customerBynderUrl}/api/v4/upload/{uploadRequest.S3File.UploadId}/", postData);
         }
+
         public void UploadPartToAmazon(string filename, string awsBucket, UploadRequest uploadRequest, uint chunkNumber, byte[] fileContent, int numberOfBytes, uint numberOfChunks)
         {
             var finalKey = string.Format("{0}/p{1}", uploadRequest.MultipartParams.Key, chunkNumber);
@@ -281,6 +299,7 @@ namespace Bynder.Api
                 }
             }
         }
+
         #endregion Methods
     }
 }
