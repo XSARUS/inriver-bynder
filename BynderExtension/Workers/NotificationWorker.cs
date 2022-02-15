@@ -15,7 +15,7 @@ namespace Bynder.Workers
         {
             { "asset_bank.media.updated", NotificationType.DataUpsert },
             { "asset_bank.media.uploaded", NotificationType.DataUpsert },
-            { "asset_bank.media.pre_archived", NotificationType.DataUpsert }, //todo is this correct?
+            { "asset_bank.media.pre_archived", NotificationType.DataUpsert },
             { "asset_bank.media.upload", NotificationType.DataUpsert },
             { "asset_bank.media.create", NotificationType.DataUpsert },
             { "asset_bank.media.meta_updated", NotificationType.MetadataUpdated },
