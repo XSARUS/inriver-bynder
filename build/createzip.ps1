@@ -4,8 +4,10 @@ param (
     [Parameter(Mandatory=$true)][string]$project
  )
 
+$date = (Get-Date).ToString("dd-MM-yy");
+
 $versionPath = (Get-Item -Path '.\' -Verbose).FullName + '\' + $version;
-$destinationPath = $versionPath + '\' + $project + '.zip'
+$destinationPath = $versionPath + '\' + $project + '_' + $date + '.zip'
 
 New-Item -ErrorAction Ignore -ItemType directory -Path $versionPath
 

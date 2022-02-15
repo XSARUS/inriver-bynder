@@ -138,7 +138,7 @@
       <Version>3.3.0.24</Version>
     </PackageReference>
     <PackageReference Include="inRiver.Remoting.iPMC">
-      <Version>7.5.20197.1</Version>
+      <Version>7.5.21015.1</Version>
     </PackageReference>
     <PackageReference Include="StructureMap">
       <Version>4.6.1</Version>
