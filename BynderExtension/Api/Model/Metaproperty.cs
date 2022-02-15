@@ -5,6 +5,8 @@ namespace Bynder.Api.Model
 {
     public class Metaproperty
     {
+        #region Properties
+
         /// <summary>
         /// Unique GUID
         /// </summary>
@@ -16,11 +18,16 @@ namespace Bynder.Api.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Values from bynder are always represented as array 
+        /// Values from bynder are always represented as array
         /// </summary>
         public List<string> Values { get; set; }
 
-        public Metaproperty() {}
+        #endregion Properties
+
+        #region Constructors
+
+        public Metaproperty()
+        { }
 
         [Obsolete("Use an Object Initializer instead")]
         public Metaproperty(string id, string value)
@@ -28,5 +35,7 @@ namespace Bynder.Api.Model
             Id = id;
             Values = new List<string> { value };
         }
+
+        #endregion Constructors
     }
 }

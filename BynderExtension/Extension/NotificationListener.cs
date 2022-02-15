@@ -1,18 +1,29 @@
 ﻿using inRiver.Remoting.Extension.Interface;
+using inRiver.Remoting.Log;
 using System;
 
 namespace Bynder.Extension
 {
+    using Bynder.Enums;
     using Workers;
 
     public class NotificationListener : Extension, IInboundDataExtension
     {
+        #region Methods
+
         /// <summary>
         /// called on POST
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
         public string Add(string value) => Update(value);
+
+        /// <summary>
+        /// called on DELETE - no implementation
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public string Delete(string value) => string.Empty;
 
         /// <summary>
         /// called on PUT/POST
@@ -25,7 +36,9 @@ namespace Bynder.Extension
 
             try
             {
-                Context.Log(inRiver.Remoting.Log.LogLevel.Verbose, "notification: " + value);
+                // log the incomining notification
+                Context.Log(LogLevel.Verbose, $"Notification: {value}");
+
                 // first, handle the notification
                 var notificationWorker = Container.GetInstance<NotificationWorker>();
                 var notificationResult = notificationWorker.Execute(value);
@@ -34,9 +47,19 @@ namespace Bynder.Extension
                 // if the outcome of the notification contains a media Id, we need to start handling the asset
                 if (!string.IsNullOrEmpty(notificationResult.MediaId))
                 {
-                    var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
-                    var updaterResult = assetWorker.Execute(notificationResult.MediaId, notificationResult.OnlyMetadataChanged);
-                    resultMessages.AddRange(updaterResult.Messages);
+                    WorkerResult workerResult;
+                    if (notificationResult.NotificationType == NotificationType.IsDeleted)
+                    {
+                        var assetDeletedWorker = Container.GetInstance<AssetDeletedWorker>();
+                        workerResult = assetDeletedWorker.Execute(notificationResult.MediaId);
+                    }
+                    else
+                    {
+                        var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
+                        workerResult = assetWorker.Execute(notificationResult.MediaId, notificationResult.NotificationType);
+                    }
+
+                    resultMessages.AddRange(workerResult.Messages);
                 }
 
                 // return the outcome to the caller
@@ -44,19 +67,13 @@ namespace Bynder.Extension
             }
             catch (Exception ex)
             {
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
-            Context.Log(inRiver.Remoting.Log.LogLevel.Verbose, result);
+            Context.Log(LogLevel.Verbose, result);
 
             return result;
         }
 
-        /// <summary>
-        /// called on DELETE - no implementation
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public string Delete(string value) => string.Empty;
-
+        #endregion Methods
     }
 }

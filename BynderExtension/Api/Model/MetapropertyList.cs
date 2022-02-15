@@ -5,8 +5,36 @@ namespace Bynder.Api.Model
 {
     public class MetapropertyList : List<Metaproperty>
     {
-        public MetapropertyList(IEnumerable<Metaproperty> metaproperties) : base(metaproperties) { }
-        public MetapropertyList() { }
+        #region Constructors
+
+        public MetapropertyList(IEnumerable<Metaproperty> metaproperties) : base(metaproperties)
+        {
+        }
+
+        public MetapropertyList()
+        { }
+
+        #endregion Constructors
+
+        #region Methods
+
+        public static MetapropertyList CreateFromDictionary(Dictionary<string, List<string>> dictionary)
+        {
+            var metaproperyList = new MetapropertyList();
+            if (dictionary == null) return metaproperyList;
+
+            foreach (var element in dictionary)
+            {
+                metaproperyList.Add(new Metaproperty { Id = element.Key, Values = element.Value });
+            }
+
+            return metaproperyList;
+        }
+
+        public string GetPostData()
+        {
+            return string.Join($"\n", GetPostKeyValuePairs().Select(kv => $"{kv.Key}={kv.Value}"));
+        }
 
         public List<KeyValuePair<string, string>> GetPostKeyValuePairs()
         {
@@ -18,22 +46,6 @@ namespace Bynder.Api.Model
             return pairs;
         }
 
-        public string GetPostData()
-        {
-            return string.Join($"\n", GetPostKeyValuePairs().Select(kv => $"{kv.Key}={kv.Value}"));
-        }
-
-        public static MetapropertyList CreateFromDictionary(Dictionary<string, List<string>> dictionary)
-        {
-            var metaproperyList = new MetapropertyList();
-            if (dictionary == null) return metaproperyList;
-
-            foreach (var element in dictionary)
-            {
-                metaproperyList.Add(new Metaproperty{ Id = element.Key, Values = element.Value  });
-            }
-
-            return metaproperyList;
-        }
+        #endregion Methods
     }
 }

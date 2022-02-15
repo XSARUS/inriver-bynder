@@ -1,14 +1,21 @@
-﻿using System.Linq;
-using Bynder.Names;
+﻿using Bynder.Names;
 using Bynder.Utils.InRiver;
 using Bynder.Workers;
 using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Objects;
+using System.Linq;
 
 namespace Bynder.Extension
 {
     public class Worker : Extension, IEntityListener, ILinkListener
     {
+        #region Methods
+
+        public void EntityCommentAdded(int entityId, int commentId)
+        {
+            // Not implemented
+        }
+
         /// <summary>
         /// when a resource entity is created in inRiver, we should process it as it is possible originated from bynder
         /// </summary>
@@ -28,6 +35,51 @@ namespace Bynder.Extension
             {
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
             }
+        }
+
+        public void EntityDeleted(Entity deletedEntity)
+        {
+            try
+            {
+                foreach (var entityId in deletedEntity.OutboundLinks
+                    .Where(l => l.Target.EntityType.Id.Equals(EntityTypeIds.Resource))
+                    .Select(l => l.Target.Id))
+                {
+                    if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
+                        EntityTypeIds.Resource, out var entity)) return;
+
+                    Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+            }
+        }
+
+        public void EntityFieldSetUpdated(int entityId, string fieldSetId)
+        {
+            // Not implemented
+        }
+
+        public void EntityLocked(int entityId)
+        {
+            // Not implemented
+        }
+
+        public void EntitySpecificationFieldAdded(int entityId, string fieldName)
+        {
+            // Not implemented
+        }
+
+        public void EntitySpecificationFieldUpdated(int entityId, string fieldName)
+        {
+            // Not implemented
+        }
+
+        public void EntityUnlocked(int entityId)
+        {
+            // Not implemented
         }
 
         /// <summary>
@@ -58,6 +110,11 @@ namespace Bynder.Extension
             }
         }
 
+        public void LinkActivated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
+        {
+            // Not implemented
+        }
+
         /// <summary>
         /// if a link is created with resource as target, we should check if we inform bynder
         /// </summary>
@@ -81,18 +138,6 @@ namespace Bynder.Extension
             }
         }
 
-        public void LinkUpdated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
-        {
-            try
-            {
-                LinkCreated(linkId, sourceId, targetId, linkTypeId, linkEntityId);
-            }
-            catch (System.Exception ex)
-            {
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
-            }
-        }
-
         public void LinkDeleted(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
         {
             try
@@ -105,19 +150,16 @@ namespace Bynder.Extension
             }
         }
 
-        public void EntityDeleted(Entity deletedEntity)
+        public void LinkInactivated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
+        {
+            // Not implemented
+        }
+
+        public void LinkUpdated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
         {
             try
             {
-                foreach (var entityId in deletedEntity.OutboundLinks
-                    .Where(l => l.Target.EntityType.Id.Equals(EntityTypeIds.Resource))
-                    .Select(l => l.Target.Id))
-                {
-                    if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
-                        EntityTypeIds.Resource, out var entity)) return;
-
-                    Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
-                }
+                LinkCreated(linkId, sourceId, targetId, linkTypeId, linkEntityId);
             }
             catch (System.Exception ex)
             {
@@ -125,48 +167,6 @@ namespace Bynder.Extension
             }
         }
 
-        #region Not Implemented IEntityListener, ILinkListener Members
-        public void LinkActivated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
-        {
-            // Not implemented
-        }
-
-        public void LinkInactivated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
-        {
-            // Not implemented
-        }
-
-
-        public void EntityLocked(int entityId)
-        {
-            // Not implemented
-        }
-
-        public void EntityUnlocked(int entityId)
-        {
-            // Not implemented
-        }
-
-        public void EntityFieldSetUpdated(int entityId, string fieldSetId)
-        {
-            // Not implemented
-        }
-
-        public void EntityCommentAdded(int entityId, int commentId)
-        {
-            // Not implemented
-        }
-
-        public void EntitySpecificationFieldAdded(int entityId, string fieldName)
-        {
-            // Not implemented
-        }
-
-        public void EntitySpecificationFieldUpdated(int entityId, string fieldName)
-        {
-            // Not implemented
-        }
-        #endregion
-
+        #endregion Methods
     }
 }

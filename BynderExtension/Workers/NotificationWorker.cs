@@ -1,25 +1,31 @@
-﻿using System;
-using Amazon.SimpleNotificationService.Util;
+﻿using Amazon.SimpleNotificationService.Util;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 
 namespace Bynder.Workers
 {
+    using Enums;
+
     public class NotificationWorker : IWorker
     {
-        private readonly string[] _allowedSubjects = {
-                    "asset_bank.media.updated",
-                    "asset_bank.media.uploaded",
-                    "asset_bank.media.pre_archived",
-                    "asset_bank.media.upload",
-                    "asset_bank.media.create",
-                    "asset_bank.media.meta_updated"
-                };
+        #region Fields
 
-        public class Result : WorkerResult
+        private readonly Dictionary<string, NotificationType> _notificationMapping = new Dictionary<string, NotificationType>
         {
-            public string MediaId { get; set; }
-            public bool OnlyMetadataChanged { get; set; }
-        }
+            { "asset_bank.media.updated", NotificationType.DataUpsert },
+            { "asset_bank.media.uploaded", NotificationType.DataUpsert },
+            { "asset_bank.media.pre_archived", NotificationType.DataUpsert },
+            { "asset_bank.media.upload", NotificationType.DataUpsert },
+            { "asset_bank.media.create", NotificationType.DataUpsert },
+            { "asset_bank.media.meta_updated", NotificationType.MetadataUpdated },
+            { "asset_bank.media.deleted", NotificationType.IsDeleted },
+            { "asset_bank.media.archived", NotificationType.IsArchived },
+        };
+
+        #endregion Fields
+
+        #region Methods
 
         public Result Execute(string requestBody)
         {
@@ -40,13 +46,13 @@ namespace Bynder.Workers
             // check if notification & notification topic is expected
             if (snsMessage.IsNotificationType)
             {
-                if (!Array.Exists(_allowedSubjects, s => s.Equals(snsMessage.Subject)))
+                if (!_notificationMapping.ContainsKey(snsMessage.Subject))
                 {
                     result.Messages.Add($"AWS SNS - Not acting on subject {snsMessage.Subject}");
                     return result;
                 }
 
-                result.OnlyMetadataChanged = snsMessage.Subject.Equals("asset_bank.media.meta_updated");
+                result.NotificationType = _notificationMapping[snsMessage.Subject];
 
                 dynamic innerMessage = JsonConvert.DeserializeObject(snsMessage.MessageText);
                 if (!string.IsNullOrEmpty(innerMessage?.media_id?.ToString()))
@@ -60,6 +66,21 @@ namespace Bynder.Workers
 
             return result;
         }
-    }
 
+        #endregion Methods
+
+        #region Classes
+
+        public class Result : WorkerResult
+        {
+            #region Properties
+
+            public string MediaId { get; set; }
+            public NotificationType NotificationType { get; set; }
+
+            #endregion Properties
+        }
+
+        #endregion Classes
+    }
 }

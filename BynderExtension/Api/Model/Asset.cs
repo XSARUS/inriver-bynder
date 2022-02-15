@@ -25,7 +25,6 @@ namespace Bynder.Api.Model
     [JsonConverter(typeof(AssetJsonConverter))]
     public class Asset
     {
-
         #region Fields
 
         private const string Original = "original";
@@ -57,6 +56,7 @@ namespace Bynder.Api.Model
 
         public DateTime DateCreated { get; set; }
         public DateTime DateModified { get; set; }
+
         /// <summary>
         /// Publication datetime. ISO8601 format: yyyy-mm-ddThh:mm:ssZ.
         /// </summary>
@@ -70,12 +70,14 @@ namespace Bynder.Api.Model
         public List<string> Extension { get; set; }
         public long FileSize { get; set; }
         public int Height { get; set; }
+
         /// <summary>
         /// Asset id, will return the asset for that id.
         /// </summary>
         public string Id { get; set; }
 
         public string IdHash { get; set; }
+
         /// <summary>
         /// Indicating the public state of the asset. Warning irreversible, once changed to true it cannot be changed back.
         /// </summary>
@@ -98,8 +100,8 @@ namespace Bynder.Api.Model
         public List<MediaItem> MediaItems { get; set; }
 
         /// <summary>
-        /// Dictionary with (metaproperty) options to set on the asset. 
-        /// Send fields as metaproperty.METAPROPERY_ID with a string of all its (metaproperty) options comma-separated. 
+        /// Dictionary with (metaproperty) options to set on the asset.
+        /// Send fields as metaproperty.METAPROPERY_ID with a string of all its (metaproperty) options comma-separated.
         /// Note that the list of (metaproperty) options should include all the (metaproperty) options available in the lower hierarchy;
         /// meaning it should include the (metaproperty) options of the (metaproperty) options etc.
         /// </summary>
@@ -111,6 +113,7 @@ namespace Bynder.Api.Model
         public string Name { get; set; }
 
         public string Orientation { get; set; }
+
         /// <summary>
         /// Comma-separated tags. Tags will be appended to current tags list. If the tag doesn't exist it will be created.
         /// </summary>
@@ -118,6 +121,7 @@ namespace Bynder.Api.Model
 
         public string Type { get; set; }
         public string UserCreated { get; set; }
+
         /// <summary>
         /// Watermark datetime. ISO8601 format: yyyy-mm-ddThh:mm:ssZ.
         /// Not received in get, only used in POST
@@ -157,6 +161,5 @@ namespace Bynder.Api.Model
         }
 
         #endregion Methods
-
     }
 }

@@ -5,6 +5,8 @@ namespace Bynder.Utils.InRiver
 {
     public static class DataServiceExtensions
     {
+        #region Methods
+
         /// <summary>
         /// check if link already exists, otherwise create and return it
         /// if link already exists, null will be the answer
@@ -40,6 +42,20 @@ namespace Bynder.Utils.InRiver
         }
 
         /// <summary>
+        /// loads the entity with the required loadlevel
+        /// </summary>
+        /// <param name="dataService"></param>
+        /// <param name="entity"></param>
+        /// <param name="loadLevel"></param>
+        /// <returns></returns>
+        public static Entity EntityLoadLevel(this IDataService dataService, Entity entity, LoadLevel loadLevel)
+        {
+            return entity.LoadLevel < loadLevel
+                ? dataService.GetEntity(entity.Id, loadLevel)
+                : entity;
+        }
+
+        /// <summary>
         /// try get entity from repository but only if type matches
         /// </summary>
         /// <param name="dataService"></param>
@@ -55,18 +71,6 @@ namespace Bynder.Utils.InRiver
             return entity != null && entity.EntityType.Id.Equals(entityTypeId);
         }
 
-        /// <summary>
-        /// loads the entity with the required loadlevel
-        /// </summary>
-        /// <param name="dataService"></param>
-        /// <param name="entity"></param>
-        /// <param name="loadLevel"></param>
-        /// <returns></returns>
-        public static Entity EntityLoadLevel(this IDataService dataService, Entity entity, LoadLevel loadLevel)
-        {
-            return entity.LoadLevel < loadLevel
-                ? dataService.GetEntity(entity.Id, loadLevel)
-                : entity;
-        }
+        #endregion Methods
     }
 }

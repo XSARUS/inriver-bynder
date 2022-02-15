@@ -19,12 +19,15 @@ namespace Bynder.Utils.Extensions
             {
                 case TypeCode.Int32:
                     return (T)input.ToIEnumerable<string>().Select(int.Parse);
+
                 case TypeCode.String:
                     return (T)input.ToIEnumerable<string>().Select(x => x);
+
                 default:
                     return default(T);
             }
         }
+
         #endregion Methods
     }
 }

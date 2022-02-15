@@ -4,10 +4,13 @@ using inRiver.Remoting.Log;
 namespace Bynder.Extension
 {
     using Api;
+    using Enums;
     using Workers;
 
     public class AssetLoader : Extension, IScheduledExtension
     {
+        #region Methods
+
         /// <summary>
         /// Get a list of all assetIds from Bynder using the configured filter Query
         /// which will be executed against api/v4/media/?-----
@@ -31,7 +34,7 @@ namespace Bynder.Extension
                 var assetCollection = bynderClient.GetAssetCollection(Context.Settings[Config.Settings.InitialAssetLoadUrlQuery]);
                 Context.Logger.Log(LogLevel.Information, $"Start processing {assetCollection.GetTotal()} assets.");
 
-                assetCollection.Media.ForEach(a => worker.Execute(a.Id, false));
+                assetCollection.Media.ForEach(a => worker.Execute(a.Id, NotificationType.DataUpsert));
                 counter += assetCollection.Media.Count;
                 while (!assetCollection.IsLastPage())
                 {
@@ -39,7 +42,7 @@ namespace Bynder.Extension
                     assetCollection = bynderClient.GetAssetCollection(
                         Context.Settings[Config.Settings.InitialAssetLoadUrlQuery],
                         assetCollection.GetNextPage());
-                    assetCollection.Media.ForEach(a => worker.Execute(a.Id, false));
+                    assetCollection.Media.ForEach(a => worker.Execute(a.Id, NotificationType.DataUpsert));
                     counter += assetCollection.Media.Count;
                     Context.Logger.Log(LogLevel.Information, $"Processed {counter} assets.");
                 }
@@ -50,5 +53,7 @@ namespace Bynder.Extension
                 Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
         }
+
+        #endregion Methods
     }
 }

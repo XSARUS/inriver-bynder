@@ -2,11 +2,17 @@
 
 namespace Bynder.Workers
 {
-    class CombinedValidationWorker : IWorker
+    internal class CombinedValidationWorker : IWorker
     {
-        private readonly ModelValidationWorker _modelValidationWorker;
-        private readonly BynderSettingsValidationWorker _bynderSettingsValidationWorker;
+        #region Fields
+
         private readonly IBynderClient _bynderClient;
+        private readonly BynderSettingsValidationWorker _bynderSettingsValidationWorker;
+        private readonly ModelValidationWorker _modelValidationWorker;
+
+        #endregion Fields
+
+        #region Constructors
 
         public CombinedValidationWorker(
             ModelValidationWorker modelValidationWorker,
@@ -17,6 +23,10 @@ namespace Bynder.Workers
             _bynderSettingsValidationWorker = bynderSettingsValidationWorker;
             _bynderClient = bynderClient;
         }
+
+        #endregion Constructors
+
+        #region Methods
 
         public WorkerResult Execute()
         {
@@ -31,7 +41,8 @@ namespace Bynder.Workers
             result.Messages.Add($"Got access to account '{account?.Name}'");
 
             return result;
-
         }
+
+        #endregion Methods
     }
 }

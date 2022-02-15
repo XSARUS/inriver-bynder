@@ -6,6 +6,8 @@ namespace BynderTest
     [TestClass]
     public class ListenerTest : TestBase
     {
+        #region Methods
+
         [TestMethod]
         public void TestAwsNotification()
         {
@@ -28,7 +30,7 @@ namespace BynderTest
                   ""SigningCertURL"" : ""https://sns.us-west-2.amazonaws.com/SimpleNotificationService-f3ecfb7224c7233fe7bb5f59f96de52f.pem"",
                   ""UnsubscribeURL"" : ""https://sns.us-west-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-west-2:123456789012:MyTopic:2bcfbf39-05c3-41de-beaa-fcfcc21c8f55""
                 } ");
-            
+
             Logger.Log(result);
             Assert.AreNotEqual(string.Empty, result, "Got no result");
         }
@@ -47,5 +49,6 @@ namespace BynderTest
             Assert.AreNotEqual(string.Empty, result, "Got no result");
         }
 
+        #endregion Methods
     }
 }
