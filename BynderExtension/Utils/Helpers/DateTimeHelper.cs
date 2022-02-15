@@ -2,6 +2,8 @@
 
 namespace Bynder.Utils.Helpers
 {
+    using Models;
+
     public static class DateTimeHelper
     {
         #region Methods
@@ -17,6 +19,17 @@ namespace Bynder.Utils.Helpers
         {
             return dstEnabled ? GetDateTimeForTimeZone(utc, timeZone) :
                                          GetNonDstDateTimeForTimeZone(utc, timeZone);
+        }
+
+        /// <summary>
+        /// Returns UTC converted to TimeZone
+        /// </summary>
+        /// <param name="utc"></param>
+        /// <param name="dateTimeSettings">model class which holds the settings for local timezone</param>
+        /// <returns></returns>
+        public static DateTime GetDateTimeForTimeZone(DateTime utc, DateTimeSettings dateTimeSettings)
+        {
+            return GetDateTimeForTimeZone(utc, dateTimeSettings.LocalTimeZone, dateTimeSettings.LocalDstEnabled);
         }
 
         /// <summary>
@@ -36,6 +49,7 @@ namespace Bynder.Utils.Helpers
         /// Gets timestamp / datetime of now
         /// utc or local
         /// local is converted to given timezone
+        /// If timezone is filled then converts it. Otherwise it returns DateTime.Now for the timezone of the server.
         /// </summary>
         /// <param name="dateTimeKind">only local and utc are supported!</param>
         /// <param name="timeZoneId">only used for local conversion</param>
@@ -43,17 +57,27 @@ namespace Bynder.Utils.Helpers
         /// <returns></returns>
         public static DateTime GetTimestamp(DateTimeKind dateTimeKind, string timeZoneId = "W. Europe Standard Time", bool dstEnabled = true)
         {
-            switch (dateTimeKind)
+            if (string.IsNullOrWhiteSpace(timeZoneId))
             {
-                case DateTimeKind.Local:
-                    return GetLocalTimeStampForTimezone(timeZoneId, dstEnabled);
-
-                case DateTimeKind.Utc:
-                    return DateTime.UtcNow;
-
-                default:
-                    throw new NotSupportedException($"DateTimeKind '{dateTimeKind}' is not supported.");
+                return GetTimestamp(dateTimeKind, timeZone: null, dstEnabled);
             }
+            else
+            {
+                TimeZoneInfo zone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                return GetTimestamp(dateTimeKind, zone, dstEnabled);
+            }
+        }
+
+        /// <summary>
+        /// Gets timestamp / datetime of now
+        /// utc or local
+        /// local is converted to given timezone
+        /// </summary>
+        /// <param name="dateTimeSettings">model class which holds the settings needed for a timestamp</param>
+        /// <returns></returns>
+        public static DateTime GetTimestamp(DateTimeSettings dateTimeSettings)
+        {
+            return GetTimestamp(dateTimeSettings.DateTimeKind, dateTimeSettings.LocalTimeZone, dateTimeSettings.LocalDstEnabled);
         }
 
         /// <summary>
@@ -89,22 +113,6 @@ namespace Bynder.Utils.Helpers
         private static DateTime GetDateTimeForTimeZone(DateTime utc, TimeZoneInfo timeZone)
         {
             return TimeZoneInfo.ConvertTimeFromUtc(utc, timeZone);
-        }
-
-        /// <summary>
-        /// If timezone is filled then converts it. Otherwise it returns DateTime.Now for the timezone of the server.
-        /// Converts the start time from UTC to given TimeZone
-        /// Uses Daylight Saving Time if required
-        /// </summary>
-        /// <param name="timeZoneId"></param>
-        /// <param name="dstEnabled"></param>
-        /// <returns></returns>
-        private static DateTime GetLocalTimeStampForTimezone(string timeZoneId, bool dstEnabled)
-        {
-            if (string.IsNullOrWhiteSpace(timeZoneId)) return DateTime.Now;
-
-            TimeZoneInfo zone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-            return GetLocalTimeStampForTimezone(zone, dstEnabled);
         }
 
         /// <summary>

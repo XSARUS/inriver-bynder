@@ -428,6 +428,16 @@ namespace Bynder.Workers
             return new Dictionary<string, string>();
         }
 
+        private DateTimeSettings GetDateTimeSettings()
+        {
+            if (_inRiverContext.Settings.ContainsKey(Settings.TimestampSettings))
+            {
+                return JsonConvert.DeserializeObject<DateTimeSettings>(_inRiverContext.Settings[Settings.TimestampSettings]);
+            }
+            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.TimestampSettings}");
+            return null;
+        }
+
         /// <summary>
         /// Optional setting. Default is an empty list.
         /// </summary>
@@ -543,16 +553,6 @@ namespace Bynder.Workers
             }
         }
 
-        private TimestampSettings GetTimestampSettings()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.TimestampSettings))
-            {
-                return JsonConvert.DeserializeObject<TimestampSettings>(_inRiverContext.Settings[Settings.TimestampSettings]);
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.TimestampSettings}");
-            return null;
-        }
-
         private void LogMessageIfMultipleValuesForSingleField(WorkerResult result, string propertyName, Field field, List<string> values, string firstVal, string mergedVal)
         {
             if (values != null && values.Count > 1)
@@ -659,7 +659,7 @@ namespace Bynder.Workers
             }
 
             var fieldsToUpdate = new List<Field>();
-            var timestampSettings = GetTimestampSettings();
+            var dateTimeSettings = GetDateTimeSettings();
 
             foreach (var fvc in fieldValueCombinations)
             {
@@ -678,13 +678,13 @@ namespace Bynder.Workers
 
                 if (fvc.SetTimestamp)
                 {
-                    if (timestampSettings == null)
+                    if (dateTimeSettings == null)
                     {
                         _inRiverContext.Log(LogLevel.Verbose, $"Field value combination found with {nameof(FieldValueCombination.SetTimestamp)} on true, but the setting '{Settings.TimestampSettings}' is empty!");
                         continue;
                     }
 
-                    field.Data = DateTimeHelper.GetTimestamp(timestampSettings.TimstampType, timestampSettings.LocalTimeZone, timestampSettings.LocalDstEnabled);
+                    field.Data = DateTimeHelper.GetTimestamp(dateTimeSettings);
                 }
                 else
                 {

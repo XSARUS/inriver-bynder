@@ -81,7 +81,7 @@
     <Compile Include="Extension\Uploader.cs" />
     <Compile Include="Models\FieldValueCombination.cs" />
     <Compile Include="Models\ImportCondition.cs" />
-    <Compile Include="Models\TimestampSettings.cs" />
+    <Compile Include="Models\DateTimeSettings.cs" />
     <Compile Include="Utils\Extensions\CollectionExtensions.cs" />
     <Compile Include="Utils\Extensions\StringExtensions.cs" />
     <Compile Include="Utils\Extensions\StringToCollectionExtensions.cs" />
