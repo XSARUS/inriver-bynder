@@ -117,11 +117,21 @@ namespace Bynder.Workers
                     // check if configured fieldtype is on one of the inbound entities
                     foreach (var inboundLink in inboundLinks)
                     {
-                        var fieldValue = _inRiverContext.ExtensionManager.DataService.GetFieldValue(inboundLink.Source.Id, metaProperty.Value);
-                        if (fieldValue != null)
+                        Field field = _inRiverContext.ExtensionManager.DataService.GetField(inboundLink.Source.Id, metaProperty.Value);
+                        if (!string.IsNullOrWhiteSpace(field?.Data?.ToString()))
                         {
-                            // if found, add to list
-                            values.Add(fieldValue.ToString());
+                            if (field.FieldType.DataType.Equals(DataType.CVL) && field.FieldType.Multivalue)
+                            {
+                                string[] keys = field.Data.ToString().Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                                if (keys.Any())
+                                {
+                                    values.AddRange(keys);
+                                }
+                            }
+                            else
+                            {
+                                values.Add(field.Data.ToString());
+                            }
                         }
                     }
 
