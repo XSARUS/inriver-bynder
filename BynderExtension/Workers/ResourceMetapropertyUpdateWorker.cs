@@ -89,11 +89,15 @@ namespace Bynder.Workers
             {
                 // check if configured fieldtype is on entity
                 var field = resourceEntity.GetField(metaProperty.Value);
-                if (field != null)
+                var values = GetValuesForField(field);
+
+                if (values.Count == 0)
                 {
-                    _inRiverContext.Logger.Log(LogLevel.Debug, $"Saving value for metaproperty {metaProperty.Key} ({metaProperty.Value}) (R)");
-                    newMetapropertyValues.Add(metaProperty.Key, new List<string> { (string)field.Data ?? "" });
+                    continue;
                 }
+
+                _inRiverContext.Logger.Log(LogLevel.Debug, $"Saving value for metaproperty {metaProperty.Key} ({metaProperty.Value}) (R)");
+                newMetapropertyValues.Add(metaProperty.Key, values);
             }
         }
 
@@ -103,42 +107,61 @@ namespace Bynder.Workers
                 _inRiverContext.ExtensionManager.DataService.GetInboundLinksForEntity(resourceEntity.Id);
 
             // only process when inbound links are found
-            if (inboundLinks.Count > 0)
+            if (inboundLinks.Count == 0)
             {
-                // iterate over configured metaproperties
-                foreach (var metaProperty in configuredMetaPropertyMap)
+                return;
+            }
+
+            // skip resource metaproperties
+            var nonResourceMetaProperties = configuredMetaPropertyMap.Where(x => !x.Value.StartsWith(EntityTypeIds.Resource));
+
+            // iterate over configured metaproperties
+            foreach (var metaProperty in nonResourceMetaProperties)
+            {
+                // save metaproperty values in a list so we can combine multiple occuneces to a single string
+                var values = new List<string>();
+
+                // check if configured fieldtype is on one of the inbound entities
+                foreach (var inboundLink in inboundLinks)
                 {
-                    // skip resource metaproperties
-                    if (metaProperty.Value.StartsWith(EntityTypeIds.Resource)) continue;
-
-                    // save metaproperty values in a list so we can combine multiple occuneces to a single string
-                    var values = new List<string>();
-
-                    // check if configured fieldtype is on one of the inbound entities
-                    foreach (var inboundLink in inboundLinks)
+                    Field field = _inRiverContext.ExtensionManager.DataService.GetField(inboundLink.Source.Id, metaProperty.Value);
+                    var fieldValues = GetValuesForField(field);
+                    if (values.Count == 0)
                     {
-                        Field field = _inRiverContext.ExtensionManager.DataService.GetField(inboundLink.Source.Id, metaProperty.Value);
-                        if (!string.IsNullOrWhiteSpace(field?.Data?.ToString()))
-                        {
-                            if (field.FieldType.DataType.Equals(DataType.CVL) && field.FieldType.Multivalue)
-                            {
-                                string[] keys = field.Data.ToString().Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-                                if (keys.Any())
-                                {
-                                    values.AddRange(keys);
-                                }
-                            }
-                            else
-                            {
-                                values.Add(field.Data.ToString());
-                            }
-                        }
+                        continue;
                     }
 
-                    _inRiverContext.Logger.Log(LogLevel.Debug, $"Saving value for metaproperty {metaProperty.Key} ({metaProperty.Value}) (L)");
-                    newMetapropertyValues.Add(metaProperty.Key, values);
+                    values.AddRange(fieldValues);
+                }
+
+                _inRiverContext.Logger.Log(LogLevel.Debug, $"Saving value for metaproperty {metaProperty.Key} ({metaProperty.Value}) (L)");
+                newMetapropertyValues.Add(metaProperty.Key, values);
+            }
+        }
+
+        private List<string> GetValuesForField(Field field)
+        {
+            var values = new List<string>();
+
+            if (field == null || string.IsNullOrWhiteSpace(field?.Data?.ToString()))
+            {
+                return values;
+            }
+
+            if (field.FieldType.DataType.Equals(DataType.CVL) && field.FieldType.Multivalue)
+            {
+                string[] keys = field.Data.ToString().Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                if (keys.Any())
+                {
+                    values.AddRange(keys);
                 }
             }
+            else
+            {
+                values.Add(field.Data.ToString());
+            }
+
+            return values;
         }
 
         #endregion Methods

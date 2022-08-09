@@ -9,6 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BynderTest", "BynderTest\By
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionWide", "SolutionWide", "{200E1AD4-F988-41C7-B0F4-0564BD138F60}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
 		build\createzip.ps1 = build\createzip.ps1
 	EndProjectSection
 EndProject

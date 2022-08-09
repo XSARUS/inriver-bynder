@@ -69,6 +69,7 @@ namespace BynderTest
                     "***", "***", "***"), Logger);
 
             Assert.IsNotNull(InRiverContext?.ExtensionManager, "Connection to inRiver failed. Please check the url and credentials within the test initialize method.");
+            InRiverContext.Settings = TestSettings;
         }
 
         #endregion Methods
