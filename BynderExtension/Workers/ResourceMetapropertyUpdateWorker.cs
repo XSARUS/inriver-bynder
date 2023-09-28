@@ -126,11 +126,6 @@ namespace Bynder.Workers
                 {
                     Field field = _inRiverContext.ExtensionManager.DataService.GetField(inboundLink.Source.Id, metaProperty.Value);
                     var fieldValues = GetValuesForField(field);
-                    if (values.Count == 0)
-                    {
-                        continue;
-                    }
-
                     values.AddRange(fieldValues);
                 }
 
