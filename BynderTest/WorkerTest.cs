@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace BynderTest
 {
     [TestClass]
-    public class WorkerTest : TestBaseVogels
+    public class WorkerTest : TestBase
     {
         #region Methods
 
@@ -18,8 +18,8 @@ namespace BynderTest
             var updaterResult = worker.Execute(bynderAssetId, Bynder.Enums.NotificationType.DataUpsert);
         }
 
-        //[Ignore("Add resource entityId here")]
-        [DataTestMethod, DataRow(203127)]
+        [Ignore("Add resource entityId here")]
+        [DataTestMethod, DataRow(123)]
         public void TestEntityCreate(int entityId)
         {
             var worker = new Worker
@@ -27,7 +27,7 @@ namespace BynderTest
                 Context = InRiverContext
             };
             worker.Context.Settings = TestSettings;
-            worker.EntityUpdated(entityId, new string[] { });
+            worker.EntityCreated(entityId);
             Logger.Log("Done!");
         }
 
