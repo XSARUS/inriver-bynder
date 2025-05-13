@@ -1,6 +1,7 @@
 ﻿using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Log;
 using System;
+using System.Threading;
 
 namespace Bynder.Extension
 {
@@ -36,6 +37,7 @@ namespace Bynder.Extension
 
             try
             {
+                Thread.Sleep(15000);
                 // log the incomining notification
                 Context.Log(LogLevel.Verbose, $"Notification: {value}");
 

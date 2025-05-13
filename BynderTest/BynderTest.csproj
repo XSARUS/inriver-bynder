@@ -55,7 +55,6 @@
     <Compile Include="ResourceMetapropertyUpdateWorkerTest.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="ApiTest.cs" />
-    <Compile Include="TestBaseVogels.local.cs" />
     <Compile Include="WorkerTest.cs" />
   </ItemGroup>
   <ItemGroup>
