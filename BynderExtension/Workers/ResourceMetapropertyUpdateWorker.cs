@@ -36,6 +36,11 @@ namespace Bynder.Workers
             // check if entity is resource
             if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
 
+            // parse setting map in dictionary
+            var configuredMetaPropertyMap = GetConfiguredMetaPropertyMap();
+            if (configuredMetaPropertyMap == null) return;
+
+            // get full resource entity (again to also prevent revision errors)
             resourceEntity = _inRiverContext.ExtensionManager.DataService.EntityLoadLevel(resourceEntity, LoadLevel.DataOnly);
 
             // block resourceEntity for bynder update if no BynderId is found on entity
@@ -47,10 +52,6 @@ namespace Bynder.Workers
             string bynderUploadStatus = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState)?.Data;
             if ((string.IsNullOrWhiteSpace(bynderDownloadStatus) && string.IsNullOrWhiteSpace(bynderUploadStatus))
                 || (bynderDownloadStatus != BynderStates.Done && bynderUploadStatus != BynderStates.Done)) return;
-
-            // parse setting map in dictionary
-            var configuredMetaPropertyMap = GetConfiguredMetaPropertyMap();
-            if (configuredMetaPropertyMap == null) return;
 
             // enrich metaproperties (metapropertyId => resourcefieldValue)
             var newMetapropertyValues = new Dictionary<string, List<string>>();

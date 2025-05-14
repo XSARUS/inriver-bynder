@@ -12,6 +12,7 @@
         public const string ResourceFileId = "ResourceFileId";
         public const string ResourceFilename = "ResourceFilename";
         public const string ResourceMimeType = "ResourceMimeType";
+        public const string ResourceType = "ResourceType";
 
         #endregion Fields
     }

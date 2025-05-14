@@ -30,6 +30,11 @@ namespace Bynder.Workers
 
         public void Execute(Entity resourceEntity)
         {
+            // get settings, if missing return, nothing to do
+            var settings = _inRiverContext.Settings;
+            if (!settings.TryGetValue(Config.Settings.InRiverIntegrationId, out var integrationId) ||
+                !settings.TryGetValue(Config.Settings.InRiverEntityUrl, out var inriverEntityUrl)) return;
+
             // get resource entity with fields
             resourceEntity =
                 _inRiverContext.ExtensionManager.DataService.EntityLoadLevel(resourceEntity, LoadLevel.DataOnly);
@@ -37,11 +42,6 @@ namespace Bynder.Workers
 
             // check if empty - nothing to do
             if (string.IsNullOrEmpty(assetId)) return;
-
-            // get settings, if missing return, nothing to do
-            var settings = _inRiverContext.Settings;
-            if (!settings.TryGetValue(Config.Settings.InRiverIntegrationId, out var integrationId) ||
-                !settings.TryGetValue(Config.Settings.InRiverEntityUrl, out var inriverEntityUrl)) return;
 
             string formattedInriverResourceUrl = inriverEntityUrl.Replace("{entityId}", resourceEntity.Id.ToString());
 

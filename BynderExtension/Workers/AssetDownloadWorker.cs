@@ -60,8 +60,7 @@ namespace Bynder.Workers
             }
 
             // check for existing file
-            var resourceFileId = resourceEntity.GetField(FieldTypeIds.ResourceFileId)?.Data;
-            int existingFileId = resourceFileId != null ? (int)resourceFileId : 0;
+            int existingFileId = (int?)resourceEntity.GetField(FieldTypeIds.ResourceFileId)?.Data ?? 0;
 
             // add new asset
             string resourceFileName = (string)resourceEntity.GetField(FieldTypeIds.ResourceFilename)?.Data;
