@@ -37,7 +37,9 @@ namespace Bynder.Extension
 
             try
             {
+                // wait 15 seconds because the export db of bynder does not immediately has the change synced.
                 Thread.Sleep(15000);
+
                 // log the incomining notification
                 Context.Log(LogLevel.Verbose, $"Notification: {value}");
 
