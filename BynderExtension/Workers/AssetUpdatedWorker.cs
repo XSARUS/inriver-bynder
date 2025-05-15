@@ -238,7 +238,14 @@ namespace Bynder.Workers
             resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = asset.Id;
 
             // set filename (only for *new* resource)
-            resourceEntity.GetField(FieldTypeIds.ResourceFilename).Data = $"{asset.Id}_{asset.GetOriginalFileName()}";
+            string filename = asset.GetOriginalFileName();
+            //todo what if the filname is empty?
+            if (ShouldAddAssetIdPrefixToFilename())
+            {
+                filename = $"{asset.Id}_{filename}";
+            }
+
+            resourceEntity.GetField(FieldTypeIds.ResourceFilename).Data = filename;
             return resourceEntity;
         }
 
@@ -396,6 +403,17 @@ namespace Bynder.Workers
             }
             _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured asset property Map");
             return new Dictionary<string, string>();
+        }
+
+        private bool ShouldAddAssetIdPrefixToFilename()
+        {
+            if (_inRiverContext.Settings.TryGetValue(Settings.AddAssetIdPrefixToFilenameOfNewResource, out string setting))
+            {
+                return string.Equals(setting, true.ToString(), StringComparison.InvariantCultureIgnoreCase);
+            }
+
+            // default true for backwards compatiblity
+            return true;
         }
 
         /// <summary>

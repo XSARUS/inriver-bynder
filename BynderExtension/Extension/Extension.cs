@@ -39,6 +39,8 @@ namespace Bynder.Extension
                 settings.Add(Config.Settings.DeleteResourceOnDeleteEvent, false.ToString());
                 settings.Add(Config.Settings.FieldValuesToSetOnArchiveEvent, "");
                 settings.Add(Config.Settings.TimestampSettings, "");
+                settings.Add(Config.Settings.DownloadMediaType, "Original");
+                settings.Add(Config.Settings.AddAssetIdPrefixToFilenameOfNewResource, true.ToString());
                 return settings;
             }
         }

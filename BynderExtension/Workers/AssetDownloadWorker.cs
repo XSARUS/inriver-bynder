@@ -63,8 +63,29 @@ namespace Bynder.Workers
             int existingFileId = (int?)resourceEntity.GetField(FieldTypeIds.ResourceFileId)?.Data ?? 0;
 
             // add new asset
-            string resourceFileName = (string)resourceEntity.GetField(FieldTypeIds.ResourceFilename)?.Data;
-            int newFileId = _inRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(resourceFileName, _bynderClient.GetAssetDownloadLocation(asset.Id).S3_File);
+            string resourceFilename = (string)resourceEntity.GetField(FieldTypeIds.ResourceFilename)?.Data;
+            if (string.IsNullOrWhiteSpace(resourceFilename))
+            {
+                _inRiverContext.Log(LogLevel.Error, $"Field '{FieldTypeIds.ResourceFilename}' is empty");
+
+                // set error state when the asset could not be found
+                bynderDownloadStateField.Data = BynderStates.Error;
+                _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderDownloadStateField });
+                return;
+            }
+
+            string fileUrl = GetFileUrl(asset);
+            if (string.IsNullOrWhiteSpace(fileUrl))
+            {
+                _inRiverContext.Log(LogLevel.Error, "File url is empty");
+
+                // set error state when the asset could not be found
+                bynderDownloadStateField.Data = BynderStates.Error;
+                _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderDownloadStateField });
+                return;
+            }
+
+            int newFileId = _inRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(resourceFilename, fileUrl);
 
             // delete older asset file
             if (existingFileId > 0)
@@ -80,6 +101,30 @@ namespace Bynder.Workers
 
             _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
             _inRiverContext.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
+        }
+
+        private string GetFileUrl(Asset asset)
+        {
+            string downloadMediaType;
+
+            if (!_inRiverContext.Settings.TryGetValue(Config.Settings.DownloadMediaType, out downloadMediaType))
+            {
+                downloadMediaType = "Original";
+            }
+
+            // todo does the case matter?
+            if (downloadMediaType.Equals("Original", System.StringComparison.InvariantCultureIgnoreCase)) 
+            {
+                return _bynderClient.GetAssetDownloadLocation(asset.Id).S3_File;
+            }
+
+            if (asset.Thumbnails.ContainsKey(downloadMediaType))
+            {
+                return asset.Thumbnails[downloadMediaType];
+            }
+
+            //todo do we throw an exception, do we return original and log a warning?
+            throw new KeyNotFoundException($"Download media type (Original, derivative/thumbnail) '{downloadMediaType}' not found!");
         }
 
         #endregion Methods

@@ -60,10 +60,12 @@ Unfortunately you have to configure 4 extensions to make the integration complet
 | BYNDER_BRAND_NAME | Customer Brand Name | Used to set the BrandId in the upload of Assets. Can be found under Brand Management in Bynder or with the API by running the GetAvailableBranches() method on the BynderClient. |
 | LOCALESTRING_LANGUAGES_TO_SET | en-GB, nl-NL | Languages to set on the Entity, when a FieldType in the METAPROPERTY_MAP is of type LocaleString. Values in Bynder are not language specific, so the value on the property will be copied to the configured languages (in the AssetUpdatedWorker).|
 | MULTIVALUE_SEPARATOR | ,  | Separator which will be used to concat multiple values delivered by Bynder into a (locale)string field for metadataproperties. This separator will only be used on string and LocaleString fields, for CVL we concat the values with a semicolon(;), because that's what inRiver expects. |
-| CREATE_MISSING_CVL_KEYS| True | Allow extension to create missing CVL Keys when true.
-| DELETE_RESOURCE_ON_DELETE_EVENT | True | Deletes inRiver resource for asset of incoming event "asset_bank.media.deleted". Default false. |
+| CREATE_MISSING_CVL_KEYS| True | Allow extension to create missing CVL Keys when true. |
+| DELETE_RESOURCE_ON_DELETE_EVENT | True | Deletes inRiver resource for asset of incoming event "asset_bank.media.deleted". Default `false`. |
 | FIELD_VALUES_TO_SET_ON_ARCHIVE_EVENT | [{"fieldTypeId":"ResourceArchived","value": true},{"fieldTypeId":"ResourceArchivedDate","setTimestamp": true}] | Sets the value on the field when resource is archived by receiving event "asset_bank.media.archived". Value may be any datatype except LocaleString. Use setTimestamp in combination with the 'TIMESTAMP_SETTINGS' setting.
 | TIMESTAMP_SETTINGS | {"dateTimeKind": "Utc","localTimeZone": "W. Europe Standard Time","localDstEnabled": true} | Settings to use when setting a timestamp on archive events. DateTimeKind can be 'Utc' or 'Local'. DstEnabled should be true if your timezone uses Daylight Saving Time. Timezone id's can be found here 'http://www.xiirus.net/articles/article-_net-convert-datetime-from-one-timezone-to-another-7e44y.aspx' |
+| DOWNLOAD_MEDIA_TYPE | webimage | The media type you want to use for downloads of the Bynder file to inriver. This could be `Original` or a derivative/thumbnail. Default `Original`  |
+| ADD_ASSET_ID_PREFIX_TO_FILENAME_OF_NEW_RESOURCE | false | Adds prefix `{assetId}_` to the filename to make it more unique. Default `true`  |
 
 Press Test on each connector (in the extensions page) to see if the connector works and your settings are valid
 
