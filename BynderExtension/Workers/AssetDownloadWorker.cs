@@ -109,13 +109,12 @@ namespace Bynder.Workers
 
             if (!_inRiverContext.Settings.TryGetValue(Config.Settings.DownloadMediaType, out downloadMediaType))
             {
-                downloadMediaType = "Original";
+                downloadMediaType = "original";
             }
 
-            // todo does the case matter?
-            if (downloadMediaType.Equals("Original", System.StringComparison.InvariantCultureIgnoreCase)) 
+            if (downloadMediaType.Equals("original")) 
             {
-                return _bynderClient.GetAssetDownloadLocation(asset.Id).S3_File;
+                return _bynderClient.GetAssetDownloadLocation(asset.Id)?.S3_File;
             }
 
             if (asset.Thumbnails.ContainsKey(downloadMediaType))
@@ -123,8 +122,8 @@ namespace Bynder.Workers
                 return asset.Thumbnails[downloadMediaType];
             }
 
-            //todo do we throw an exception, do we return original and log a warning?
-            throw new KeyNotFoundException($"Download media type (Original, derivative/thumbnail) '{downloadMediaType}' not found!");
+            _inRiverContext.Log(LogLevel.Warning, $"Download media type (original or a derivative/thumbnail) '{downloadMediaType}' not found!");
+            return null;
         }
 
         #endregion Methods

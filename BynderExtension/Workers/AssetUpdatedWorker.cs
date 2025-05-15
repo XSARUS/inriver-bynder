@@ -239,7 +239,11 @@ namespace Bynder.Workers
 
             // set filename (only for *new* resource)
             string filename = asset.GetOriginalFileName();
-            //todo what if the filname is empty?
+            if (string.IsNullOrEmpty(filename))
+            {
+                _inRiverContext.Log(LogLevel.Debug, $"Filename for asset {asset.Id} is empty");
+            }
+
             if (ShouldAddAssetIdPrefixToFilename())
             {
                 filename = $"{asset.Id}_{filename}";

@@ -29,7 +29,6 @@ namespace Bynder.Api.Model
 
         #region Fields
 
-        public const string DefaultThumbnailType = "webimage";
         private const string Original = "original";
 
         #endregion Fields
