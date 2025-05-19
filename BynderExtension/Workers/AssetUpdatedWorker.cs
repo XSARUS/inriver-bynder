@@ -418,14 +418,35 @@ namespace Bynder.Workers
         /// Optional setting. Default is an empty dictionary.
         /// </summary>
         /// <returns></returns>
-        private Dictionary<string, string> GetConfiguredMetaPropertyMap()
+        private List<MetaPropertyMap> GetConfiguredMetaPropertyMap()
         {
             if (_inRiverContext.Settings.ContainsKey(Settings.MetapropertyMap))
             {
-                return _inRiverContext.Settings[Settings.MetapropertyMap].ToDictionary<string, string>(',', '=');
+                var settingValue = _inRiverContext.Settings[Settings.MetapropertyMap];
+
+                if (string.IsNullOrEmpty(settingValue))
+                {
+                    return new List<MetaPropertyMap>();
+                }
+
+                settingValue = settingValue.Trim();
+                if (settingValue.StartsWith("[") && settingValue.EndsWith("]"))
+                {
+                    return JsonConvert.DeserializeObject<List<MetaPropertyMap>>(settingValue)
+                        .Where(map => !string.IsNullOrEmpty(map.BynderMetaProperty) && !string.IsNullOrEmpty(map.InriverFieldTypeId))
+                        .ToList();
+                }
+
+                // support old format for backwards compatiblity
+                var mapDict = _inRiverContext.Settings[Settings.MetapropertyMap].ToDictionary<string, string>(',', '=');
+                return mapDict
+                    .Select(x=> new MetaPropertyMap { BynderMetaProperty = x.Key, InriverFieldTypeId = x.Value, IsMultiValue = true })
+                    .Where(map => !string.IsNullOrEmpty(map.BynderMetaProperty) && !string.IsNullOrEmpty(map.InriverFieldTypeId))
+                    .ToList();
             }
+
             _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured metaproperty Map");
-            return new Dictionary<string, string>();
+            return new List<MetaPropertyMap>();
         }
 
         private DateTimeSettings GetDateTimeSettings()
@@ -608,13 +629,25 @@ namespace Bynder.Workers
 
         private void SetMetapropertyData(Entity resourceEntity, Asset asset, WorkerResult result)
         {
+            var metaPropertyMapping = GetConfiguredMetaPropertyMap();
+            if (metaPropertyMapping.Count == 0)
+            {
+                return;
+            }
+
             _inRiverContext.Log(LogLevel.Verbose, $"Setting metaproperties on entity {resourceEntity.Id}");
 
-            var metaPropertyMapping = GetConfiguredMetaPropertyMap();
-            var metaPropertiesToProcess = asset.MetaProperties.Where(property => metaPropertyMapping.ContainsKey(property.Name) && metaPropertyMapping[property.Name] != null);
-            foreach (var property in metaPropertiesToProcess)
+            var matchedProperties = asset.MetaProperties
+            .Join(
+                metaPropertyMapping,
+                property => property.Id,
+                map => map.BynderMetaProperty,
+                (property, map) => new { property, map }
+            );
+
+            foreach (var match in matchedProperties)
             {
-                var fieldTypeId = metaPropertyMapping[property.Name];
+                var fieldTypeId = match.map.InriverFieldTypeId;
                 var field = resourceEntity.GetField(fieldTypeId);
                 if (field == null)
                 {
@@ -623,7 +656,7 @@ namespace Bynder.Workers
                     continue;
                 }
 
-                field.Data = GetParsedValueForField(result, property.Name, property.Values, field);
+                field.Data = GetParsedValueForField(result, match.property.Name, match.property.Values, field);
             }
         }
 
