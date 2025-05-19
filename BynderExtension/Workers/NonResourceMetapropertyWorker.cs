@@ -35,7 +35,7 @@ namespace Bynder.Workers
             if (metapropertyMap.Count == 0) return;
 
             // check if any of the updated fields is in the mapping
-            if (fields.Any(field => metapropertyMap.ContainsValue(field)))
+            if (fields.Any(field => metapropertyMap.Any(map=> Equals(field, map.InriverFieldTypeId))))
             {
                 var resourceIds = _inRiverContext.ExtensionManager.DataService.GetOutboundLinksForEntity(entity.Id)
                     .Where(l => l.LinkType.TargetEntityTypeId.Equals(EntityTypeIds.Resource))
