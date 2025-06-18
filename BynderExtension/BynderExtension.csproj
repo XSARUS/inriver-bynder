@@ -75,6 +75,7 @@
     <Compile Include="Enums\AssetType.cs" />
     <Compile Include="Enums\MatchType.cs" />
     <Compile Include="Enums\NotificationType.cs" />
+    <Compile Include="Enums\ResourceSearchType.cs" />
     <Compile Include="Exceptions\MissingDataException.cs" />
     <Compile Include="Extension\AssetLoader.cs" />
     <Compile Include="Extension\Registry.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="Utils\Extensions\TypeExtensions.cs" />
     <Compile Include="Utils\Generics.cs" />
     <Compile Include="Utils\Helpers\DateTimeHelper.cs" />
+    <Compile Include="Utils\Helpers\EntityHelper.cs" />
     <Compile Include="Utils\Helpers\JsonHelper.cs" />
     <Compile Include="Utils\InRiver\DataServiceExtensions.cs" />
     <Compile Include="Workers\AssetDeletedWorker.cs" />

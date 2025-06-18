@@ -76,10 +76,8 @@ namespace Bynder.Workers
 
             _inRiverContext.Log(LogLevel.Debug, $"Asset {asset.Id} applies to conditions.");
 
-            // find resourceEntity based on bynderAssetId
-            Entity resourceEntity =
-                _inRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeIds.ResourceBynderId, bynderAssetId,
-                    LoadLevel.DataAndLinks);
+            var resourceSearchType = GetResourceSearchType();
+            Entity resourceEntity = EntityHelper.GetResourceByAsset(asset, resourceSearchType, _inRiverContext.ExtensionManager.DataService, LoadLevel.DataAndLinks);
 
             // handle notification logic
             switch (notificationType)
@@ -212,6 +210,9 @@ namespace Bynder.Workers
                 resourceEntity = CreateResourceEntity(asset);
             }
 
+            // always set the asset id
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = asset.Id;
+
             SetAssetProperties(resourceEntity, asset, result);
             SetMetapropertyData(resourceEntity, asset, result);
 
@@ -233,9 +234,6 @@ namespace Bynder.Workers
             Entity resourceEntity;
             EntityType resourceType = _inRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
             resourceEntity = Entity.CreateEntity(resourceType);
-
-            // add asset id to new ResourceEntity
-            resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = asset.Id;
 
             // set filename (only for *new* resource)
             string filename = asset.GetOriginalFileName();
@@ -418,6 +416,17 @@ namespace Bynder.Workers
 
             // default true for backwards compatiblity
             return true;
+        }
+
+        private ResourceSearchType GetResourceSearchType()
+        {
+            if (_inRiverContext.Settings.TryGetValue(Settings.ResourceSearchType, out string setting))
+            {
+                return setting.ToEnum<ResourceSearchType>();
+            }
+
+            // default ResourceSearchType.AssetId for backwards compatiblity
+            return ResourceSearchType.AssetId;
         }
 
         /// <summary>

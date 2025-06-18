@@ -1,4 +1,5 @@
 ﻿using Bynder.Api;
+using Bynder.Enums;
 using Bynder.Workers;
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
@@ -41,6 +42,7 @@ namespace Bynder.Extension
                 settings.Add(Config.Settings.TimestampSettings, "");
                 settings.Add(Config.Settings.DownloadMediaType, "original");
                 settings.Add(Config.Settings.AddAssetIdPrefixToFilenameOfNewResource, true.ToString());
+                settings.Add(Config.Settings.ResourceSearchType, ResourceSearchType.AssetId.ToString());
                 return settings;
             }
         }
