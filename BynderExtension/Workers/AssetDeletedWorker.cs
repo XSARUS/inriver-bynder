@@ -39,7 +39,7 @@ namespace Bynder.Workers
             // only process if we are allowed to delete entities
             if (!GetDeleteResourceOnDeletedEvents()) return result;
 
-            // find resourceEntity based on bynderAssetId
+            // find resourceEntity based on bynderAssetId. We can't retreive the filename anymore so we have to match on bynder id. That is no problem, because it is always set also on update.
             Entity resourceEntity =
                 _inRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeIds.ResourceBynderId, bynderAssetId,
                     LoadLevel.DataAndLinks);

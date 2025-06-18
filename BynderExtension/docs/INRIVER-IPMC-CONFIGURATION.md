@@ -66,6 +66,7 @@ Unfortunately you have to configure 4 extensions to make the integration complet
 | TIMESTAMP_SETTINGS | {"dateTimeKind": "Utc","localTimeZone": "W. Europe Standard Time","localDstEnabled": true} | Settings to use when setting a timestamp on archive events. DateTimeKind can be 'Utc' or 'Local'. DstEnabled should be true if your timezone uses Daylight Saving Time. Timezone id's can be found here 'http://www.xiirus.net/articles/article-_net-convert-datetime-from-one-timezone-to-another-7e44y.aspx' |
 | DOWNLOAD_MEDIA_TYPE | webimage | The media type you want to use for downloads of the Bynder file to inriver. This could be `original` or a derivative/thumbnail. Default `original`  |
 | ADD_ASSET_ID_PREFIX_TO_FILENAME_OF_NEW_RESOURCE | false | Adds prefix `{assetId}_` to the filename to make it more unique. Default `true`  |
+| RESOURCE_SEARCH_TYPE | Filename | Searches the existing Resource in the AssetUpdatedWorker by `AssetId`, `Filename` or `PrefixedFilename`. Default `AssetId`  |
 
 Press Test on each connector (in the extensions page) to see if the connector works and your settings are valid
 

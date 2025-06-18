@@ -6,6 +6,7 @@
         #region Fields
 
         public const string AddAssetIdPrefixToFilenameOfNewResource = "ADD_ASSET_ID_PREFIX_TO_FILENAME_OF_NEW_RESOURCE";
+        public const string ResourceSearchType = "RESOURCE_SEARCH_TYPE";
         public const string AssetPropertyMap = "ASSET_PROPERTY_MAP";
         public const string BynderBrandName = "BYNDER_BRAND_NAME";
         public const string CreateMissingCvlKeys = "CREATE_MISSING_CVL_KEYS";
