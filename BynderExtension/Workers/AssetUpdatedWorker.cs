@@ -742,6 +742,10 @@ namespace Bynder.Workers
         private WorkerResult UpdateMetadata(WorkerResult result, Asset asset, Entity resourceEntity)
         {
             _inRiverContext.Log(LogLevel.Verbose, $"Update metadata only for Resource {resourceEntity.Id}");
+
+            // always set the asset id
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = asset.Id;
+
             SetAssetProperties(resourceEntity, asset, result);
             SetMetapropertyData(resourceEntity, asset, result);
             resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
