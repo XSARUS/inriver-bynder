@@ -212,12 +212,16 @@ namespace Bynder.Workers
 
             // always set the asset id
             resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = asset.Id;
+            // save IdHash for re-creation of public CDN Urls in inRiver
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
+            // status for new and existing ResourceEntity
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState).Data = BynderStates.Todo;
 
             SetAssetProperties(resourceEntity, asset, result);
             SetMetapropertyData(resourceEntity, asset, result);
 
             var filenameData = evaluatorResult.GetResourceDataInFilename();
-            SetResourceFilenameData(resourceEntity, asset, filenameData);
+            SetResourceFilenameData(resourceEntity, filenameData);
 
             var resultString = new StringBuilder();
             resourceEntity = AddOrUpdateEntityInInRiver(resourceEntity, resultString);
@@ -691,19 +695,13 @@ namespace Bynder.Workers
             }
         }
 
-        private void SetResourceFilenameData(Entity resourceEntity, Asset asset, Dictionary<FieldType, string> filenameData)
+        private void SetResourceFilenameData(Entity resourceEntity, Dictionary<FieldType, string> filenameData)
         {
-            // status for new and existing ResourceEntity
-            resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState).Data = BynderStates.Todo;
-
             // resource fields from regular expression created from filename
             foreach (var keyValuePair in filenameData)
             {
                 resourceEntity.GetField(keyValuePair.Key.Id).Data = keyValuePair.Value;
             }
-
-            // save IdHash for re-creation of public CDN Urls in inRiver
-            resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
         }
 
         /// <summary>
@@ -776,8 +774,9 @@ namespace Bynder.Workers
         {
             _inRiverContext.Log(LogLevel.Verbose, $"Update metadata only for Resource {resourceEntity.Id}");
 
-            // always set the asset id
+            // always set the asset id and hash
             resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = asset.Id;
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
 
             SetAssetProperties(resourceEntity, asset, result);
             SetMetapropertyData(resourceEntity, asset, result);
