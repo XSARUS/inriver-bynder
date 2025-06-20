@@ -1,7 +1,6 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -76,7 +75,7 @@ namespace Bynder.Workers
 
             _inRiverContext.Log(LogLevel.Debug, $"Asset {asset.Id} applies to conditions.");
 
-            var resourceSearchType = GetResourceSearchType();
+            var resourceSearchType = SettingHelper.GetResourceSearchType(_inRiverContext.Settings, _inRiverContext.Logger);
             Entity resourceEntity = EntityHelper.GetResourceByAsset(asset, resourceSearchType, _inRiverContext.ExtensionManager.DataService, LoadLevel.DataAndLinks);
 
             // handle notification logic
@@ -188,7 +187,7 @@ namespace Bynder.Workers
         /// <returns></returns>
         private bool AssetAppliesToConditions(Asset asset)
         {
-            var conditions = GetImportConditions();
+            var conditions = SettingHelper.GetImportConditions(_inRiverContext.Settings, _inRiverContext.Logger);
 
             // return true if no conditions found. Conditions are optional.
             if (conditions.Count == 0) return true;
@@ -246,7 +245,7 @@ namespace Bynder.Workers
                 _inRiverContext.Log(LogLevel.Debug, $"Filename for asset {asset.Id} is empty");
             }
 
-            if (ShouldAddAssetIdPrefixToFilename())
+            if (SettingHelper.ShouldAddAssetIdPrefixToFilename(_inRiverContext.Settings, _inRiverContext.Logger))
             {
                 filename = $"{asset.Id}_{filename}";
             }
@@ -298,7 +297,7 @@ namespace Bynder.Workers
                 }
 
                 // create new CVL value when the setting CREATE_MISSING_CVL_KEYS is true
-                if (GetConfiguredCreateMissingCvlKeys())
+                if (SettingHelper.GetConfiguredCreateMissingCvlKeys(_inRiverContext.Settings, _inRiverContext.Logger))
                 {
                     CVLValue newCvlValue = new CVLValue()
                     {
@@ -397,168 +396,15 @@ namespace Bynder.Workers
             }
         }
 
-        /// <summary>
-        /// Optional setting. Default is an empty dictionary
-        /// </summary>
-        /// <returns></returns>
-        private Dictionary<string, string> GetConfiguredAssetPropertyMap()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.AssetPropertyMap))
-            {
-                return _inRiverContext.Settings[Settings.AssetPropertyMap].ToDictionary<string, string>(',', '=');
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured asset property Map");
-            return new Dictionary<string, string>();
-        }
-
-        private bool ShouldAddAssetIdPrefixToFilename()
-        {
-            if (_inRiverContext.Settings.TryGetValue(Settings.AddAssetIdPrefixToFilenameOfNewResource, out string setting))
-            {
-                return string.Equals(setting, true.ToString(), StringComparison.InvariantCultureIgnoreCase);
-            }
-
-            // default true for backwards compatiblity
-            return true;
-        }
-
-        private ResourceSearchType GetResourceSearchType()
-        {
-            if (_inRiverContext.Settings.TryGetValue(Settings.ResourceSearchType, out string setting))
-            {
-                return setting.ToEnum<ResourceSearchType>();
-            }
-
-            // default ResourceSearchType.AssetId for backwards compatiblity
-            return ResourceSearchType.AssetId;
-        }
-
-        /// <summary>
-        /// Optional setting. Default is false.
-        /// </summary>
-        /// <returns></returns>
-        private bool GetConfiguredCreateMissingCvlKeys()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.CreateMissingCvlKeys))
-            {
-                return string.Equals(_inRiverContext.Settings[Settings.CreateMissingCvlKeys], true.ToString(), StringComparison.InvariantCultureIgnoreCase);
-            }
-
-            _inRiverContext.Logger.Log(LogLevel.Error, $"Could not find configuration for '{Settings.CreateMissingCvlKeys}'");
-
-            return false;
-        }
-
-        /// <summary>
-        /// Optional setting. Default is an empty dictionary.
-        /// </summary>
-        /// <returns></returns>
-        private List<MetaPropertyMap> GetConfiguredMetaPropertyMap()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.MetapropertyMap))
-            {
-                var settingValue = _inRiverContext.Settings[Settings.MetapropertyMap];
-
-                if (string.IsNullOrEmpty(settingValue))
-                {
-                    return new List<MetaPropertyMap>();
-                }
-
-                settingValue = settingValue.Trim();
-                if (settingValue.StartsWith("[") && settingValue.EndsWith("]"))
-                {
-                    return JsonConvert.DeserializeObject<List<MetaPropertyMap>>(settingValue)
-                        .Where(map => !string.IsNullOrEmpty(map.BynderMetaProperty) && !string.IsNullOrEmpty(map.InriverFieldTypeId))
-                        .ToList();
-                }
-
-                // support old format for backwards compatiblity
-                var mapDict = _inRiverContext.Settings[Settings.MetapropertyMap].ToDictionary<string, string>(',', '=');
-                return mapDict
-                    .Select(x=> new MetaPropertyMap { BynderMetaProperty = x.Key, InriverFieldTypeId = x.Value, IsMultiValue = true })
-                    .Where(map => !string.IsNullOrEmpty(map.BynderMetaProperty) && !string.IsNullOrEmpty(map.InriverFieldTypeId))
-                    .ToList();
-            }
-
-            _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured metaproperty Map");
-            return new List<MetaPropertyMap>();
-        }
-
-        private DateTimeSettings GetDateTimeSettings()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.TimestampSettings))
-            {
-                return JsonConvert.DeserializeObject<DateTimeSettings>(_inRiverContext.Settings[Settings.TimestampSettings]);
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.TimestampSettings}");
-            return null;
-        }
-
-        /// <summary>
-        /// Optional setting. Default is an empty list.
-        /// </summary>
-        /// <returns></returns>
-        private List<FieldValueCombination> GetFieldValueCombinations()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.FieldValuesToSetOnArchiveEvent))
-            {
-                return JsonConvert.DeserializeObject<List<FieldValueCombination>>(_inRiverContext.Settings[Settings.FieldValuesToSetOnArchiveEvent]);
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.FieldValuesToSetOnArchiveEvent}");
-            return new List<FieldValueCombination>();
-        }
-
-        /// <summary>
-        /// Optional setting. Default is an empty list.
-        /// </summary>
-        /// <returns></returns>
-        private List<ImportCondition> GetImportConditions()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.ImportConditions))
-            {
-                return JsonConvert.DeserializeObject<List<ImportCondition>>(_inRiverContext.Settings[Settings.ImportConditions]);
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ImportConditions}");
-            return new List<ImportCondition>();
-        }
-
-        /// <summary>
-        /// Optional setting. Default is an empty list.
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerable<string> GetLanguagesToSet()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.LocaleStringLanguagesToSet))
-            {
-                return _inRiverContext.Settings[Settings.LocaleStringLanguagesToSet].ConvertTo<IEnumerable<string>>() ?? new List<string>();
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find LocaleString languages to set");
-            return new List<string>();
-        }
-
-        /// <summary>
-        /// Optional setting. Default is an empty string.
-        /// </summary>
-        /// <returns></returns>
-        private string GetMultivalueSeparator()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.MultivalueSeparator))
-            {
-                return _inRiverContext.Settings[Settings.MultivalueSeparator];
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured multivalue separator");
-            return string.Empty;
-        }
-
         private object GetParsedValueForField(WorkerResult result, string propertyName, List<string> values, Field field)
         {
-            var mergedVal = values == null ? null : string.Join(GetMultivalueSeparator(), values);
+            var mergedVal = values == null ? null : string.Join(SettingHelper.GetMultivalueSeparator(_inRiverContext.Settings, _inRiverContext.Logger), values);
             var singleVal = values?.FirstOrDefault();
 
             switch (field.FieldType.DataType.ToLower())
             {
                 case "localestring":
-                    var languagesToSet = GetLanguagesToSet();
+                    var languagesToSet = SettingHelper.GetLanguagesToSet(_inRiverContext.Settings, _inRiverContext.Logger);
                     var ls = (LocaleString)field.Data;
                     if (ls == null)
                     {
@@ -621,7 +467,7 @@ namespace Bynder.Workers
         {
             _inRiverContext.Log(LogLevel.Verbose, $"Setting asset properties on entity {resourceEntity.Id}");
 
-            var propertyMap = GetConfiguredAssetPropertyMap();
+            var propertyMap = SettingHelper.GetConfiguredAssetPropertyMap(_inRiverContext.Settings, _inRiverContext.Logger);
             var assetProperties = asset.GetType().GetProperties();
 
             foreach (var kvp in propertyMap)
@@ -664,9 +510,10 @@ namespace Bynder.Workers
 
         private void SetMetapropertyData(Entity resourceEntity, Asset asset, WorkerResult result)
         {
-            var metaPropertyMapping = GetConfiguredMetaPropertyMap();
+            var metaPropertyMapping = SettingHelper.GetConfiguredMetaPropertyMap(_inRiverContext.Settings, _inRiverContext.Logger);
             if (metaPropertyMapping.Count == 0)
             {
+                _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured metaproperty Map");
                 return;
             }
 
@@ -713,7 +560,7 @@ namespace Bynder.Workers
         /// <returns></returns>
         private WorkerResult SetValuesOnResource(WorkerResult result, string bynderAssetId, Entity resourceEntity)
         {
-            var fieldValueCombinations = GetFieldValueCombinations();
+            var fieldValueCombinations = SettingHelper.GetFieldValueCombinations(_inRiverContext.Settings, _inRiverContext.Logger);
             if (fieldValueCombinations.Count == 0)
             {
                 _inRiverContext.Log(LogLevel.Verbose, $"No fieldvalue combinations found. Not updating resource for archived bynder asset {bynderAssetId}");
@@ -721,7 +568,7 @@ namespace Bynder.Workers
             }
 
             var fieldsToUpdate = new List<Field>();
-            var dateTimeSettings = GetDateTimeSettings();
+            var dateTimeSettings = SettingHelper.GetDateTimeSettings(_inRiverContext.Settings, _inRiverContext.Logger);
 
             foreach (var fvc in fieldValueCombinations)
             {
@@ -780,6 +627,7 @@ namespace Bynder.Workers
 
             SetAssetProperties(resourceEntity, asset, result);
             SetMetapropertyData(resourceEntity, asset, result);
+
             resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
             result.Messages.Add($"Resource {resourceEntity.Id} updated");
             return result;

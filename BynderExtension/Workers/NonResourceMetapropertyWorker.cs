@@ -1,10 +1,12 @@
-﻿using Bynder.Names;
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Objects;
 using System.Linq;
 
 namespace Bynder.Workers
 {
+    using Names;
+    using Utils.Helpers;
+
     public class NonResourceMetapropertyWorker : IWorker
     {
         #region Fields
@@ -31,7 +33,7 @@ namespace Bynder.Workers
             if (entity.EntityType.Id == EntityTypeIds.Resource) return;
 
             // create metaproperty dictionary
-            var metapropertyMap = _resourceMetapropertyUpdateWorker.GetConfiguredMetaPropertyMap();
+            var metapropertyMap = SettingHelper.GetConfiguredMetaPropertyMap(_inRiverContext.Settings, _inRiverContext.Logger);
             if (metapropertyMap.Count == 0) return;
 
             // check if any of the updated fields is in the mapping

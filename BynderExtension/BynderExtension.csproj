@@ -94,6 +94,7 @@
     <Compile Include="Utils\Helpers\DateTimeHelper.cs" />
     <Compile Include="Utils\Helpers\EntityHelper.cs" />
     <Compile Include="Utils\Helpers\JsonHelper.cs" />
+    <Compile Include="Utils\Helpers\SettingHelper.cs" />
     <Compile Include="Utils\InRiver\DataServiceExtensions.cs" />
     <Compile Include="Workers\AssetDeletedWorker.cs" />
     <Compile Include="Workers\AssetDownloadWorker.cs" />

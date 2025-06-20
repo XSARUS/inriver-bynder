@@ -1,18 +1,18 @@
-﻿using Bynder.Api;
-using Bynder.Models;
-using Bynder.Names;
-using Bynder.Utils.Extensions;
-using Bynder.Utils.InRiver;
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Bynder.Workers
 {
+    using Api;
+    using Models;
+    using Names;
+    using Utils.Helpers;
+    using Utils.InRiver;
+
     public class ResourceMetapropertyUpdateWorker : IWorker
     {
 
@@ -41,7 +41,7 @@ namespace Bynder.Workers
             if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
 
             // parse setting map in dictionary
-            var configuredMetaPropertyMap = GetConfiguredMetaPropertyMap();
+            var configuredMetaPropertyMap = SettingHelper.GetConfiguredMetaPropertyMap(_inRiverContext.Settings, _inRiverContext.Logger);
             if (configuredMetaPropertyMap.Count == 0) return;
 
             // get full resource entity (again to also prevent revision errors)
@@ -73,37 +73,6 @@ namespace Bynder.Workers
             {
                 _inRiverContext.Logger.Log(LogLevel.Verbose, $"No metaproperties mapped or found");
             }
-        }
-
-        public List<MetaPropertyMap> GetConfiguredMetaPropertyMap()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Config.Settings.MetapropertyMap))
-            {
-                var settingValue = _inRiverContext.Settings[Config.Settings.MetapropertyMap];
-
-                if (string.IsNullOrEmpty(settingValue))
-                {
-                    return new List<MetaPropertyMap>();
-                }
-
-                settingValue = settingValue.Trim();
-                if (settingValue.StartsWith("[") && settingValue.EndsWith("]"))
-                {
-                    return JsonConvert.DeserializeObject<List<MetaPropertyMap>>(settingValue)
-                        .Where(map => !string.IsNullOrEmpty(map.BynderMetaProperty) && !string.IsNullOrEmpty(map.InriverFieldTypeId))
-                        .ToList();
-                }
-
-                // support old format for backwards compatiblity
-                var mapDict = _inRiverContext.Settings[Config.Settings.MetapropertyMap].ToDictionary<string, string>(',', '=');
-                return mapDict
-                    .Select(x => new MetaPropertyMap { BynderMetaProperty = x.Key, InriverFieldTypeId = x.Value, IsMultiValue = true })
-                    .Where(map => !string.IsNullOrEmpty(map.BynderMetaProperty) && !string.IsNullOrEmpty(map.InriverFieldTypeId))
-                    .ToList();
-            }
-
-            _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured metaproperty Map");
-            return new List<MetaPropertyMap>();
         }
 
         protected static void FilterMetapropertyValues(List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)

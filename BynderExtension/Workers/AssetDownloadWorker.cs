@@ -1,13 +1,15 @@
-﻿using Bynder.Api;
-using Bynder.Api.Model;
-using Bynder.Names;
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using System.Collections.Generic;
 
 namespace Bynder.Workers
 {
+    using Api;
+    using Api.Model;
+    using Names;
+    using Utils.Helpers;
+
     internal class AssetDownloadWorker : IWorker
     {
         #region Fields
@@ -105,12 +107,7 @@ namespace Bynder.Workers
 
         private string GetFileUrl(Asset asset)
         {
-            string downloadMediaType;
-
-            if (!_inRiverContext.Settings.TryGetValue(Config.Settings.DownloadMediaType, out downloadMediaType))
-            {
-                downloadMediaType = "original";
-            }
+            string downloadMediaType = SettingHelper.GetDownloadMediaType(_inRiverContext.Settings, _inRiverContext.Logger);
 
             if (downloadMediaType.Equals("original")) 
             {
