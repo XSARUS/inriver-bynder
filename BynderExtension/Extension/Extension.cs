@@ -35,8 +35,8 @@ namespace Bynder.Extension
                 settings.Add(Config.Settings.BynderBrandName, "");
                 settings.Add(Config.Settings.LocaleStringLanguagesToSet, "");
                 settings.Add(Config.Settings.MultivalueSeparator, ", ");
-                settings.Add(Config.Settings.ImportConditions, "[{\"propertyName\":\"synctoinriver\",\"values\":[\"True\"]}]");
-                settings.Add(Config.Settings.ExportConditions, "[{\"inRiverFieldTypeId\":\"ResourceSyncToBynder\",\"values\":[\"True\"]}]");
+                settings.Add(Config.Settings.ImportConditions, "[{\"propertyName\":\"synctoinriver\",\"values\":[\"True\"], \"matchType\":\"Equal\"}]");
+                settings.Add(Config.Settings.ExportConditions, "[{\"inRiverFieldTypeId\":\"ResourceSyncToBynder\",\"values\":[\"True\"], \"matchType\":\"Equal\"}]");
                 settings.Add(Config.Settings.CreateMissingCvlKeys, true.ToString());
                 settings.Add(Config.Settings.DeleteResourceOnDeleteEvent, false.ToString());
                 settings.Add(Config.Settings.FieldValuesToSetOnArchiveEvent, "");

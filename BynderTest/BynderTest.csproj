@@ -52,6 +52,7 @@
     <Compile Include="ListenerTest.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResourceMetapropertyUpdateWorkerTest.local.cs" />
     <Compile Include="ResourceMetapropertyUpdateWorkerTest.cs" />
     <Compile Include="TestBase.local.cs" />
     <Compile Include="TestBase.cs" />
