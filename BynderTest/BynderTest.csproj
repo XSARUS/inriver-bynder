@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="AssetLoaderTest.cs" />
     <Compile Include="JsonConvertTest.cs" />
+    <Compile Include="ListenerTest.local.cs" />
     <Compile Include="ListenerTest.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
