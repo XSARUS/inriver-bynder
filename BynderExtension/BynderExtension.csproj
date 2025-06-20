@@ -81,7 +81,9 @@
     <Compile Include="Extension\Registry.cs" />
     <Compile Include="Extension\Extension.cs" />
     <Compile Include="Extension\Uploader.cs" />
+    <Compile Include="Models\Condition.cs" />
     <Compile Include="Models\FieldValueCombination.cs" />
+    <Compile Include="Models\ExportCondition.cs" />
     <Compile Include="Models\ImportCondition.cs" />
     <Compile Include="Models\DateTimeSettings.cs" />
     <Compile Include="Models\MetapropertyMap.cs" />
@@ -91,6 +93,7 @@
     <Compile Include="Utils\Extensions\ParseExtensions.cs" />
     <Compile Include="Utils\Extensions\TypeExtensions.cs" />
     <Compile Include="Utils\Generics.cs" />
+    <Compile Include="Utils\Helpers\ConditionHelper.cs" />
     <Compile Include="Utils\Helpers\DateTimeHelper.cs" />
     <Compile Include="Utils\Helpers\EntityHelper.cs" />
     <Compile Include="Utils\Helpers\JsonHelper.cs" />

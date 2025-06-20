@@ -1,10 +1,10 @@
 ﻿namespace Bynder.Models
 {
-    public class ImportCondition : Condition
+    public class ExportCondition : Condition
     {
         #region Properties
 
-        public string PropertyName { get; set; }
+        public string InRiverFieldTypeId { get; set; }
 
         #endregion Properties
     }

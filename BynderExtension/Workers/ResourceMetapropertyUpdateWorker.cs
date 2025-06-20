@@ -57,6 +57,9 @@ namespace Bynder.Workers
             if ((string.IsNullOrWhiteSpace(bynderDownloadStatus) && string.IsNullOrWhiteSpace(bynderUploadStatus))
                 || (bynderDownloadStatus != BynderStates.Done && bynderUploadStatus != BynderStates.Done)) return;
 
+            // check if it may export
+            if (!EntityAppliesToConditions(resourceEntity)) return;
+
             // enrich metaproperties (metapropertyId => resourcefieldValue)
             var newMetapropertyValues = new Dictionary<string, List<string>>();
             AddMetapropertyValuesForEntity(resourceEntity, configuredMetaPropertyMap, newMetapropertyValues);
@@ -75,6 +78,41 @@ namespace Bynder.Workers
             }
         }
 
+        private bool EntityAppliesToConditions(Entity entity)
+        {
+            var conditions = SettingHelper.GetExportConditions(_inRiverContext.Settings, _inRiverContext.Logger);
+
+            // return true if no conditions found. Conditions are optional.
+            if (conditions.Count == 0) return true;
+
+            foreach (var condition in conditions)
+            {
+                if (!GetConditionResult(entity, condition)) return false;
+            }
+
+            return true;
+        }
+
+        private static bool GetConditionResult(Entity entity, ExportCondition condition)
+        {
+            var field = entity.GetField(condition.InRiverFieldTypeId);
+
+            // metaproperty is not included in asset, when the value is null
+            if (field == null || field.IsEmpty())
+            {
+                // check if there are conditions or if the only condition value is null
+                if (condition.Values.Count == 0 || (condition.Values.Count == 1 && string.IsNullOrEmpty(condition.Values[0]))) return true;
+
+                // return false, because the metaproperty does not have a value, but the condition does
+                return false;
+            }
+
+            List<string> fieldValues = GetValuesForField(field);
+
+            return ConditionHelper.ValuesApplyToCondition(fieldValues, condition);
+        }
+
+
         protected static void FilterMetapropertyValues(List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
         {
             foreach(var map in configuredMetaPropertyMap)
@@ -88,6 +126,7 @@ namespace Bynder.Workers
                 }
             }
         }
+
         protected static List<string> GetValuesForField(Field field)
         {
             var values = new List<string>();

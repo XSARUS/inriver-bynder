@@ -157,6 +157,20 @@ namespace Bynder.Utils.Helpers
             return new List<ImportCondition>();
         }
 
+        /// <summary>
+        /// Optional setting. Default is an empty list.
+        /// </summary>
+        /// <returns></returns>
+        public static List<ExportCondition> GetExportConditions(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.ExportConditions))
+            {
+                return JsonConvert.DeserializeObject<List<ExportCondition>>(settings[Settings.ExportConditions]);
+            }
+            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ExportConditions}");
+            return new List<ExportCondition>();
+        }
+
         public static string GetInitialAssetLoadUrlQuery(Dictionary<string, string> settings, IExtensionLog logger)
         {
             if (settings.ContainsKey(Settings.InitialAssetLoadUrlQuery))
