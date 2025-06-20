@@ -522,7 +522,7 @@ namespace Bynder.Workers
             var matchedProperties = asset.MetaProperties
             .Join(
                 metaPropertyMapping,
-                property => property.Id,
+                property => property.Name,
                 map => map.BynderMetaProperty,
                 (property, map) => new { property, map }
             );
