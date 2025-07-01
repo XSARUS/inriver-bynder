@@ -25,7 +25,7 @@ namespace Bynder.Api.Model
 
             foreach (var element in dictionary)
             {
-                metaproperyList.Add(new Metaproperty { Id = element.Key, Values = element.Value });
+                metaproperyList.Add(new Metaproperty { Id = element.Key, Values = element.Value ?? new List<string>() });
             }
 
             return metaproperyList;
@@ -41,7 +41,7 @@ namespace Bynder.Api.Model
             var pairs = new List<KeyValuePair<string, string>>();
             foreach (var metaproperty in this)
             {
-                pairs.Add(new KeyValuePair<string, string>("metaproperty." + metaproperty.Id, string.Join(",", metaproperty.Values)));
+                pairs.Add(new KeyValuePair<string, string>("metaproperty." + metaproperty.Id, string.Join(",", metaproperty.Values.Distinct())));
             }
             return pairs;
         }

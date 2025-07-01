@@ -1,5 +1,4 @@
-﻿using Bynder.Config;
-using Bynder.Names;
+﻿
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
@@ -9,6 +8,9 @@ using System.Text.RegularExpressions;
 
 namespace Bynder.Utils
 {
+    using Helpers;
+    using Names;
+
     public class FilenameEvaluator
     {
         #region Fields
@@ -35,7 +37,7 @@ namespace Bynder.Utils
         {
             var result = new Result { Filename = fileName };
 
-            string regularExpressionPattern = _inRiverContext.Settings[Settings.RegularExpressionForFileName];
+            string regularExpressionPattern = SettingHelper.GetRegularExpressionForFileName(_inRiverContext.Settings, _inRiverContext.Logger);
             var regex = new Regex(regularExpressionPattern, RegexOptions.None);
 
             result.Match = regex.Match(fileName);

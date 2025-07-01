@@ -1,7 +1,6 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -76,10 +75,8 @@ namespace Bynder.Workers
 
             _inRiverContext.Log(LogLevel.Debug, $"Asset {asset.Id} applies to conditions.");
 
-            // find resourceEntity based on bynderAssetId
-            Entity resourceEntity =
-                _inRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeIds.ResourceBynderId, bynderAssetId,
-                    LoadLevel.DataAndLinks);
+            var resourceSearchType = SettingHelper.GetResourceSearchType(_inRiverContext.Settings, _inRiverContext.Logger);
+            Entity resourceEntity = EntityHelper.GetResourceByAsset(asset, resourceSearchType, _inRiverContext.ExtensionManager.DataService, LoadLevel.DataAndLinks);
 
             // handle notification logic
             switch (notificationType)
@@ -190,7 +187,7 @@ namespace Bynder.Workers
         /// <returns></returns>
         private bool AssetAppliesToConditions(Asset asset)
         {
-            var conditions = GetImportConditions();
+            var conditions = SettingHelper.GetImportConditions(_inRiverContext.Settings, _inRiverContext.Logger);
 
             // return true if no conditions found. Conditions are optional.
             if (conditions.Count == 0) return true;
@@ -212,11 +209,18 @@ namespace Bynder.Workers
                 resourceEntity = CreateResourceEntity(asset);
             }
 
+            // always set the asset id
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = asset.Id;
+            // save IdHash for re-creation of public CDN Urls in inRiver
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
+            // status for new and existing ResourceEntity
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState).Data = BynderStates.Todo;
+
             SetAssetProperties(resourceEntity, asset, result);
             SetMetapropertyData(resourceEntity, asset, result);
 
             var filenameData = evaluatorResult.GetResourceDataInFilename();
-            SetResourceFilenameData(resourceEntity, asset, filenameData);
+            SetResourceFilenameData(resourceEntity, filenameData);
 
             var resultString = new StringBuilder();
             resourceEntity = AddOrUpdateEntityInInRiver(resourceEntity, resultString);
@@ -234,11 +238,19 @@ namespace Bynder.Workers
             EntityType resourceType = _inRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
             resourceEntity = Entity.CreateEntity(resourceType);
 
-            // add asset id to new ResourceEntity
-            resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = asset.Id;
-
             // set filename (only for *new* resource)
-            resourceEntity.GetField(FieldTypeIds.ResourceFilename).Data = $"{asset.Id}_{asset.GetOriginalFileName()}";
+            string filename = asset.GetOriginalFileName();
+            if (string.IsNullOrEmpty(filename))
+            {
+                _inRiverContext.Log(LogLevel.Debug, $"Filename for asset {asset.Id} is empty");
+            }
+
+            if (SettingHelper.ShouldAddAssetIdPrefixToFilename(_inRiverContext.Settings, _inRiverContext.Logger))
+            {
+                filename = $"{asset.Id}_{filename}";
+            }
+
+            resourceEntity.GetField(FieldTypeIds.ResourceFilename).Data = filename;
             return resourceEntity;
         }
 
@@ -285,7 +297,7 @@ namespace Bynder.Workers
                 }
 
                 // create new CVL value when the setting CREATE_MISSING_CVL_KEYS is true
-                if (GetConfiguredCreateMissingCvlKeys())
+                if (SettingHelper.GetConfiguredCreateMissingCvlKeys(_inRiverContext.Settings, _inRiverContext.Logger))
                 {
                     CVLValue newCvlValue = new CVLValue()
                     {
@@ -329,7 +341,7 @@ namespace Bynder.Workers
             return null;
         }
 
-        private bool GetConditionResult(Asset asset, ImportCondition condition)
+        private static bool GetConditionResult(Asset asset, ImportCondition condition)
         {
             var metaproperty = asset.MetaProperties.FirstOrDefault(x => x.Name.Equals(condition.PropertyName));
 
@@ -337,172 +349,24 @@ namespace Bynder.Workers
             if (metaproperty == null)
             {
                 // check if there are conditions or if the only condition value is null
-                if (condition.Values.Count == 0 || (condition.Values.Count == 1 && condition.Values.First() == null)) return true;
+                if (condition.Values.Count == 0 || (condition.Values.Count == 1 && string.IsNullOrEmpty(condition.Values[0]))) return true;
 
                 // return false, because the metaproperty does not have a value, but the condition does
                 return false;
             }
 
-            switch (condition.MatchType)
-            {
-                case MatchType.EqualSorted:
-                    // sort the values
-                    metaproperty.Values.Sort();
-                    condition.Values.Sort();
-                    // check if lists are equal
-                    return Enumerable.SequenceEqual(metaproperty.Values, condition.Values, StringComparer.Ordinal);
-
-                case MatchType.EqualSortedCaseInsensitive:
-                    // sort the values
-                    metaproperty.Values.Sort();
-                    condition.Values.Sort();
-                    // check if lists are equal
-                    return Enumerable.SequenceEqual(metaproperty.Values, condition.Values, StringComparer.OrdinalIgnoreCase);
-
-                case MatchType.Equal:
-                    return Enumerable.SequenceEqual(metaproperty.Values, condition.Values, StringComparer.Ordinal);
-
-                case MatchType.EqualCaseInsensitive:
-                    return Enumerable.SequenceEqual(metaproperty.Values, condition.Values, StringComparer.OrdinalIgnoreCase);
-
-                case MatchType.ContainsAny:
-                    return metaproperty.Values.Intersect(condition.Values).Any();
-
-                case MatchType.ContainsAnyCaseInsensitive:
-                    return metaproperty.Values.Select(x => x.ToLower()).Intersect(condition.Values.Select(x => x.ToLower())).Any();
-
-                case MatchType.ContainsAll:
-                    return condition.Values.All(x => metaproperty.Values.Contains(x));
-
-                case MatchType.ContainsAllCaseInsensitive:
-                    var metapropertyValuesLowerCase = metaproperty.Values.Select(x => x.ToLower());
-                    var conditionValuesLowerCase = condition.Values.Select(x => x.ToLower());
-                    return conditionValuesLowerCase.All(x => metapropertyValuesLowerCase.Contains(x));
-
-                default:
-                    throw new NotSupportedException($"MatchType {condition.MatchType} is not yet supported to use for the import conditions!");
-            }
-        }
-
-        /// <summary>
-        /// Optional setting. Default is an empty dictionary
-        /// </summary>
-        /// <returns></returns>
-        private Dictionary<string, string> GetConfiguredAssetPropertyMap()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.AssetPropertyMap))
-            {
-                return _inRiverContext.Settings[Settings.AssetPropertyMap].ToDictionary<string, string>(',', '=');
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured asset property Map");
-            return new Dictionary<string, string>();
-        }
-
-        /// <summary>
-        /// Optional setting. Default is false.
-        /// </summary>
-        /// <returns></returns>
-        private bool GetConfiguredCreateMissingCvlKeys()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.CreateMissingCvlKeys))
-            {
-                return string.Equals(_inRiverContext.Settings[Settings.CreateMissingCvlKeys], true.ToString(), StringComparison.InvariantCultureIgnoreCase);
-            }
-
-            _inRiverContext.Logger.Log(LogLevel.Error, $"Could not find configuration for '{Settings.CreateMissingCvlKeys}'");
-
-            return false;
-        }
-
-        /// <summary>
-        /// Optional setting. Default is an empty dictionary.
-        /// </summary>
-        /// <returns></returns>
-        private Dictionary<string, string> GetConfiguredMetaPropertyMap()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.MetapropertyMap))
-            {
-                return _inRiverContext.Settings[Settings.MetapropertyMap].ToDictionary<string, string>(',', '=');
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured metaproperty Map");
-            return new Dictionary<string, string>();
-        }
-
-        private DateTimeSettings GetDateTimeSettings()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.TimestampSettings))
-            {
-                return JsonConvert.DeserializeObject<DateTimeSettings>(_inRiverContext.Settings[Settings.TimestampSettings]);
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.TimestampSettings}");
-            return null;
-        }
-
-        /// <summary>
-        /// Optional setting. Default is an empty list.
-        /// </summary>
-        /// <returns></returns>
-        private List<FieldValueCombination> GetFieldValueCombinations()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.FieldValuesToSetOnArchiveEvent))
-            {
-                return JsonConvert.DeserializeObject<List<FieldValueCombination>>(_inRiverContext.Settings[Settings.FieldValuesToSetOnArchiveEvent]);
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.FieldValuesToSetOnArchiveEvent}");
-            return new List<FieldValueCombination>();
-        }
-
-        /// <summary>
-        /// Optional setting. Default is an empty list.
-        /// </summary>
-        /// <returns></returns>
-        private List<ImportCondition> GetImportConditions()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.ImportConditions))
-            {
-                return JsonConvert.DeserializeObject<List<ImportCondition>>(_inRiverContext.Settings[Settings.ImportConditions]);
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ImportConditions}");
-            return new List<ImportCondition>();
-        }
-
-        /// <summary>
-        /// Optional setting. Default is an empty list.
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerable<string> GetLanguagesToSet()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.LocaleStringLanguagesToSet))
-            {
-                return _inRiverContext.Settings[Settings.LocaleStringLanguagesToSet].ConvertTo<IEnumerable<string>>() ?? new List<string>();
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find LocaleString languages to set");
-            return new List<string>();
-        }
-
-        /// <summary>
-        /// Optional setting. Default is an empty string.
-        /// </summary>
-        /// <returns></returns>
-        private string GetMultivalueSeparator()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.MultivalueSeparator))
-            {
-                return _inRiverContext.Settings[Settings.MultivalueSeparator];
-            }
-            _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured multivalue separator");
-            return string.Empty;
+            return ConditionHelper.ValuesApplyToCondition(metaproperty.Values, condition);
         }
 
         private object GetParsedValueForField(WorkerResult result, string propertyName, List<string> values, Field field)
         {
-            var mergedVal = values == null ? null : string.Join(GetMultivalueSeparator(), values);
+            var mergedVal = values == null ? null : string.Join(SettingHelper.GetMultivalueSeparator(_inRiverContext.Settings, _inRiverContext.Logger), values);
             var singleVal = values?.FirstOrDefault();
 
             switch (field.FieldType.DataType.ToLower())
             {
                 case "localestring":
-                    var languagesToSet = GetLanguagesToSet();
+                    var languagesToSet = SettingHelper.GetLanguagesToSet(_inRiverContext.Settings, _inRiverContext.Logger);
                     var ls = (LocaleString)field.Data;
                     if (ls == null)
                     {
@@ -565,7 +429,7 @@ namespace Bynder.Workers
         {
             _inRiverContext.Log(LogLevel.Verbose, $"Setting asset properties on entity {resourceEntity.Id}");
 
-            var propertyMap = GetConfiguredAssetPropertyMap();
+            var propertyMap = SettingHelper.GetConfiguredAssetPropertyMap(_inRiverContext.Settings, _inRiverContext.Logger);
             var assetProperties = asset.GetType().GetProperties();
 
             foreach (var kvp in propertyMap)
@@ -608,13 +472,26 @@ namespace Bynder.Workers
 
         private void SetMetapropertyData(Entity resourceEntity, Asset asset, WorkerResult result)
         {
+            var metaPropertyMapping = SettingHelper.GetConfiguredMetaPropertyMap(_inRiverContext.Settings, _inRiverContext.Logger);
+            if (metaPropertyMapping.Count == 0)
+            {
+                _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured metaproperty Map");
+                return;
+            }
+
             _inRiverContext.Log(LogLevel.Verbose, $"Setting metaproperties on entity {resourceEntity.Id}");
 
-            var metaPropertyMapping = GetConfiguredMetaPropertyMap();
-            var metaPropertiesToProcess = asset.MetaProperties.Where(property => metaPropertyMapping.ContainsKey(property.Name) && metaPropertyMapping[property.Name] != null);
-            foreach (var property in metaPropertiesToProcess)
+            var matchedProperties = asset.MetaProperties
+            .Join(
+                metaPropertyMapping,
+                property => property.Name,
+                map => map.BynderMetaProperty,
+                (property, map) => new { property, map }
+            );
+
+            foreach (var match in matchedProperties)
             {
-                var fieldTypeId = metaPropertyMapping[property.Name];
+                var fieldTypeId = match.map.InriverFieldTypeId;
                 var field = resourceEntity.GetField(fieldTypeId);
                 if (field == null)
                 {
@@ -623,23 +500,17 @@ namespace Bynder.Workers
                     continue;
                 }
 
-                field.Data = GetParsedValueForField(result, property.Name, property.Values, field);
+                field.Data = GetParsedValueForField(result, match.property.Name, match.property.Values, field);
             }
         }
 
-        private void SetResourceFilenameData(Entity resourceEntity, Asset asset, Dictionary<FieldType, string> filenameData)
+        private void SetResourceFilenameData(Entity resourceEntity, Dictionary<FieldType, string> filenameData)
         {
-            // status for new and existing ResourceEntity
-            resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState).Data = BynderStates.Todo;
-
             // resource fields from regular expression created from filename
             foreach (var keyValuePair in filenameData)
             {
                 resourceEntity.GetField(keyValuePair.Key.Id).Data = keyValuePair.Value;
             }
-
-            // save IdHash for re-creation of public CDN Urls in inRiver
-            resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
         }
 
         /// <summary>
@@ -651,7 +522,7 @@ namespace Bynder.Workers
         /// <returns></returns>
         private WorkerResult SetValuesOnResource(WorkerResult result, string bynderAssetId, Entity resourceEntity)
         {
-            var fieldValueCombinations = GetFieldValueCombinations();
+            var fieldValueCombinations = SettingHelper.GetFieldValueCombinations(_inRiverContext.Settings, _inRiverContext.Logger);
             if (fieldValueCombinations.Count == 0)
             {
                 _inRiverContext.Log(LogLevel.Verbose, $"No fieldvalue combinations found. Not updating resource for archived bynder asset {bynderAssetId}");
@@ -659,7 +530,7 @@ namespace Bynder.Workers
             }
 
             var fieldsToUpdate = new List<Field>();
-            var dateTimeSettings = GetDateTimeSettings();
+            var dateTimeSettings = SettingHelper.GetDateTimeSettings(_inRiverContext.Settings, _inRiverContext.Logger);
 
             foreach (var fvc in fieldValueCombinations)
             {
@@ -711,8 +582,14 @@ namespace Bynder.Workers
         private WorkerResult UpdateMetadata(WorkerResult result, Asset asset, Entity resourceEntity)
         {
             _inRiverContext.Log(LogLevel.Verbose, $"Update metadata only for Resource {resourceEntity.Id}");
+
+            // always set the asset id and hash
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = asset.Id;
+            resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
+
             SetAssetProperties(resourceEntity, asset, result);
             SetMetapropertyData(resourceEntity, asset, result);
+
             resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
             result.Messages.Add($"Resource {resourceEntity.Id} updated");
             return result;

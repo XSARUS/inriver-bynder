@@ -1,4 +1,5 @@
 ﻿using Bynder.Api;
+using Bynder.Enums;
 using Bynder.Workers;
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
@@ -34,11 +35,15 @@ namespace Bynder.Extension
                 settings.Add(Config.Settings.BynderBrandName, "");
                 settings.Add(Config.Settings.LocaleStringLanguagesToSet, "");
                 settings.Add(Config.Settings.MultivalueSeparator, ", ");
-                settings.Add(Config.Settings.ImportConditions, "[{\"propertyName\":\"synctoinriver\",\"values\":[\"True\"]}]");
+                settings.Add(Config.Settings.ImportConditions, "[{\"propertyName\":\"synctoinriver\",\"values\":[\"True\"], \"matchType\":\"Equal\"}]");
+                settings.Add(Config.Settings.ExportConditions, "[{\"inRiverFieldTypeId\":\"ResourceSyncToBynder\",\"values\":[\"True\"], \"matchType\":\"Equal\"}]");
                 settings.Add(Config.Settings.CreateMissingCvlKeys, true.ToString());
                 settings.Add(Config.Settings.DeleteResourceOnDeleteEvent, false.ToString());
                 settings.Add(Config.Settings.FieldValuesToSetOnArchiveEvent, "");
                 settings.Add(Config.Settings.TimestampSettings, "");
+                settings.Add(Config.Settings.DownloadMediaType, "original");
+                settings.Add(Config.Settings.AddAssetIdPrefixToFilenameOfNewResource, true.ToString());
+                settings.Add(Config.Settings.ResourceSearchType, ResourceSearchType.AssetId.ToString());
                 return settings;
             }
         }

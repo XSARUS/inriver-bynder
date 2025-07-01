@@ -1,11 +1,12 @@
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Bynder.Api.Model
 {
     using Converters;
-    using System;
+    using Enums;
 
     /// <summary>
     /// You can post changes of the Asset for these fields:
@@ -25,6 +26,7 @@ namespace Bynder.Api.Model
     [JsonConverter(typeof(AssetJsonConverter))]
     public class Asset
     {
+
         #region Fields
 
         private const string Original = "original";
@@ -56,7 +58,6 @@ namespace Bynder.Api.Model
 
         public DateTime DateCreated { get; set; }
         public DateTime DateModified { get; set; }
-
         /// <summary>
         /// Publication datetime. ISO8601 format: yyyy-mm-ddThh:mm:ssZ.
         /// </summary>
@@ -70,14 +71,12 @@ namespace Bynder.Api.Model
         public List<string> Extension { get; set; }
         public long FileSize { get; set; }
         public int Height { get; set; }
-
         /// <summary>
         /// Asset id, will return the asset for that id.
         /// </summary>
         public string Id { get; set; }
 
         public string IdHash { get; set; }
-
         /// <summary>
         /// Indicating the public state of the asset. Warning irreversible, once changed to true it cannot be changed back.
         /// </summary>
@@ -119,7 +118,10 @@ namespace Bynder.Api.Model
         /// </summary>
         public List<string> Tags { get; set; }
 
-        public string Type { get; set; }
+        public Dictionary<string, string> Thumbnails { get; set; }
+
+        public AssetType Type { get; set; }
+
         public string UserCreated { get; set; }
 
         /// <summary>
@@ -161,5 +163,6 @@ namespace Bynder.Api.Model
         }
 
         #endregion Methods
+
     }
 }

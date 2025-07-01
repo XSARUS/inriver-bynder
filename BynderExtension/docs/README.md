@@ -40,7 +40,7 @@ The AssetUpdated worker, in short, handles the process of creates, updates and a
 * Set data on entity thats retreived from filename 
   * The following values will be set on the Resource entity:
     * `ResourceBynderId` : Bynder Asset ID
-    * `ResourceFilename` : filename from Bynder (currently prefixed with the asset ID to keep it unique)
+    * `ResourceFilename` : filename from Bynder. When the resource is new and using setting `ADD_ASSET_ID_PREFIX_TO_FILENAME_OF_NEW_RESOURCE` it will be prefixed with the asset ID to keep it unique. 
     * `ResourceBynderDownloadState` : "todo" 
   * All labeled regex groups starting with `Resource` will be put in matching Resource fields on the Resource entity. With this you can set an inRiver resource value based on parts of the filename
 * Add relations
