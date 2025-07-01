@@ -1,12 +1,12 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
-using System;
 
 namespace Bynder.Workers
 {
-    using Config;
     using Names;
+    using Utils.Helpers;
+
 
     public class AssetDeletedWorker : IWorker
     {
@@ -37,9 +37,9 @@ namespace Bynder.Workers
             var result = new WorkerResult();
 
             // only process if we are allowed to delete entities
-            if (!GetDeleteResourceOnDeletedEvents()) return result;
+            if (!SettingHelper.GetDeleteResourceOnDeletedEvents(_inRiverContext.Settings, _inRiverContext.Logger)) return result;
 
-            // find resourceEntity based on bynderAssetId
+            // find resourceEntity based on bynderAssetId. We can't retreive the filename anymore so we have to match on bynder id. That is no problem, because it is always set also on update.
             Entity resourceEntity =
                 _inRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeIds.ResourceBynderId, bynderAssetId,
                     LoadLevel.DataAndLinks);
@@ -61,21 +61,6 @@ namespace Bynder.Workers
             return result;
         }
 
-        /// <summary>
-        /// Optional setting. Default is false.
-        /// </summary>
-        /// <returns></returns>
-        private bool GetDeleteResourceOnDeletedEvents()
-        {
-            if (_inRiverContext.Settings.ContainsKey(Settings.DeleteResourceOnDeleteEvent))
-            {
-                return string.Equals(_inRiverContext.Settings[Settings.DeleteResourceOnDeleteEvent], true.ToString(), StringComparison.InvariantCultureIgnoreCase);
-            }
-
-            _inRiverContext.Logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.DeleteResourceOnDeleteEvent}'. Using default value '{false}'");
-
-            return false;
-        }
 
         #endregion Methods
     }

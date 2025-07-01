@@ -1,12 +1,14 @@
-﻿using Bynder.Api;
-using Bynder.Names;
-using Bynder.Utils.InRiver;
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 
 namespace Bynder.Workers
 {
+    using Api;
+    using Names;
+    using Utils.Helpers;
+    using Utils.InRiver;
+
     internal class AssetUsageUpdateWorker : IWorker
     {
         #region Fields
@@ -30,6 +32,12 @@ namespace Bynder.Workers
 
         public void Execute(Entity resourceEntity)
         {
+            // get settings, if missing return, nothing to do
+            string integrationId = SettingHelper.GetInRiverIntegrationId(_inRiverContext.Settings, _inRiverContext.Logger);
+            string inriverEntityUrl = SettingHelper.GetInRiverEntityUrl(_inRiverContext.Settings, _inRiverContext.Logger);
+
+            if (string.IsNullOrWhiteSpace(integrationId) || string.IsNullOrWhiteSpace(inriverEntityUrl)) return;
+
             // get resource entity with fields
             resourceEntity =
                 _inRiverContext.ExtensionManager.DataService.EntityLoadLevel(resourceEntity, LoadLevel.DataOnly);
@@ -37,11 +45,6 @@ namespace Bynder.Workers
 
             // check if empty - nothing to do
             if (string.IsNullOrEmpty(assetId)) return;
-
-            // get settings, if missing return, nothing to do
-            var settings = _inRiverContext.Settings;
-            if (!settings.TryGetValue(Config.Settings.InRiverIntegrationId, out var integrationId) ||
-                !settings.TryGetValue(Config.Settings.InRiverEntityUrl, out var inriverEntityUrl)) return;
 
             string formattedInriverResourceUrl = inriverEntityUrl.Replace("{entityId}", resourceEntity.Id.ToString());
 

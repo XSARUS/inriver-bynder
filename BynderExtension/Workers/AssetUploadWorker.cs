@@ -1,8 +1,4 @@
-﻿using Bynder.Api;
-using Bynder.Api.Model;
-using Bynder.Exceptions;
-using Bynder.Names;
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using System;
@@ -12,6 +8,12 @@ using System.Threading;
 
 namespace Bynder.Workers
 {
+    using Api;
+    using Api.Model;
+    using Exceptions;
+    using Names;
+    using Utils.Helpers;
+
     public class AssetUploadWorker : IWorker
     {
         #region Fields
@@ -54,7 +56,8 @@ namespace Bynder.Workers
 
         private string GetBrandIdBasedOnSettingKey()
         {
-            if (!_inRiverContext.Settings.TryGetValue(Config.Settings.BynderBrandName, out var brandName)) return null;
+            var brandName = SettingHelper.GetBynderBrandName(_inRiverContext.Settings, _inRiverContext.Logger);
+            if (string.IsNullOrEmpty(brandName)) return null;
 
             var brands = _bynderClient.GetAvailableBranches();
             return brands

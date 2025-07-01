@@ -8,6 +8,7 @@ namespace Bynder.Api
 {
     public class OAuthClient
     {
+
         #region Fields
 
         protected OAuth.Manager OAuthManager;
@@ -23,13 +24,12 @@ namespace Bynder.Api
         /// <returns></returns>
         public string Delete(string uri)
         {
-            var response = SendRequest(
-                new HttpRequestMessage()
-                {
-                    RequestUri = new Uri(uri),
-                    Method = HttpMethod.Delete
-                }
-            );
+            var response = SendRequest(new HttpRequestMessage
+            {
+                RequestUri = new Uri(uri),
+                Method = HttpMethod.Delete
+            });
+
             response.EnsureSuccessStatusCode();
             return response.Content.ReadAsStringAsync().Result;
         }
@@ -41,13 +41,11 @@ namespace Bynder.Api
         /// <returns></returns>
         public string Get(string uri)
         {
-            var response = SendRequest(
-                new HttpRequestMessage()
-                {
-                    RequestUri = new Uri(uri),
-                    Method = HttpMethod.Get,
-                }
-            );
+            var response = SendRequest(new HttpRequestMessage
+            {
+                RequestUri = new Uri(uri),
+                Method = HttpMethod.Get,
+            });
             response.EnsureSuccessStatusCode();
             return response.Content.ReadAsStringAsync().Result;
         }
@@ -63,13 +61,11 @@ namespace Bynder.Api
             int retryCount = 0;
             while (true)
             {
-                var response = SendRequest(
-                    new HttpRequestMessage()
-                    {
-                        RequestUri = new Uri(uri),
-                        Method = HttpMethod.Get,
-                    }
-                );
+                var response = SendRequest(new HttpRequestMessage
+                {
+                    RequestUri = new Uri(uri),
+                    Method = HttpMethod.Get,
+                });
                 if (response.IsSuccessStatusCode)
                 {
                     return response.Content.ReadAsStringAsync().Result;
@@ -96,14 +92,12 @@ namespace Bynder.Api
         /// <returns></returns>
         public string Post(string uri, string postData)
         {
-            var response = SendRequest(
-                new HttpRequestMessage()
-                {
-                    RequestUri = new Uri(uri),
-                    Method = HttpMethod.Post,
-                    Content = new StringContent(postData)
-                }
-            );
+            var response = SendRequest(new HttpRequestMessage
+            {
+                RequestUri = new Uri(uri),
+                Method = HttpMethod.Post,
+                Content = new StringContent(postData)
+            });
             response.EnsureSuccessStatusCode();
             return response.Content.ReadAsStringAsync().Result;
         }
@@ -117,14 +111,12 @@ namespace Bynder.Api
         /// <returns></returns>
         public string Post(string uri, List<KeyValuePair<string, string>> formData)
         {
-            var response = SendRequest(
-                new HttpRequestMessage()
-                {
-                    RequestUri = new Uri(uri),
-                    Method = HttpMethod.Post,
-                    Content = new FormUrlEncodedContent(formData)
-                }
-            );
+            var response = SendRequest(new HttpRequestMessage
+            {
+                RequestUri = new Uri(uri),
+                Method = HttpMethod.Post,
+                Content = new FormUrlEncodedContent(formData)
+            });
             response.EnsureSuccessStatusCode();
             return response.Content.ReadAsStringAsync().Result;
         }
@@ -160,5 +152,6 @@ namespace Bynder.Api
         }
 
         #endregion Methods
+
     }
 }

@@ -1,13 +1,15 @@
-﻿using Bynder.Api;
-using Bynder.Api.Model;
-using Bynder.Names;
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using System.Collections.Generic;
 
 namespace Bynder.Workers
 {
+    using Api;
+    using Api.Model;
+    using Names;
+    using Utils.Helpers;
+
     internal class AssetDownloadWorker : IWorker
     {
         #region Fields
@@ -60,12 +62,32 @@ namespace Bynder.Workers
             }
 
             // check for existing file
-            var resourceFileId = resourceEntity.GetField(FieldTypeIds.ResourceFileId)?.Data;
-            int existingFileId = resourceFileId != null ? (int)resourceFileId : 0;
+            int existingFileId = (int?)resourceEntity.GetField(FieldTypeIds.ResourceFileId)?.Data ?? 0;
 
             // add new asset
-            string resourceFileName = (string)resourceEntity.GetField(FieldTypeIds.ResourceFilename)?.Data;
-            int newFileId = _inRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(resourceFileName, _bynderClient.GetAssetDownloadLocation(asset.Id).S3_File);
+            string resourceFilename = (string)resourceEntity.GetField(FieldTypeIds.ResourceFilename)?.Data;
+            if (string.IsNullOrWhiteSpace(resourceFilename))
+            {
+                _inRiverContext.Log(LogLevel.Error, $"Field '{FieldTypeIds.ResourceFilename}' is empty");
+
+                // set error state when the asset could not be found
+                bynderDownloadStateField.Data = BynderStates.Error;
+                _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderDownloadStateField });
+                return;
+            }
+
+            string fileUrl = GetFileUrl(asset);
+            if (string.IsNullOrWhiteSpace(fileUrl))
+            {
+                _inRiverContext.Log(LogLevel.Error, "File url is empty");
+
+                // set error state when the asset could not be found
+                bynderDownloadStateField.Data = BynderStates.Error;
+                _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderDownloadStateField });
+                return;
+            }
+
+            int newFileId = _inRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(resourceFilename, fileUrl);
 
             // delete older asset file
             if (existingFileId > 0)
@@ -81,6 +103,24 @@ namespace Bynder.Workers
 
             _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
             _inRiverContext.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
+        }
+
+        private string GetFileUrl(Asset asset)
+        {
+            string downloadMediaType = SettingHelper.GetDownloadMediaType(_inRiverContext.Settings, _inRiverContext.Logger);
+
+            if (downloadMediaType.Equals("original")) 
+            {
+                return _bynderClient.GetAssetDownloadLocation(asset.Id)?.S3_File;
+            }
+
+            if (asset.Thumbnails.ContainsKey(downloadMediaType))
+            {
+                return asset.Thumbnails[downloadMediaType];
+            }
+
+            _inRiverContext.Log(LogLevel.Warning, $"Download media type (original or a derivative/thumbnail) '{downloadMediaType}' not found!");
+            return null;
         }
 
         #endregion Methods

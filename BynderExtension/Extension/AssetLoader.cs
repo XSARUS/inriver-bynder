@@ -4,11 +4,13 @@ using inRiver.Remoting.Log;
 namespace Bynder.Extension
 {
     using Api;
+    using Bynder.Utils.Helpers;
     using Enums;
     using Workers;
 
     public class AssetLoader : Extension, IScheduledExtension
     {
+
         #region Methods
 
         /// <summary>
@@ -31,7 +33,8 @@ namespace Bynder.Extension
                 // get all assets ids
                 // note: this is a paged result set, call next page until reaching end.
                 var counter = 0;
-                var assetCollection = bynderClient.GetAssetCollection(Context.Settings[Config.Settings.InitialAssetLoadUrlQuery]);
+                string query = SettingHelper.GetInitialAssetLoadUrlQuery(DefaultSettings, Context.Logger);
+                var assetCollection = bynderClient.GetAssetCollection(query);
                 Context.Logger.Log(LogLevel.Information, $"Start processing {assetCollection.GetTotal()} assets.");
 
                 assetCollection.Media.ForEach(a => worker.Execute(a.Id, NotificationType.DataUpsert));
@@ -40,7 +43,7 @@ namespace Bynder.Extension
                 {
                     // when not reached end get next group of assets
                     assetCollection = bynderClient.GetAssetCollection(
-                        Context.Settings[Config.Settings.InitialAssetLoadUrlQuery],
+                        query,
                         assetCollection.GetNextPage());
                     assetCollection.Media.ForEach(a => worker.Execute(a.Id, NotificationType.DataUpsert));
                     counter += assetCollection.Media.Count;
@@ -55,5 +58,6 @@ namespace Bynder.Extension
         }
 
         #endregion Methods
+
     }
 }
