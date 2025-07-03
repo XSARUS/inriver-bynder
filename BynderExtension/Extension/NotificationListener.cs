@@ -61,13 +61,13 @@ namespace Bynder.Extension
         /// <returns></returns>
         public string Update(string value)
         {
-            // wait x seconds because the export db of Bynder does not immediately has the change synced.
-            Thread.Sleep(NotificationListenerThreadSleepMilliSeconds);
-
             string result = string.Empty;
 
             try
             {
+                // wait x seconds because the export db of Bynder does not immediately has the change synced.
+                Thread.Sleep(NotificationListenerThreadSleepMilliSeconds);
+
                 // log the incomining notification
                 Context.Log(LogLevel.Verbose, $"Notification: {value}");
 
@@ -99,7 +99,7 @@ namespace Bynder.Extension
             }
             catch (Exception ex)
             {
-                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
+                Context.Log(LogLevel.Error, "Notification Listener exception occurred: " + ex.GetBaseException().Message, ex);
             }
 
             Context.Log(LogLevel.Verbose, result);
