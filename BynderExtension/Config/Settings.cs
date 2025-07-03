@@ -26,7 +26,6 @@
 
         #region NotificationListener
         public const string NotificationListenerThreadSleepMilliSeconds = "NOTIFICATION_LISTENER__THREAD_SLEEP_MILLISECONDS";
-        public const string NotificationListenerMaxRetryAttemps = "NOTIFICATION_LISTENER_MAX__RETRY_ATTEMPTS";
         #endregion
 
         #endregion Fields
