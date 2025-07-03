@@ -21,7 +21,7 @@ namespace Bynder.Extension
 
         public inRiverContext Context { get; set; }
 
-        public Dictionary<string, string> DefaultSettings
+        public virtual Dictionary<string, string> DefaultSettings
         {
             get
             {

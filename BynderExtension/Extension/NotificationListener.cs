@@ -5,11 +5,39 @@ using System.Threading;
 
 namespace Bynder.Extension
 {
+    using Bynder.Config;
     using Bynder.Enums;
+    using System.Collections.Generic;
     using Workers;
 
     public class NotificationListener : Extension, IInboundDataExtension
     {
+        const int defaultThreadSleepValue = 15000;
+
+        public override Dictionary<string, string> DefaultSettings
+        {
+            get
+            {
+                var settings = base.DefaultSettings;
+                settings[Settings.NotificationListenerThreadSleepMilliSeconds] = defaultThreadSleepValue.ToString();
+                
+                return settings;
+            }
+        }
+
+        protected int NotificationListenerThreadSleepMilliSeconds
+        {
+            get
+            {
+                if (DefaultSettings.TryGetValue(Settings.NotificationListenerThreadSleepMilliSeconds, out string value) &&
+                    int.TryParse(value, out int parsed))
+                {
+                    return parsed;
+                }
+
+                return defaultThreadSleepValue;
+            }
+        }
         #region Methods
 
         /// <summary>
@@ -33,13 +61,13 @@ namespace Bynder.Extension
         /// <returns></returns>
         public string Update(string value)
         {
+            // wait x seconds because the export db of Bynder does not immediately has the change synced.
+            Thread.Sleep(NotificationListenerThreadSleepMilliSeconds);
+
             string result = string.Empty;
 
             try
             {
-                // wait 15 seconds because the export db of bynder does not immediately has the change synced.
-                Thread.Sleep(15000);
-
                 // log the incomining notification
                 Context.Log(LogLevel.Verbose, $"Notification: {value}");
 
@@ -73,6 +101,7 @@ namespace Bynder.Extension
             {
                 Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
+
             Context.Log(LogLevel.Verbose, result);
 
             return result;

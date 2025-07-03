@@ -24,6 +24,11 @@
         public const string ResourceSearchType = "RESOURCE_SEARCH_TYPE";
         public const string TimestampSettings = "TIMESTAMP_SETTINGS";
 
+        #region NotificationListener
+        public const string NotificationListenerThreadSleepMilliSeconds = "NOTIFICATION_LISTENER__THREAD_SLEEP_MILLISECONDS";
+        public const string NotificationListenerMaxRetryAttemps = "NOTIFICATION_LISTENER_MAX__RETRY_ATTEMPTS";
+        #endregion
+
         #endregion Fields
 
     }
