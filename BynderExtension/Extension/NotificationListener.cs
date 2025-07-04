@@ -62,39 +62,47 @@ namespace Bynder.Extension
         public string Update(string value)
         {
             string result = string.Empty;
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew(); // Start timing
+            Context.Log(LogLevel.Verbose, $"NotificationListener START...");
 
             try
             {
-                // wait x seconds because the export db of Bynder does not immediately has the change synced.
+                // wait x seconds because the export db of Bynder does not immediately have the change synced.
                 Thread.Sleep(NotificationListenerThreadSleepMilliSeconds);
 
-                // log the incomining notification
-                Context.Log(LogLevel.Verbose, $"Notification: {value}");
+                // log the incoming notification
+                Context.Log(LogLevel.Verbose, $"Notification received: {value}");
 
-                // first, handle the notification
                 var notificationWorker = Container.GetInstance<NotificationWorker>();
+
+                var stepWatch = System.Diagnostics.Stopwatch.StartNew();
                 var notificationResult = notificationWorker.Execute(value);
+                stepWatch.Stop();
+                Context.Log(LogLevel.Verbose, $"NotificationWorker.Execute took {stepWatch.ElapsedMilliseconds} ms");
+
                 var resultMessages = notificationResult.Messages;
 
-                // if the outcome of the notification contains a media Id, we need to start handling the asset
                 if (!string.IsNullOrEmpty(notificationResult.MediaId))
                 {
                     WorkerResult workerResult;
+                    stepWatch.Restart();
+
                     if (notificationResult.NotificationType == NotificationType.IsDeleted)
                     {
                         var assetDeletedWorker = Container.GetInstance<AssetDeletedWorker>();
                         workerResult = assetDeletedWorker.Execute(notificationResult.MediaId);
+                        Context.Log(LogLevel.Verbose, $"AssetDeletedWorker.Execute took {stepWatch.ElapsedMilliseconds} ms");
                     }
                     else
                     {
                         var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
                         workerResult = assetWorker.Execute(notificationResult.MediaId, notificationResult.NotificationType);
+                        Context.Log(LogLevel.Verbose, $"AssetUpdatedWorker.Execute took {stepWatch.ElapsedMilliseconds} ms");
                     }
 
                     resultMessages.AddRange(workerResult.Messages);
                 }
 
-                // return the outcome to the caller
                 result = string.Join(Environment.NewLine, resultMessages);
             }
             catch (Exception ex)
@@ -102,10 +110,13 @@ namespace Bynder.Extension
                 Context.Log(LogLevel.Error, "Notification Listener exception occurred: " + ex.GetBaseException().Message, ex);
             }
 
-            Context.Log(LogLevel.Verbose, result);
+            stopwatch.Stop(); // Stop overall timer
+            Context.Log(LogLevel.Verbose, $"NotificationListener completed in {stopwatch.ElapsedMilliseconds} ms");
+            Context.Log(LogLevel.Verbose, $"NotificationListener RESULT: {result}");
 
             return result;
         }
+
 
         #endregion Methods
     }

@@ -143,7 +143,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AWSSDK.SimpleNotificationService">
-      <Version>3.7.400.166</Version>
+      <Version>4.0.0.12</Version>
     </PackageReference>
     <PackageReference Include="inRiver.Remoting.iPMC">
       <Version>8.21.0</Version>
