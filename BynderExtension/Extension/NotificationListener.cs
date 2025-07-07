@@ -1,13 +1,13 @@
-﻿using inRiver.Remoting.Extension.Interface;
+﻿using System.Collections.Generic;
+using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Log;
 using System;
 using System.Threading;
 
 namespace Bynder.Extension
 {
-    using Bynder.Config;
-    using Bynder.Enums;
-    using System.Collections.Generic;
+    using Config;
+    using Enums;
     using Workers;
 
     public class NotificationListener : Extension, IInboundDataExtension
@@ -61,6 +61,8 @@ namespace Bynder.Extension
         /// <returns></returns>
         public string Update(string value)
         {
+            return $"[OK] Notification message queued";
+
             string result = string.Empty;
             var stopwatch = System.Diagnostics.Stopwatch.StartNew(); // Start timing
             Context.Log(LogLevel.Verbose, $"NotificationListener START...");
