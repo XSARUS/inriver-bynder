@@ -1,12 +1,13 @@
-﻿using Bynder.Names;
-using Bynder.Utils.InRiver;
-using Bynder.Workers;
-using inRiver.Remoting.Extension.Interface;
+﻿using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Objects;
 using System.Linq;
 
 namespace Bynder.Extension
 {
+    using Names;
+    using Utils.InRiver;
+    using Workers;
+
     public class Worker : Extension, IEntityListener, ILinkListener
     {
         #region Methods

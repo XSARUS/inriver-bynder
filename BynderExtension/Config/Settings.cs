@@ -2,7 +2,6 @@
 {
     public struct Settings
     {
-
         #region Fields
 
         public const string AddAssetIdPrefixToFilenameOfNewResource = "ADD_ASSET_ID_PREFIX_TO_FILENAME_OF_NEW_RESOURCE";
@@ -20,15 +19,11 @@
         public const string LocaleStringLanguagesToSet = "LOCALESTRING_LANGUAGES_TO_SET";
         public const string MetapropertyMap = "METAPROPERTY_MAP";
         public const string MultivalueSeparator = "MULTIVALUE_SEPARATOR";
+        public const string NotificationListenerThreadSleepMilliSeconds = "NOTIFICATION_LISTENER__THREAD_SLEEP_MILLISECONDS";
         public const string RegularExpressionForFileName = "REGULAR_EXPRESSION_FOR_FILENAME";
         public const string ResourceSearchType = "RESOURCE_SEARCH_TYPE";
         public const string TimestampSettings = "TIMESTAMP_SETTINGS";
 
-        #region NotificationListener
-        public const string NotificationListenerThreadSleepMilliSeconds = "NOTIFICATION_LISTENER__THREAD_SLEEP_MILLISECONDS";
-        #endregion
-
         #endregion Fields
-
     }
 }

@@ -81,6 +81,7 @@
     <Compile Include="Extension\AssetLoader.cs" />
     <Compile Include="Extension\Registry.cs" />
     <Compile Include="Extension\Extension.cs" />
+    <Compile Include="Extension\ScheduledNotificationHandler.cs" />
     <Compile Include="Extension\Uploader.cs" />
     <Compile Include="Models\Condition.cs" />
     <Compile Include="Models\FieldValueCombination.cs" />
@@ -88,6 +89,7 @@
     <Compile Include="Models\ImportCondition.cs" />
     <Compile Include="Models\DateTimeSettings.cs" />
     <Compile Include="Models\MetapropertyMap.cs" />
+    <Compile Include="Names\ConnectorStateIds.cs" />
     <Compile Include="Utils\Extensions\CollectionExtensions.cs" />
     <Compile Include="Utils\Extensions\StringExtensions.cs" />
     <Compile Include="Utils\Extensions\StringToCollectionExtensions.cs" />

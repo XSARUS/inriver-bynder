@@ -109,7 +109,7 @@ namespace Bynder.Workers
         {
             string downloadMediaType = SettingHelper.GetDownloadMediaType(_inRiverContext.Settings, _inRiverContext.Logger);
 
-            if (downloadMediaType.Equals("original")) 
+            if (downloadMediaType.Equals("original"))
             {
                 return _bynderClient.GetAssetDownloadLocation(asset.Id)?.S3_File;
             }

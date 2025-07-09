@@ -41,7 +41,7 @@ namespace Bynder.Workers
 
         public void Execute(Entity resourceEntity)
         {
-            _inRiverContext.Logger.Log(LogLevel.Information, $"Start uploading resource entity {resourceEntity.Id}");
+            _inRiverContext.Log(LogLevel.Information, $"Start uploading resource entity {resourceEntity.Id}");
 
             if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
 
@@ -192,12 +192,12 @@ namespace Bynder.Workers
                 }
 
                 resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState).Data = BynderStates.Done;
-                _inRiverContext.Logger.Log(LogLevel.Information, $"Finished uploading resource entity {resourceEntity.Id}");
+                _inRiverContext.Log(LogLevel.Information, $"Finished uploading resource entity {resourceEntity.Id}");
             }
             catch (Exception ex)
             {
                 resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState).Data = BynderStates.Error;
-                _inRiverContext.Logger.Log(LogLevel.Error, $"Error uploading resource entity {resourceEntity.Id}. Message: {ex.GetBaseException().Message}");
+                _inRiverContext.Log(LogLevel.Error, $"Error uploading resource entity {resourceEntity.Id}. Message: {ex.GetBaseException().Message}");
             }
 
             _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);

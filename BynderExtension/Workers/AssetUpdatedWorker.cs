@@ -115,6 +115,23 @@ namespace Bynder.Workers
             }
         }
 
+        private static bool GetConditionResult(Asset asset, ImportCondition condition)
+        {
+            var metaproperty = asset.MetaProperties.FirstOrDefault(x => x.Name.Equals(condition.PropertyName));
+
+            // metaproperty is not included in asset, when the value is null
+            if (metaproperty == null)
+            {
+                // check if there are conditions or if the only condition value is null
+                if (condition.Values.Count == 0 || (condition.Values.Count == 1 && string.IsNullOrEmpty(condition.Values[0]))) return true;
+
+                // return false, because the metaproperty does not have a value, but the condition does
+                return false;
+            }
+
+            return ConditionHelper.ValuesApplyToCondition(metaproperty.Values, condition);
+        }
+
         private Entity AddOrUpdateEntityInInRiver(Entity resourceEntity, StringBuilder resultString)
         {
             if (resourceEntity.Id == 0)
@@ -341,23 +358,6 @@ namespace Bynder.Workers
             return null;
         }
 
-        private static bool GetConditionResult(Asset asset, ImportCondition condition)
-        {
-            var metaproperty = asset.MetaProperties.FirstOrDefault(x => x.Name.Equals(condition.PropertyName));
-
-            // metaproperty is not included in asset, when the value is null
-            if (metaproperty == null)
-            {
-                // check if there are conditions or if the only condition value is null
-                if (condition.Values.Count == 0 || (condition.Values.Count == 1 && string.IsNullOrEmpty(condition.Values[0]))) return true;
-
-                // return false, because the metaproperty does not have a value, but the condition does
-                return false;
-            }
-
-            return ConditionHelper.ValuesApplyToCondition(metaproperty.Values, condition);
-        }
-
         private object GetParsedValueForField(WorkerResult result, string propertyName, List<string> values, Field field)
         {
             var mergedVal = values == null ? null : string.Join(SettingHelper.GetMultivalueSeparator(_inRiverContext.Settings, _inRiverContext.Logger), values);
@@ -475,7 +475,7 @@ namespace Bynder.Workers
             var metaPropertyMapping = SettingHelper.GetConfiguredMetaPropertyMap(_inRiverContext.Settings, _inRiverContext.Logger);
             if (metaPropertyMapping.Count == 0)
             {
-                _inRiverContext.Logger.Log(LogLevel.Verbose, "Could not find configured metaproperty Map");
+                _inRiverContext.Log(LogLevel.Verbose, "Could not find configured metaproperty Map");
                 return;
             }
 
@@ -496,7 +496,7 @@ namespace Bynder.Workers
                 if (field == null)
                 {
                     result.Messages.Add($"FieldType '{fieldTypeId}' in MetaPropertyMapping does not exist on Resource EntityType");
-                    _inRiverContext.Logger.Log(LogLevel.Warning, $"FieldType '{fieldTypeId}' does not exist on Resource EntityType");
+                    _inRiverContext.Log(LogLevel.Warning, $"FieldType '{fieldTypeId}' does not exist on Resource EntityType");
                     continue;
                 }
 

@@ -39,6 +39,7 @@ After adding and saving a connector press 'Get Default Settings' to get the defa
 | BynderAssetLoader | Bynder.zip | Bynder.dll | Bynder.Extension.AssetLoader | ScheduledExtension |
 | BynderAssetWorkerEntities | Bynder.zip | Bynder.dll | Bynder.Extension.Worker | EntityListener |
 | BynderAssetWorkerLinks | Bynder.zip | Bynder.dll | Bynder.Extension.Worker | LinkListener |
+| ScheduledNotificationHandler| Bynder.zip | Bynder.dll | ScheduledExtension|
 
 ### Extension settings
 Unfortunately you have to configure 4 extensions to make the integration complete and they cannot share configuration values.

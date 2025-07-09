@@ -1,7 +1,4 @@
-﻿using Bynder.Api;
-using Bynder.Enums;
-using Bynder.Workers;
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using StructureMap;
 using System;
@@ -9,6 +6,10 @@ using System.Collections.Generic;
 
 namespace Bynder.Extension
 {
+    using Api;
+    using Enums;
+    using Workers;
+
     public abstract class Extension
     {
         #region Fields
@@ -65,7 +66,7 @@ namespace Bynder.Extension
 
             // write result to log for more readable access
             result.Messages.ForEach(msg =>
-                Context.Logger.Log(msg.ToLower().StartsWith("error") ? LogLevel.Error : LogLevel.Information, msg)
+                Context.Log(msg.ToLower().StartsWith("error") ? LogLevel.Error : LogLevel.Information, msg)
             );
 
             return string.Join(Environment.NewLine, result.Messages);

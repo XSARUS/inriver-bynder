@@ -15,8 +15,12 @@ The inRiver endpoint defined in `Bynder.Extenstion.NotificationListener` will li
 * asset_bank.media.create
 * asset_bank.media.meta_updated
 
-All topics will be treated the same: the Bynder `MediaId` is parsed from the message and starts the [AssetUpdated Worker](#AssetUpdatedWorker)
+The NotificationListener has been updated after 1.6.0 release.
+It now saves the notification messages to a ConnectorState in inriver.
+One needs to configure a ScheduledExtension (ScheduledNotificationHandler) to process the ConnectorStates.
+All topics will be treated the same by the Scheduled Extension: the Bynder `MediaId` is parsed from the message and starts the [AssetUpdated Worker](#AssetUpdatedWorker)
 
+Note: as the Scheduled Extension runs every 15minutes since the start of the extension. So between Notification and processing of the topics a delay of at least 15 minutes is applicable.
 
 ### AssetUpdatedWorker
 

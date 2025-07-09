@@ -1,8 +1,4 @@
-﻿using Bynder.Config;
-using Bynder.Enums;
-using Bynder.Models;
-using Bynder.Utils.Extensions;
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using Newtonsoft.Json;
 using System;
@@ -11,6 +7,11 @@ using System.Linq;
 
 namespace Bynder.Utils.Helpers
 {
+    using Config;
+    using Enums;
+    using Models;
+    using Utils.Extensions;
+
     public static class SettingHelper
     {
         #region Methods
@@ -129,6 +130,21 @@ namespace Bynder.Utils.Helpers
 
             return "original";
         }
+
+        /// <summary>
+        /// Optional setting. Default is an empty list.
+        /// </summary>
+        /// <returns></returns>
+        public static List<ExportCondition> GetExportConditions(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.ExportConditions))
+            {
+                return JsonConvert.DeserializeObject<List<ExportCondition>>(settings[Settings.ExportConditions]);
+            }
+            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ExportConditions}");
+            return new List<ExportCondition>();
+        }
+
         /// <summary>
         /// Optional setting. Default is an empty list.
         /// </summary>
@@ -155,20 +171,6 @@ namespace Bynder.Utils.Helpers
             }
             logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ImportConditions}");
             return new List<ImportCondition>();
-        }
-
-        /// <summary>
-        /// Optional setting. Default is an empty list.
-        /// </summary>
-        /// <returns></returns>
-        public static List<ExportCondition> GetExportConditions(Dictionary<string, string> settings, IExtensionLog logger)
-        {
-            if (settings.ContainsKey(Settings.ExportConditions))
-            {
-                return JsonConvert.DeserializeObject<List<ExportCondition>>(settings[Settings.ExportConditions]);
-            }
-            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ExportConditions}");
-            return new List<ExportCondition>();
         }
 
         public static string GetInitialAssetLoadUrlQuery(Dictionary<string, string> settings, IExtensionLog logger)

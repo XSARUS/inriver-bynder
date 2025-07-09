@@ -1,10 +1,11 @@
-﻿using Bynder.Api;
-using Bynder.Utils;
-using Bynder.Workers;
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
 
 namespace Bynder.Extension
 {
+    using Api;
+    using Utils;
+    using Workers;
+
     internal class Registry : StructureMap.Registry
     {
         #region Constructors

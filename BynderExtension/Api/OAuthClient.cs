@@ -8,7 +8,6 @@ namespace Bynder.Api
 {
     public class OAuthClient
     {
-
         #region Fields
 
         protected OAuth.Manager OAuthManager;
@@ -152,6 +151,5 @@ namespace Bynder.Api
         }
 
         #endregion Methods
-
     }
 }

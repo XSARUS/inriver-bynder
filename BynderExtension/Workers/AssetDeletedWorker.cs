@@ -7,7 +7,6 @@ namespace Bynder.Workers
     using Names;
     using Utils.Helpers;
 
-
     public class AssetDeletedWorker : IWorker
     {
         #region Fields
@@ -60,7 +59,6 @@ namespace Bynder.Workers
 
             return result;
         }
-
 
         #endregion Methods
     }
