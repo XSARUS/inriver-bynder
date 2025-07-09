@@ -8,6 +8,7 @@ namespace BynderTest
     {
         #region Methods
 
+        [Ignore("Temporary disabled because since 1.7.0 we only store a ConnectorState and handle it by a ScheduledExtension")]
         [TestMethod]
         public void TestAwsNotification()
         {
