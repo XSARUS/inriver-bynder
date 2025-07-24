@@ -96,12 +96,16 @@ namespace Bynder.Workers
                 _inRiverContext.ExtensionManager.UtilityService.DeleteFile(existingFileId);
             }
 
-            // set fieltypes for resource entity
-            resourceEntity.GetField(FieldTypeIds.ResourceFileId).Data = newFileId;
-            resourceEntity.GetField(FieldTypeIds.ResourceMimeType).Data = asset.GetOriginalMimeType();
+            // set fieldtypes for resource entity
+            var resourceFileIdField = resourceEntity.GetField(FieldTypeIds.ResourceFileId);
+            resourceFileIdField.Data = newFileId;
+
+            var resourceMimeTypeField = resourceEntity.GetField(FieldTypeIds.ResourceMimeType);
+            resourceMimeTypeField.Data = asset.GetOriginalMimeType();
+
             bynderDownloadStateField.Data = BynderStates.Done;
 
-            _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
+            resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderDownloadStateField, resourceFileIdField, resourceMimeTypeField });
             _inRiverContext.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
         }
 

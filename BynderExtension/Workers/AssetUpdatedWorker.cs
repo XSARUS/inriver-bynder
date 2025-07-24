@@ -115,22 +115,6 @@ namespace Bynder.Workers
             }
         }
 
-        private Entity AddOrUpdateEntityInInRiver(Entity resourceEntity, StringBuilder resultString)
-        {
-            if (resourceEntity.Id == 0)
-            {
-                resourceEntity = _inRiverContext.ExtensionManager.DataService.AddEntity(resourceEntity);
-                resultString.Append($"Resource {resourceEntity.Id} added");
-            }
-            else
-            {
-                resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
-                resultString.Append($"Resource {resourceEntity.Id} updated");
-            }
-
-            return resourceEntity;
-        }
-
         /// <summary>
         /// get related entity data found in filename so we can create or update link to these entities
         /// all found field/values are supposed to be unique fields in the correspondent entitytype
@@ -209,10 +193,15 @@ namespace Bynder.Workers
                 resourceEntity = CreateResourceEntity(asset);
             }
 
+            // get current fieldvalues so we can check the updated fields later on
+            var oldFieldValues = resourceEntity.Fields.Select(x=> (Field)x.Clone()).ToList();
+
             // always set the asset id
             resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = asset.Id;
+            
             // save IdHash for re-creation of public CDN Urls in inRiver
             resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
+
             // status for new and existing ResourceEntity
             resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState).Data = BynderStates.Todo;
 
@@ -223,7 +212,19 @@ namespace Bynder.Workers
             SetResourceFilenameData(resourceEntity, filenameData);
 
             var resultString = new StringBuilder();
-            resourceEntity = AddOrUpdateEntityInInRiver(resourceEntity, resultString);
+
+            if (resourceEntity.Id == 0)
+            {
+                resourceEntity = _inRiverContext.ExtensionManager.DataService.AddEntity(resourceEntity);
+                resultString.Append($"Resource {resourceEntity.Id} added");
+            }
+            else
+            {
+                // get updated fields
+                var updatedFields = resourceEntity.Fields.Where(x => oldFieldValues.First(y => Equals(y.FieldType.Id, x.FieldType.Id)).ValueHasBeenModified(x.Data)).ToList();
+                resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(updatedFields);
+                resultString.Append($"Resource {resourceEntity.Id} updated");
+            }
 
             var relatedEntityData = evaluatorResult.GetRelatedEntityDataInFilename();
             AddRelations(relatedEntityData, resourceEntity, resultString);
@@ -583,14 +584,20 @@ namespace Bynder.Workers
         {
             _inRiverContext.Log(LogLevel.Verbose, $"Update metadata only for Resource {resourceEntity.Id}");
 
+            // get current fieldvalues so we can check the updated fields later on
+            var oldFieldValues = resourceEntity.Fields.Select(x => (Field)x.Clone()).ToList();
+
             // always set the asset id and hash
             resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = asset.Id;
             resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
 
+            // set other fields
             SetAssetProperties(resourceEntity, asset, result);
             SetMetapropertyData(resourceEntity, asset, result);
 
-            resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
+            // get updated fields
+            var updatedFields = resourceEntity.Fields.Where(x => oldFieldValues.First(y => Equals(y.FieldType.Id, x.FieldType.Id)).ValueHasBeenModified(x.Data)).ToList();
+            resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(updatedFields);
             result.Messages.Add($"Resource {resourceEntity.Id} updated");
             return result;
         }
