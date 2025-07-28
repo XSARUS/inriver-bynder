@@ -11,15 +11,12 @@ namespace Bynder.Extension
     using Enums;
     using Workers;
 
-    public class ScheduledNotificationHandler : Extension, IScheduledExtension
+    public class ScheduledNotificationHandler : AbstractScheduledExtension
     {
         #region Methods
 
-        public void Execute(bool force)
+        protected override void Execute()
         {
-            // only run manually
-            if (!force) return;
-
             try
             {
                 Context.Log(LogLevel.Information, "Start handling of Bynder Notifications");
@@ -74,6 +71,7 @@ namespace Bynder.Extension
                     catch (Exception e)
                     {
                         Context.Log(LogLevel.Error, $"Failed handling Bynder Notifications of ConnectorState {state.Id} created at {state.Created}: {e.Message}", e);
+                        Context.Log(LogLevel.Verbose, state.Data);
                         failed++;
                     }
                     finally

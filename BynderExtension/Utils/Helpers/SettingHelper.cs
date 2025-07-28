@@ -28,6 +28,18 @@ namespace Bynder.Utils.Helpers
             return string.Empty;
         }
 
+        public static string GetCronExpression(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.CronExpression))
+            {
+                return settings[Settings.CronExpression];
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.CronExpression}'. Using default value '* * * * *'");
+
+            return "* * * * *";
+        }
+
         /// <summary>
         /// Optional setting. Default is an empty dictionary
         /// </summary>

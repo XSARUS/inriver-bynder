@@ -3,6 +3,7 @@ using inRiver.Remoting.Log;
 using StructureMap;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Bynder.Extension
 {
@@ -59,17 +60,27 @@ namespace Bynder.Extension
         /// test method for extension - called from control panel
         /// </summary>
         /// <returns></returns>
-        public string Test()
+        public virtual string Test()
         {
-            var worker = Container.GetInstance<CombinedValidationWorker>();
-            var result = worker.Execute();
+            var sb = new StringBuilder();
+            try
+            {
+                var worker = Container.GetInstance<CombinedValidationWorker>();
+                var result = worker.Execute();
 
-            // write result to log for more readable access
-            result.Messages.ForEach(msg =>
-                Context.Log(msg.ToLower().StartsWith("error") ? LogLevel.Error : LogLevel.Information, msg)
-            );
+                // write result to log for more readable access
+                result.Messages.ForEach(msg =>
+                {
+                    sb.AppendLine(msg);
+                    Context.Log(msg.ToLower().StartsWith("error") ? LogLevel.Error : LogLevel.Information, msg);
+                });
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine(ex.ToString());
+            }
 
-            return string.Join(Environment.NewLine, result.Messages);
+            return sb.ToString();
         }
 
         #endregion Methods

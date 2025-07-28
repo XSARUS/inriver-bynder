@@ -14,6 +14,7 @@
         public const string FieldValuesToSetOnArchiveEvent = "FIELD_VALUES_TO_SET_ON_ARCHIVE_EVENT";
         public const string ImportConditions = "IMPORT_CONDITIONS";
         public const string InitialAssetLoadUrlQuery = "INITIAL_ASSET_LOAD_URL_QUERY";
+        public const string CronExpression = "CRON_EXPRESSION";
         public const string InRiverEntityUrl = "INRIVER_RESOURCE_URL";
         public const string InRiverIntegrationId = "INRIVER_INTEGRATION_ID";
         public const string LocaleStringLanguagesToSet = "LOCALESTRING_LANGUAGES_TO_SET";

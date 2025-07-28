@@ -77,7 +77,9 @@
     <Compile Include="Enums\MatchType.cs" />
     <Compile Include="Enums\NotificationType.cs" />
     <Compile Include="Enums\ResourceSearchType.cs" />
+    <Compile Include="Enums\SchedulerStatus.cs" />
     <Compile Include="Exceptions\MissingDataException.cs" />
+    <Compile Include="Extension\AbstractScheduledExtension.cs" />
     <Compile Include="Extension\AssetLoader.cs" />
     <Compile Include="Extension\Registry.cs" />
     <Compile Include="Extension\Extension.cs" />
@@ -149,6 +151,9 @@
     </PackageReference>
     <PackageReference Include="inRiver.Remoting.iPMC">
       <Version>8.21.0</Version>
+    </PackageReference>
+    <PackageReference Include="NCrontab">
+      <Version>3.3.3</Version>
     </PackageReference>
     <PackageReference Include="StructureMap">
       <Version>4.7.1</Version>
