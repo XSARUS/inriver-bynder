@@ -1,5 +1,4 @@
-﻿
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using System.Collections.Generic;
@@ -41,7 +40,7 @@ namespace Bynder.Utils
             var regex = new Regex(regularExpressionPattern, RegexOptions.None);
 
             result.Match = regex.Match(fileName);
-            _inRiverContext.Logger.Log(LogLevel.Debug, $"Matching file '{fileName}', found: '{result.Match.Value}'");
+            _inRiverContext.Log(LogLevel.Debug, $"Matching file '{fileName}', found: '{result.Match.Value}'");
 
             for (int i = 1; i < result.Match.Groups.Count; i++)
             {

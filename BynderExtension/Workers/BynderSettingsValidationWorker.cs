@@ -1,9 +1,10 @@
-﻿using Bynder.Api;
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
 using System;
 
 namespace Bynder.Workers
 {
+    using Api;
+
     internal class BynderSettingsValidationWorker : IWorker
     {
         #region Fields

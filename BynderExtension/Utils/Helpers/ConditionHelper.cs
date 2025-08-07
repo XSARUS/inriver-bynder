@@ -9,6 +9,8 @@ namespace Bynder.Utils.Helpers
 
     public static class ConditionHelper
     {
+        #region Methods
+
         public static bool ValuesApplyToCondition(List<string> values, Condition condition)
         {
             switch (condition.MatchType)
@@ -51,5 +53,7 @@ namespace Bynder.Utils.Helpers
                     throw new NotSupportedException($"MatchType {condition.MatchType} is not yet supported to use for the import conditions!");
             }
         }
+
+        #endregion Methods
     }
 }

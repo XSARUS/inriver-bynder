@@ -1,14 +1,16 @@
-﻿using Bynder.Api;
-using Bynder.Enums;
-using Bynder.Workers;
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using StructureMap;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Bynder.Extension
 {
+    using Api;
+    using Enums;
+    using Workers;
+
     public abstract class Extension
     {
         #region Fields
@@ -21,7 +23,7 @@ namespace Bynder.Extension
 
         public inRiverContext Context { get; set; }
 
-        public Dictionary<string, string> DefaultSettings
+        public virtual Dictionary<string, string> DefaultSettings
         {
             get
             {
@@ -58,17 +60,27 @@ namespace Bynder.Extension
         /// test method for extension - called from control panel
         /// </summary>
         /// <returns></returns>
-        public string Test()
+        public virtual string Test()
         {
-            var worker = Container.GetInstance<CombinedValidationWorker>();
-            var result = worker.Execute();
+            var sb = new StringBuilder();
+            try
+            {
+                var worker = Container.GetInstance<CombinedValidationWorker>();
+                var result = worker.Execute();
 
-            // write result to log for more readable access
-            result.Messages.ForEach(msg =>
-                Context.Logger.Log(msg.ToLower().StartsWith("error") ? LogLevel.Error : LogLevel.Information, msg)
-            );
+                // write result to log for more readable access
+                result.Messages.ForEach(msg =>
+                {
+                    sb.AppendLine(msg);
+                    Context.Log(msg.ToLower().StartsWith("error") ? LogLevel.Error : LogLevel.Information, msg);
+                });
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine(ex.ToString());
+            }
 
-            return string.Join(Environment.NewLine, result.Messages);
+            return sb.ToString();
         }
 
         #endregion Methods

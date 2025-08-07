@@ -15,7 +15,6 @@ namespace Bynder.Workers
 
     public class ResourceMetapropertyUpdateWorker : IWorker
     {
-
         #region Fields
 
         private readonly IBynderClient _bynderClient;
@@ -69,53 +68,18 @@ namespace Bynder.Workers
             if (newMetapropertyValues.Count > 0)
             {
                 // inform bynder of the changes:
-                _inRiverContext.Logger.Log(LogLevel.Information, $"Update metaproperties {string.Join(";", newMetapropertyValues)}");
+                _inRiverContext.Log(LogLevel.Information, $"Update metaproperties {string.Join(";", newMetapropertyValues)}");
                 _bynderClient.SetMetaProperties(bynderId, newMetapropertyValues);
             }
             else
             {
-                _inRiverContext.Logger.Log(LogLevel.Verbose, $"No metaproperties mapped or found");
+                _inRiverContext.Log(LogLevel.Verbose, $"No metaproperties mapped or found");
             }
         }
-
-        private bool EntityAppliesToConditions(Entity entity)
-        {
-            var conditions = SettingHelper.GetExportConditions(_inRiverContext.Settings, _inRiverContext.Logger);
-
-            // return true if no conditions found. Conditions are optional.
-            if (conditions.Count == 0) return true;
-
-            foreach (var condition in conditions)
-            {
-                if (!GetConditionResult(entity, condition)) return false;
-            }
-
-            return true;
-        }
-
-        private static bool GetConditionResult(Entity entity, ExportCondition condition)
-        {
-            var field = entity.GetField(condition.InRiverFieldTypeId);
-
-            // metaproperty is not included in asset, when the value is null
-            if (field == null || field.IsEmpty())
-            {
-                // check if there are conditions or if the only condition value is null
-                if (condition.Values.Count == 0 || (condition.Values.Count == 1 && string.IsNullOrEmpty(condition.Values[0]))) return true;
-
-                // return false, because the metaproperty does not have a value, but the condition does
-                return false;
-            }
-
-            List<string> fieldValues = GetValuesForField(field);
-
-            return ConditionHelper.ValuesApplyToCondition(fieldValues, condition);
-        }
-
 
         protected static void FilterMetapropertyValues(List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
         {
-            foreach(var map in configuredMetaPropertyMap)
+            foreach (var map in configuredMetaPropertyMap)
             {
                 if (!newMetapropertyValues.ContainsKey(map.BynderMetaProperty)) continue;
 
@@ -165,7 +129,7 @@ namespace Bynder.Workers
                     continue;
                 }
 
-                _inRiverContext.Logger.Log(LogLevel.Debug, $"Saving value for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}) (R)");
+                _inRiverContext.Log(LogLevel.Debug, $"Saving value for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}) (R)");
                 newMetapropertyValues.Add(map.BynderMetaProperty, values);
             }
         }
@@ -198,9 +162,43 @@ namespace Bynder.Workers
                     values.AddRange(fieldValues);
                 }
 
-                _inRiverContext.Logger.Log(LogLevel.Debug, $"Saving value for metaproperty {mapping.BynderMetaProperty} ({mapping.InriverFieldTypeId}) (L)");
+                _inRiverContext.Log(LogLevel.Debug, $"Saving value for metaproperty {mapping.BynderMetaProperty} ({mapping.InriverFieldTypeId}) (L)");
                 newMetapropertyValues.Add(mapping.BynderMetaProperty, values);
             }
+        }
+
+        private static bool GetConditionResult(Entity entity, ExportCondition condition)
+        {
+            var field = entity.GetField(condition.InRiverFieldTypeId);
+
+            // metaproperty is not included in asset, when the value is null
+            if (field == null || field.IsEmpty())
+            {
+                // check if there are conditions or if the only condition value is null
+                if (condition.Values.Count == 0 || (condition.Values.Count == 1 && string.IsNullOrEmpty(condition.Values[0]))) return true;
+
+                // return false, because the metaproperty does not have a value, but the condition does
+                return false;
+            }
+
+            List<string> fieldValues = GetValuesForField(field);
+
+            return ConditionHelper.ValuesApplyToCondition(fieldValues, condition);
+        }
+
+        private bool EntityAppliesToConditions(Entity entity)
+        {
+            var conditions = SettingHelper.GetExportConditions(_inRiverContext.Settings, _inRiverContext.Logger);
+
+            // return true if no conditions found. Conditions are optional.
+            if (conditions.Count == 0) return true;
+
+            foreach (var condition in conditions)
+            {
+                if (!GetConditionResult(entity, condition)) return false;
+            }
+
+            return true;
         }
 
         #endregion Methods

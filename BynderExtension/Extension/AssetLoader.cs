@@ -4,13 +4,12 @@ using inRiver.Remoting.Log;
 namespace Bynder.Extension
 {
     using Api;
-    using Bynder.Utils.Helpers;
     using Enums;
+    using Utils.Helpers;
     using Workers;
 
     public class AssetLoader : Extension, IScheduledExtension
     {
-
         #region Methods
 
         /// <summary>
@@ -25,7 +24,7 @@ namespace Bynder.Extension
 
             try
             {
-                Context.Logger.Log(LogLevel.Information, "Start loading assets");
+                Context.Log(LogLevel.Information, "Start loading assets");
 
                 var worker = Container.GetInstance<AssetUpdatedWorker>();
                 var bynderClient = Container.GetInstance<BynderClient>();
@@ -35,7 +34,7 @@ namespace Bynder.Extension
                 var counter = 0;
                 string query = SettingHelper.GetInitialAssetLoadUrlQuery(DefaultSettings, Context.Logger);
                 var assetCollection = bynderClient.GetAssetCollection(query);
-                Context.Logger.Log(LogLevel.Information, $"Start processing {assetCollection.GetTotal()} assets.");
+                Context.Log(LogLevel.Information, $"Start processing {assetCollection.GetTotal()} assets.");
 
                 assetCollection.Media.ForEach(a => worker.Execute(a.Id, NotificationType.DataUpsert));
                 counter += assetCollection.Media.Count;
@@ -47,9 +46,9 @@ namespace Bynder.Extension
                         assetCollection.GetNextPage());
                     assetCollection.Media.ForEach(a => worker.Execute(a.Id, NotificationType.DataUpsert));
                     counter += assetCollection.Media.Count;
-                    Context.Logger.Log(LogLevel.Information, $"Processed {counter} assets.");
+                    Context.Log(LogLevel.Information, $"Processed {counter} assets.");
                 }
-                Context.Logger.Log(LogLevel.Information, "Initial Import Successful!");
+                Context.Log(LogLevel.Information, "Initial Import Successful!");
             }
             catch (System.Exception ex)
             {
@@ -58,6 +57,5 @@ namespace Bynder.Extension
         }
 
         #endregion Methods
-
     }
 }
