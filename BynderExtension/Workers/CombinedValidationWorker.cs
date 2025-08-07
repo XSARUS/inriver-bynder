@@ -1,7 +1,7 @@
-﻿using Bynder.Api;
-
-namespace Bynder.Workers
+﻿namespace Bynder.Workers
 {
+    using Api;
+
     internal class CombinedValidationWorker : IWorker
     {
         #region Fields

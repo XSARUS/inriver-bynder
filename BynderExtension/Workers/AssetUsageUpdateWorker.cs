@@ -49,7 +49,7 @@ namespace Bynder.Workers
             string formattedInriverResourceUrl = inriverEntityUrl.Replace("{entityId}", resourceEntity.Id.ToString());
 
             // clear all current usages
-            _inRiverContext.Logger.Log(LogLevel.Information, $"Set asset usage for asset {assetId}");
+            _inRiverContext.Log(LogLevel.Information, $"Set asset usage for asset {assetId}");
             _bynderBynderClient.DeleteAssetUsage(assetId, integrationId);
 
             // and set new one

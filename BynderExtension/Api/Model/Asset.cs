@@ -26,7 +26,6 @@ namespace Bynder.Api.Model
     [JsonConverter(typeof(AssetJsonConverter))]
     public class Asset
     {
-
         #region Fields
 
         private const string Original = "original";
@@ -58,6 +57,7 @@ namespace Bynder.Api.Model
 
         public DateTime DateCreated { get; set; }
         public DateTime DateModified { get; set; }
+
         /// <summary>
         /// Publication datetime. ISO8601 format: yyyy-mm-ddThh:mm:ssZ.
         /// </summary>
@@ -71,12 +71,14 @@ namespace Bynder.Api.Model
         public List<string> Extension { get; set; }
         public long FileSize { get; set; }
         public int Height { get; set; }
+
         /// <summary>
         /// Asset id, will return the asset for that id.
         /// </summary>
         public string Id { get; set; }
 
         public string IdHash { get; set; }
+
         /// <summary>
         /// Indicating the public state of the asset. Warning irreversible, once changed to true it cannot be changed back.
         /// </summary>
@@ -163,6 +165,5 @@ namespace Bynder.Api.Model
         }
 
         #endregion Methods
-
     }
 }

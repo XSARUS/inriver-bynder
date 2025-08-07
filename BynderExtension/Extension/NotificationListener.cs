@@ -1,12 +1,11 @@
 ﻿using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Log;
-using System;
-using System.Threading;
+using inRiver.Remoting.Objects;
+using Newtonsoft.Json;
 
 namespace Bynder.Extension
 {
-    using Bynder.Enums;
-    using Workers;
+    using Names;
 
     public class NotificationListener : Extension, IInboundDataExtension
     {
@@ -33,49 +32,18 @@ namespace Bynder.Extension
         /// <returns></returns>
         public string Update(string value)
         {
-            string result = string.Empty;
-
-            try
+            ConnectorState state = new ConnectorState
             {
-                // wait 15 seconds because the export db of bynder does not immediately has the change synced.
-                Thread.Sleep(15000);
+                ConnectorId = ConnectorStateIds.BynderNotificationListener,
+                Data = JsonConvert.SerializeObject(value)
+            };
 
-                // log the incomining notification
-                Context.Log(LogLevel.Verbose, $"Notification: {value}");
+            state = Context.ExtensionManager.UtilityService.AddConnectorState(state);
 
-                // first, handle the notification
-                var notificationWorker = Container.GetInstance<NotificationWorker>();
-                var notificationResult = notificationWorker.Execute(value);
-                var resultMessages = notificationResult.Messages;
+            string responseMessage = $"Notification message queued in ConnectorState {state.Id} for arbitrary connector {ConnectorStateIds.BynderNotificationListener} at {state.Created}";
+            Context.Log(LogLevel.Verbose, responseMessage);
 
-                // if the outcome of the notification contains a media Id, we need to start handling the asset
-                if (!string.IsNullOrEmpty(notificationResult.MediaId))
-                {
-                    WorkerResult workerResult;
-                    if (notificationResult.NotificationType == NotificationType.IsDeleted)
-                    {
-                        var assetDeletedWorker = Container.GetInstance<AssetDeletedWorker>();
-                        workerResult = assetDeletedWorker.Execute(notificationResult.MediaId);
-                    }
-                    else
-                    {
-                        var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
-                        workerResult = assetWorker.Execute(notificationResult.MediaId, notificationResult.NotificationType);
-                    }
-
-                    resultMessages.AddRange(workerResult.Messages);
-                }
-
-                // return the outcome to the caller
-                result = string.Join(Environment.NewLine, resultMessages);
-            }
-            catch (Exception ex)
-            {
-                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
-            }
-            Context.Log(LogLevel.Verbose, result);
-
-            return result;
+            return responseMessage;
         }
 
         #endregion Methods

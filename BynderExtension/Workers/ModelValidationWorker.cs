@@ -1,9 +1,10 @@
-﻿using Bynder.Names;
-using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Objects;
 
 namespace Bynder.Workers
 {
+    using Names;
+
     public class ModelValidationWorker : IWorker
     {
         #region Fields
