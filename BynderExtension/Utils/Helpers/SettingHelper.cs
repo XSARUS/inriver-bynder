@@ -28,18 +28,6 @@ namespace Bynder.Utils.Helpers
             return string.Empty;
         }
 
-        public static string GetCronExpression(Dictionary<string, string> settings, IExtensionLog logger)
-        {
-            if (settings.ContainsKey(Settings.CronExpression))
-            {
-                return settings[Settings.CronExpression];
-            }
-
-            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.CronExpression}'. Using default value '* * * * *'");
-
-            return "* * * * *";
-        }
-
         /// <summary>
         /// Optional setting. Default is an empty dictionary
         /// </summary>
@@ -103,6 +91,18 @@ namespace Bynder.Utils.Helpers
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.MetapropertyMap}'");
 
             return new List<MetaPropertyMap>();
+        }
+
+        public static string GetCronExpression(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.CronExpression))
+            {
+                return settings[Settings.CronExpression];
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.CronExpression}'. Using default value '* * * * *'");
+
+            return "* * * * *";
         }
 
         public static DateTimeSettings GetDateTimeSettings(Dictionary<string, string> settings, IExtensionLog logger)
@@ -235,6 +235,18 @@ namespace Bynder.Utils.Helpers
             logger.Log(LogLevel.Verbose, "Could not find configured multivalue separator");
 
             return new List<string>();
+        }
+
+        public static int GetMaxRetryAttempts(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.MaxRetryAttempts) && int.TryParse(settings[Settings.MaxRetryAttempts], out int maxRetryAttempts))
+            {
+                return maxRetryAttempts;
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration or parse the value to an number for '{Settings.MaxRetryAttempts}' using default value of {Settings.DefaultMaxRetryAttempts}");
+
+            return Settings.DefaultMaxRetryAttempts;
         }
 
         /// <summary>

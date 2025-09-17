@@ -1,5 +1,4 @@
-﻿using inRiver.Remoting.Extension.Interface;
-using inRiver.Remoting.Log;
+﻿using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using Newtonsoft.Json;
 using System;
@@ -8,11 +7,27 @@ using System.Linq;
 
 namespace Bynder.Extension
 {
+    using Bynder.Config;
+    using Bynder.Utils.Helpers;
     using Enums;
     using Workers;
 
     public class ScheduledNotificationHandler : AbstractScheduledExtension
     {
+        #region Properties
+
+        public override Dictionary<string, string> DefaultSettings
+        {
+            get
+            {
+                var settings = base.DefaultSettings;
+                settings.Add(Settings.MaxRetryAttempts, Settings.DefaultMaxRetryAttempts.ToString());
+                return settings;
+            }
+        }
+
+        #endregion Properties
+
         #region Methods
 
         protected override void Execute()
@@ -29,17 +44,20 @@ namespace Bynder.Extension
                 }
 
                 var notificationWorker = Container.GetInstance<NotificationWorker>();
+                int retried = 0;
                 int failed = 0;
                 int succesful = 0;
+                int maxRetryAttempts = SettingHelper.GetMaxRetryAttempts(DefaultSettings, Context.Logger);
 
                 foreach (ConnectorState state in states.OrderBy(s => s.Created))
                 {
                     string result = string.Empty;
-                    var notificationMessage = JsonConvert.DeserializeObject<string>(state.Data);
+                    var stateData = JsonConvert.DeserializeObject<Models.AttemptSNSMessageWrapper>(state.Data);
+                    var notificationMessage = JsonConvert.SerializeObject(stateData.OriginalMessage);
 
                     try
                     {
-                        Context.Log(LogLevel.Debug, $"Handling Bynder Notifications of ConnectorState {state.Id} created at {state.Created}");
+                        Context.Log(LogLevel.Debug, $"Handling Bynder Notifications of ConnectorState {state.Id} created at {state.Created} attempt {stateData.Attempt}/{maxRetryAttempts}");
 
                         var notificationResult = notificationWorker.Execute(notificationMessage);
                         var resultMessages = notificationResult.Messages;
@@ -67,20 +85,32 @@ namespace Bynder.Extension
                         Context.Log(LogLevel.Verbose, $"Result for ConnectorState {state.Id}: {result}");
                         Context.Log(LogLevel.Debug, $"Handled Bynder Notifications of ConnectorState {state.Id} created at {state.Created}");
                         succesful++;
+
+                        Context.ExtensionManager.UtilityService.DeleteConnectorState(state.Id);
                     }
                     catch (Exception e)
                     {
-                        Context.Log(LogLevel.Error, $"Failed handling Bynder Notifications of ConnectorState {state.Id} created at {state.Created}: {e.Message}", e);
+                        Context.Log(LogLevel.Error, $"Failed handling Bynder Notifications of ConnectorState {state.Id} created at {state.Created} [attempt {stateData.Attempt}/{maxRetryAttempts}]: {e.Message}", e);
                         Context.Log(LogLevel.Verbose, state.Data);
-                        failed++;
-                    }
-                    finally
-                    {
-                        Context.ExtensionManager.UtilityService.DeleteConnectorState(state.Id);
+
+                        if (stateData.Attempt <= maxRetryAttempts)
+                        {
+                            stateData.Attempt++;
+                            state.Data = JsonConvert.SerializeObject(stateData);
+                            var updatedState = Context.ExtensionManager.UtilityService.UpdateConnectorState(state);
+                            retried++;
+                            Context.Log(LogLevel.Debug, $"ConnectorState {state.Id} updated {updatedState.Modified} for next attempt {stateData.Attempt}/{maxRetryAttempts}");
+                        }
+                        else
+                        {
+                            Context.ExtensionManager.UtilityService.DeleteConnectorState(state.Id);
+                            failed++;
+                            Context.Log(LogLevel.Error, $"Max retry attempts reached for ConnectorState {state.Id}", e);
+                        }
                     }
                 }
 
-                Context.Log(LogLevel.Information, $"Finished handling of {states.Count} Bynder Notifications [{succesful} successfull | {failed} failed]");
+                Context.Log(LogLevel.Information, $"Finished handling of {states.Count} Bynder Notifications [{succesful} successfull | {failed} failed | {retried} retried]");
             }
             catch (Exception ex)
             {

@@ -1,10 +1,12 @@
-﻿using inRiver.Remoting.Extension.Interface;
+﻿using Amazon.SimpleNotificationService.Util;
+using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using Newtonsoft.Json;
 
 namespace Bynder.Extension
 {
+    using Models;
     using Names;
 
     public class NotificationListener : Extension, IInboundDataExtension
@@ -32,10 +34,18 @@ namespace Bynder.Extension
         /// <returns></returns>
         public string Update(string value)
         {
+            // Value is a Amazon SNS message containing the Bynder notification
+            // We just store it in a wrapper in the ConnectorState for processing by the ScheduledNotificationHandler and using retry-logic
+            AttemptSNSMessageWrapper data = new AttemptSNSMessageWrapper
+            {
+                OriginalMessage = JsonConvert.DeserializeObject<Message>(value),
+                Attempt = 1
+            };
+
             ConnectorState state = new ConnectorState
             {
                 ConnectorId = ConnectorStateIds.BynderNotificationListener,
-                Data = JsonConvert.SerializeObject(value)
+                Data = JsonConvert.SerializeObject(data)
             };
 
             state = Context.ExtensionManager.UtilityService.AddConnectorState(state);
