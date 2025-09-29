@@ -288,6 +288,16 @@ namespace Bynder.Utils.Helpers
             return true;
         }
 
+        public static Dictionary<string, string> GetLocaleMappings(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.LocaleMappingsInriver2Bynder))
+            {
+                return JsonConvert.DeserializeObject<Dictionary<string, string>>(settings[Settings.LocaleMappingsInriver2Bynder]);
+            }
+            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.LocaleMappingsInriver2Bynder}");
+            return new Dictionary<string, string>();
+        }
+
         #endregion Methods
     }
 }

@@ -8,8 +8,10 @@ using System.Linq;
 namespace Bynder.Workers
 {
     using Api;
+    using inRiver.Remoting;
     using Models;
     using Names;
+    using Newtonsoft.Json;
     using Utils.Helpers;
     using Utils.InRiver;
 
@@ -91,7 +93,7 @@ namespace Bynder.Workers
             }
         }
 
-        protected static List<string> GetValuesForField(Field field)
+        protected static List<string> GetValuesForField(Field field, inRiverContext inRiverContext)
         {
             var values = new List<string>();
 
@@ -100,12 +102,60 @@ namespace Bynder.Workers
                 return values;
             }
 
-            if (field.FieldType.DataType.Equals(DataType.CVL) && field.FieldType.Multivalue)
+            if (field.FieldType.DataType.Equals(DataType.LocaleString))
             {
-                string[] keys = field.Data.ToString().Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-                if (keys.Any())
+                Dictionary<string, string> valuePairs = new Dictionary<string, string>();
+                LocaleString localeString = (LocaleString)field.Data as LocaleString;
+                if (localeString != null)
                 {
-                    values.AddRange(keys);
+                    Dictionary<string, string> localeMappings = SettingHelper.GetLocaleMappings(inRiverContext.Settings, inRiverContext.Logger);
+                    foreach (var lang in localeString.Languages)
+                    {
+                        if (localeMappings.ContainsKey(lang.Name))
+                        {
+                            valuePairs.Add(localeMappings[lang.Name], localeString[lang]);
+                        }
+                    }
+                }
+
+                values.Add(JsonConvert.SerializeObject(valuePairs));
+            }
+            else if (field.FieldType.DataType.Equals(DataType.CVL))
+            {
+                CVL cvl = inRiverContext.ExtensionManager.ModelService.GetCVL(field.FieldType.CVLId);
+                if (cvl.DataType.Equals(DataType.LocaleString))
+                {
+                    Dictionary<string, string> localeMappings = SettingHelper.GetLocaleMappings(inRiverContext.Settings, inRiverContext.Logger);
+                    IEnumerable<string> keys = field.Data.ToString().Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Distinct();
+                    List<CVLValue> cvlValues = inRiverContext.ExtensionManager.ModelService.GetCVLValuesForCVL(cvl.Id);
+
+                    foreach (var key in keys)
+                    {
+                        CVLValue cvlValue = cvlValues.FirstOrDefault(c => c.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase));
+                        if (cvlValue == null) continue;
+                        LocaleString localeString = (LocaleString)cvlValue.Value as LocaleString;
+                        if (localeString == null) continue;
+
+                        Dictionary<string, string> valuePairs = new Dictionary<string, string>();
+
+                        foreach (var lang in localeString.Languages)
+                        {
+                            if (localeMappings.ContainsKey(lang.Name))
+                            {
+                                valuePairs.Add(localeMappings[lang.Name], localeString[lang]);
+                            }
+                        }
+
+                        values.Add(JsonConvert.SerializeObject(valuePairs));
+                    }
+                }
+                else if (field.FieldType.Multivalue)
+                {
+                    string[] keys = field.Data.ToString().Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                    if (keys.Any())
+                    {
+                        values.AddRange(keys);
+                    }
                 }
             }
             else
@@ -122,7 +172,7 @@ namespace Bynder.Workers
             {
                 // check if configured fieldtype is on entity
                 var field = resourceEntity.GetField(map.InriverFieldTypeId);
-                var values = GetValuesForField(field);
+                var values = GetValuesForField(field, _inRiverContext);
 
                 if (values.Count == 0)
                 {
@@ -158,7 +208,7 @@ namespace Bynder.Workers
                 foreach (var inboundLink in inboundLinks)
                 {
                     Field field = _inRiverContext.ExtensionManager.DataService.GetField(inboundLink.Source.Id, mapping.InriverFieldTypeId);
-                    var fieldValues = GetValuesForField(field);
+                    var fieldValues = GetValuesForField(field, _inRiverContext);
                     values.AddRange(fieldValues);
                 }
 
@@ -167,7 +217,7 @@ namespace Bynder.Workers
             }
         }
 
-        private static bool GetConditionResult(Entity entity, ExportCondition condition)
+        private static bool GetConditionResult(Entity entity, ExportCondition condition, inRiverContext inriverContext)
         {
             var field = entity.GetField(condition.InRiverFieldTypeId);
 
@@ -181,7 +231,7 @@ namespace Bynder.Workers
                 return false;
             }
 
-            List<string> fieldValues = GetValuesForField(field);
+            List<string> fieldValues = GetValuesForField(field, inriverContext);
 
             return ConditionHelper.ValuesApplyToCondition(fieldValues, condition);
         }
@@ -195,7 +245,7 @@ namespace Bynder.Workers
 
             foreach (var condition in conditions)
             {
-                if (!GetConditionResult(entity, condition)) return false;
+                if (!GetConditionResult(entity, condition, _inRiverContext)) return false;
             }
 
             return true;

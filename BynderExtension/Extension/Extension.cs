@@ -46,6 +46,7 @@ namespace Bynder.Extension
                 settings.Add(Config.Settings.DownloadMediaType, "original");
                 settings.Add(Config.Settings.AddAssetIdPrefixToFilenameOfNewResource, true.ToString());
                 settings.Add(Config.Settings.ResourceSearchType, ResourceSearchType.AssetId.ToString());
+                settings.Add(Config.Settings.LocaleMappingsInriver2Bynder, "");
                 return settings;
             }
         }
