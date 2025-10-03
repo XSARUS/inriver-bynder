@@ -7,7 +7,9 @@ using System.Linq;
 
 namespace Bynder.Extension
 {
+    using Amazon.SimpleNotificationService.Util;
     using Bynder.Config;
+    using Bynder.Models;
     using Bynder.Utils.Helpers;
     using Enums;
     using Workers;
@@ -52,8 +54,9 @@ namespace Bynder.Extension
                 foreach (ConnectorState state in states.OrderBy(s => s.Created))
                 {
                     string result = string.Empty;
-                    var stateData = JsonConvert.DeserializeObject<Models.AttemptSNSMessageWrapper>(state.Data);
-                    var notificationMessage = JsonConvert.SerializeObject(stateData.OriginalMessage);
+
+                    var stateData = JsonConvert.DeserializeObject<AttemptSNSMessageWrapper>(state.Data);
+                    var notificationMessage = stateData.OriginalMessageJson;
 
                     try
                     {
@@ -93,7 +96,7 @@ namespace Bynder.Extension
                         Context.Log(LogLevel.Error, $"Failed handling Bynder Notifications of ConnectorState {state.Id} created at {state.Created} [attempt {stateData.Attempt}/{maxRetryAttempts}]: {e.Message}", e);
                         Context.Log(LogLevel.Verbose, state.Data);
 
-                        if (stateData.Attempt <= maxRetryAttempts)
+                        if (stateData.Attempt < maxRetryAttempts)
                         {
                             stateData.Attempt++;
                             state.Data = JsonConvert.SerializeObject(stateData);
