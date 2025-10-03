@@ -8,6 +8,7 @@ namespace Bynder.Extension
 {
     using Models;
     using Names;
+    using System;
 
     public class NotificationListener : Extension, IInboundDataExtension
     {
@@ -38,12 +39,12 @@ namespace Bynder.Extension
             // We just store it in a wrapper in the ConnectorState for processing by the ScheduledNotificationHandler and using retry-logic
             AttemptSNSMessageWrapper data = new AttemptSNSMessageWrapper
             {
-                OriginalMessage = Message.ParseMessage(value), /* don't use: JsonConvert.DeserializeObject<Message>(value), */
-                Attempt = 1
+                Attempt = 1,
+                OriginalMessageJson = value // the raw string
             };
 
-            Context.Log(LogLevel.Verbose, $"Original SNS Message in JSON: {value}");
-            Context.Log(LogLevel.Verbose, $"Original SNS Message value-test: {data.OriginalMessage.MessageId} -> {data.OriginalMessage.MessageText}");
+            // Context.Log(LogLevel.Verbose, $"Original SNS Message in JSON: {value}");
+            // Context.Log(LogLevel.Verbose, $"Original SNS Message value-test: {data.OriginalMessage.MessageId} -> {data.OriginalMessage.MessageText}");
 
             ConnectorState state = new ConnectorState
             {
@@ -51,11 +52,11 @@ namespace Bynder.Extension
                 Data = JsonConvert.SerializeObject(data)
             };
 
-            Context.Log(LogLevel.Verbose, $"Wrapped SNS Message in JSON: {state.Data}");
+            // Context.Log(LogLevel.Verbose, $"Wrapped SNS Message in JSON: {state.Data}");
 
             state = Context.ExtensionManager.UtilityService.AddConnectorState(state);
 
-            string responseMessage = $"Notification message queued in ConnectorState {state.Id} for arbitrary connector {ConnectorStateIds.BynderNotificationListener} at {state.Created.ToString("yyyyMMddHHmmss")}";
+            string responseMessage = $"Notification message queued in ConnectorState {state.Id} for arbitrary connector {ConnectorStateIds.BynderNotificationListener} at {DateTime.Now.ToString("yyyyMMddHHmmss")}";
             Context.Log(LogLevel.Verbose, responseMessage);
 
             return responseMessage;
