@@ -43,6 +43,7 @@ namespace Bynder.Extension
             };
 
             Context.Log(LogLevel.Verbose, $"Original SNS Message in JSON: {value}");
+            Context.Log(LogLevel.Verbose, $"Original SNS Message value-test: {data.OriginalMessage.MessageId} -> {data.OriginalMessage.MessageText}");
 
             ConnectorState state = new ConnectorState
             {
