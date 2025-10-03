@@ -38,7 +38,7 @@ namespace Bynder.Extension
             // We just store it in a wrapper in the ConnectorState for processing by the ScheduledNotificationHandler and using retry-logic
             AttemptSNSMessageWrapper data = new AttemptSNSMessageWrapper
             {
-                OriginalMessage = JsonConvert.DeserializeObject<Message>(value),
+                OriginalMessage = Message.ParseMessage(value), /* don't use: JsonConvert.DeserializeObject<Message>(value), */
                 Attempt = 1
             };
 
