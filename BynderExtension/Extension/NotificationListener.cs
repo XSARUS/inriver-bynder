@@ -42,15 +42,19 @@ namespace Bynder.Extension
                 Attempt = 1
             };
 
+            Context.Log(LogLevel.Verbose, $"Original SNS Message in JSON: {value}");
+
             ConnectorState state = new ConnectorState
             {
                 ConnectorId = ConnectorStateIds.BynderNotificationListener,
                 Data = JsonConvert.SerializeObject(data)
             };
 
+            Context.Log(LogLevel.Verbose, $"Wrapped SNS Message in JSON: {state.Data}");
+
             state = Context.ExtensionManager.UtilityService.AddConnectorState(state);
 
-            string responseMessage = $"Notification message queued in ConnectorState {state.Id} for arbitrary connector {ConnectorStateIds.BynderNotificationListener} at {state.Created}";
+            string responseMessage = $"Notification message queued in ConnectorState {state.Id} for arbitrary connector {ConnectorStateIds.BynderNotificationListener} at {state.Created.ToString("yyyyMMddHHmmss")}";
             Context.Log(LogLevel.Verbose, responseMessage);
 
             return responseMessage;
