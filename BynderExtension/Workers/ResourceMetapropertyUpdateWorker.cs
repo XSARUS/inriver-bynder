@@ -263,7 +263,11 @@ namespace Bynder.Workers
 
             foreach (var condition in conditions)
             {
-                if (!GetConditionResult(entity, condition, _inRiverContext)) return false;
+                if (!GetConditionResult(entity, condition, _inRiverContext))
+                {
+                    _inRiverContext.Log(LogLevel.Debug, $"Resource {entity.Id} does not apply to condition on field {condition.InRiverFieldTypeId} [value: {entity.GetField(condition.InRiverFieldTypeId).Data?.ToString()}], skipping metaproperty update; Condition values: {string.Join(";", condition.Values)}");
+                    return false;
+                }
             }
 
             return true;
