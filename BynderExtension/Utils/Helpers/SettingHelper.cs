@@ -290,11 +290,11 @@ namespace Bynder.Utils.Helpers
 
         public static Dictionary<string, string> GetLocaleMappings(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.ContainsKey(Settings.LocaleMappingsInriver2Bynder))
+            if (settings.ContainsKey(Settings.LocaleMappingsInriverToBynder))
             {
-                return JsonConvert.DeserializeObject<Dictionary<string, string>>(settings[Settings.LocaleMappingsInriver2Bynder]);
+                return JsonConvert.DeserializeObject<Dictionary<string, string>>(settings[Settings.LocaleMappingsInriverToBynder]);
             }
-            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.LocaleMappingsInriver2Bynder}");
+            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.LocaleMappingsInriverToBynder}");
             return new Dictionary<string, string>();
         }
 
