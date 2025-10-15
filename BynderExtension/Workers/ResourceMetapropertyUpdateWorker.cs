@@ -1,6 +1,7 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +9,8 @@ using System.Linq;
 namespace Bynder.Workers
 {
     using Api;
-    using inRiver.Remoting;
     using Models;
     using Names;
-    using Newtonsoft.Json;
     using Utils.Helpers;
     using Utils.InRiver;
 
@@ -121,7 +120,7 @@ namespace Bynder.Workers
             if (field.FieldType.DataType.Equals(DataType.LocaleString))
             {
                 Dictionary<string, string> valuePairs = new Dictionary<string, string>();
-                LocaleString localeString = (LocaleString)field.Data as LocaleString;
+                LocaleString localeString = field.Data as LocaleString;
                 if (localeString != null)
                 {
                     Dictionary<string, string> localeMappings = SettingHelper.GetLocaleMappings(inRiverContext.Settings, inRiverContext.Logger);
@@ -149,7 +148,7 @@ namespace Bynder.Workers
                     {
                         CVLValue cvlValue = cvlValues.FirstOrDefault(c => c.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase));
                         if (cvlValue == null) continue;
-                        LocaleString localeString = (LocaleString)cvlValue.Value as LocaleString;
+                        LocaleString localeString = cvlValue.Value as LocaleString;
                         if (localeString == null) continue;
 
                         Dictionary<string, string> valuePairs = new Dictionary<string, string>();

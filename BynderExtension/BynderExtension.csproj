@@ -60,6 +60,9 @@
     <Compile Include="Api\Model\MediaItem.cs" />
     <Compile Include="Api\Model\Metaproperty.cs" />
     <Compile Include="Api\Model\MetapropertyList.cs" />
+    <Compile Include="Api\Model\MetapropertyMetapropertyOption.cs" />
+    <Compile Include="Api\Model\MetapropertyOption.cs" />
+    <Compile Include="Api\Model\MetapropertyOptionCU.cs" />
     <Compile Include="Api\Model\MultipartParameter.cs" />
     <Compile Include="Api\Model\Queries\RequestUploadQuery.cs" />
     <Compile Include="Api\Model\Queries\SaveMediaQuery.cs" />

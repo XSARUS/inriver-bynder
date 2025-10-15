@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 namespace Bynder.Api
 {
     using Model;
+    using Newtonsoft.Json.Serialization;
 
     public class BynderClient : OAuthClient, IBynderClient
     {
@@ -158,30 +159,76 @@ namespace Bynder.Api
         }
 
         /// <summary>
-        /// todo finish implementation of this method, now returns an empty list
+        /// TODO this is a WIP method. Class does not match properties of result.
+        /// Therefore it won't return values right now.
         /// </summary>
         /// <param name="metaDataPropertyIds"></param>
         /// <returns></returns>
         public MetapropertyList GetMetadataProperties(List<string> metaDataPropertyIds = null)
         {
-            string result;
+            string result = GetMetadataPropertiesJson(metaDataPropertyIds);
+
+            //TODO this MetapropertyList has other properties than the meta property json contains. 
+            // This should be updated or we should introduce a new type of model class
+            // because it doesn't match, it now returns no values
+            // This class is used on multiple occasions in the code, but has a generic name. 
+            // no time to check out the logic for now
+            var metaproperties = JsonConvert.DeserializeObject<Dictionary<string, Metaproperty>>(result);
+            return new MetapropertyList(metaproperties.Values);
+        }
+
+        public string GetMetadataPropertiesJson(List<string> metaDataPropertyIds = null)
+        {
             if (metaDataPropertyIds == null)
             {
-                result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/");
+                return GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/");
+            }
+
+            return GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/?ids={string.Join(",", metaDataPropertyIds)}");
+        }
+
+        public string SaveMetadataPropertyOption(string metaDataPropertyId, MetapropertyOptionCU metapropertyOption)
+        {
+            string json = JsonConvert.SerializeObject(metapropertyOption, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
+
+            var form = new List<KeyValuePair<string, string>>();
+            form.Add(new KeyValuePair<string, string>("data", json));
+
+            if (string.IsNullOrEmpty(metapropertyOption.Id))
+            {
+                return Post($"{_customerBynderUrl}/api/v4/metaproperties/{metaDataPropertyId}/options", form);
             }
             else
             {
-                result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/?ids={string.Join(",", metaDataPropertyIds)}");
+                return Post($"{_customerBynderUrl}/api/v4/metaproperties/{metaDataPropertyId}/options/{metapropertyOption.Id}", form);
             }
+        }
 
-            //return JsonConvert.DeserializeObject<List<Metaproperty>>(result); //todo for later, we are not using it yet
-            return new MetapropertyList();
+        public string DeleteMetadataPropertyOption(string metaDataPropertyId, string metaDataPropertyOptionId)
+        {
+            return Delete($"{_customerBynderUrl}/api/v4/metaproperties/{metaDataPropertyId}/options/{metaDataPropertyOptionId}");
         }
 
         public Metaproperty GetMetadataProperty(string metaDataPropertyId)
         {
             var result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/{metaDataPropertyId}/");
             return JsonConvert.DeserializeObject<Metaproperty>(result);
+        }
+
+        public List<MetapropertyOption> GetMetapropertyOptions(string metaDataPropertyId)
+        {
+            var result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/{metaDataPropertyId}/options");
+            return JsonConvert.DeserializeObject<List<MetapropertyOption>>(result);
+        }
+
+        public List<MetapropertyOption> GetMetapropertyOptions(List<string> optionIds)
+        {
+            string result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/options?ids={string.Join(",", optionIds)}");
+            return JsonConvert.DeserializeObject<List<MetapropertyOption>>(result);
         }
 
         public PollResponse PollStatus(IList<string> items)

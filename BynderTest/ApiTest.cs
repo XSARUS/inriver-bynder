@@ -62,14 +62,15 @@ namespace BynderTest
             Logger.Log("Total assets in result: " + collection.Total.Count);
         }
 
-        [TestMethod, Ignore("currently only used to retreive the metaproperties in the bynderclient")]
+        [Ignore("currently only used to retreive the metaproperties in the bynderclient")]
+        [TestMethod]
         public void GetMetaproperties()
         {
             BynderClient bynderClient = new BynderClient(BynderSettings);
             var metaproperties = bynderClient.GetMetadataProperties();
             Assert.IsTrue(true);
         }
-
+        
         [TestMethod]
         public void GetMetaproperty()
         {
@@ -88,6 +89,69 @@ namespace BynderTest
                 new Metaproperty{ Id="ABFC192D-A92B-47A0-9AFE96BBCBA3E79A", Values = new List<string>{ "bci", "gnr" } }
             };
             var result = bynderClient.SetMetaProperties(_testAssetId, mpl);
+            Logger.Log(result);
+        }
+
+        [TestMethod, Ignore("only manual")]
+        public void GetMetapropertyOptions()
+        {
+            string metaPropertyId = "5A9F4A52-1F5B-421A-94DF9249CA177926";
+            BynderClient bynderClient = new BynderClient(BynderSettings);
+            var options = bynderClient.GetMetapropertyOptions(metaPropertyId);
+            Assert.IsNotNull(options);
+        }
+
+        [TestMethod, Ignore("only manual")]
+        public void PostMetaPropertyOptions()
+        {
+            BynderClient bynderClient = new BynderClient(BynderSettings);
+            var result = bynderClient.SaveMetadataPropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", new MetapropertyOptionCU
+            {
+                Name = "Test_optie",
+                Label = "Test_optie",
+                Labels = new Dictionary<string, string>
+                {
+                    { "nl_NL", "Test_optie" },
+                    { "de_DE", "Test_option" },
+                    { "fr_FR", "Test_option" },
+                    { "it_IT", "Test_opzione" }
+                },
+                ZIndex = 5,
+                IsSelectable = true,
+            });
+            Logger.Log(result);
+        }
+
+        [TestMethod, Ignore("only manual")]
+        public void UpdateMetaPropertyOption()
+        {
+            BynderClient bynderClient = new BynderClient(BynderSettings);
+            var result = bynderClient.SaveMetadataPropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", new MetapropertyOptionCU
+            {
+                Id = "F8732D3E-7BF5-4F12-97D81570E019EDC2",
+                Name = "Test_optie",
+                Label = "Test_optie",
+                Labels = new Dictionary<string, string>
+                {
+                    { "nl_NL", "Test_optie" },
+                    //{ "en_GB", "Test_option" },
+                    { "de_DE", "Test_option" },
+                    { "fr_FR", "Test_option" },
+                    { "it_IT", "Test_opzione" }
+                },
+                ZIndex = 5,
+                IsSelectable = true,
+                //Options = new List<MetapropertyOptionCU>()
+
+            });
+            Logger.Log(result);
+        }
+
+        [TestMethod, Ignore("only manual")]
+        public void DeleteMetaPropertyOption()
+        {
+            BynderClient bynderClient = new BynderClient(BynderSettings);
+            var result = bynderClient.DeleteMetadataPropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", "F8732D3E-7BF5-4F12-97D81570E019EDC2");
             Logger.Log(result);
         }
 
