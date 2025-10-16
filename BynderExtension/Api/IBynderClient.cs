@@ -1,8 +1,9 @@
-﻿using Bynder.Api.Model;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Bynder.Api
 {
+    using Model;
+
     public interface IBynderClient
     {
         #region Methods
@@ -32,10 +33,12 @@ namespace Bynder.Api
         UploadRequest RequestUploadInformation(RequestUploadQuery requestUploadQuery);
 
         UploadResult SaveMedia(SaveMediaQuery saveMediaQuery);
+        List<MetapropertyOption> GetMetapropertyOptions(string metapropertyId);
+        List<Metaproperty> GetMetaproperties(List<string> metaPropertyIds = null);
+        string DeleteMetapropertyOption(string metapropertyId, string metapropertyOptionId);
+        string SaveAssetMetaproperties(string assetId, AssetMetapropertyList metapropertyList);
 
-        string SetMetaProperties(string assetId, MetapropertyList metapropertyList);
-
-        string SetMetaProperties(string assetId, Dictionary<string, List<string>> metapropertyDictionary);
+        string SaveAssetMetaproperties(string assetId, Dictionary<string, List<string>> metapropertyDictionary);
 
         void UploadPart(string s3Endpoint, string filename, byte[] buffer, int bytesRead, uint chunkNumber, UploadRequest uploadRequest, uint numberOfChunks);
 

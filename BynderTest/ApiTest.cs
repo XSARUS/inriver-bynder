@@ -67,29 +67,30 @@ namespace BynderTest
         public void GetMetaproperties()
         {
             BynderClient bynderClient = new BynderClient(BynderSettings);
-            var metaproperties = bynderClient.GetMetadataProperties();
-            Assert.IsTrue(true);
+            var metaproperties = bynderClient.GetMetaproperties();
+            Assert.IsNotNull(metaproperties);
         }
-        
+
         [TestMethod]
         public void GetMetaproperty()
         {
             BynderClient bynderClient = new BynderClient(BynderSettings);
-            var metaproperty = bynderClient.GetMetadataProperty(_testMetaPropertyId);
+            var metaproperty = bynderClient.GetMetaproperty(_testMetaPropertyId);
             Assert.IsNotNull(metaproperty?.Name);
         }
 
         [TestMethod]
-        public void PostMetaProperties()
+        public void PostAssetMetaproperties()
         {
             BynderClient bynderClient = new BynderClient(BynderSettings);
-            var mpl = new MetapropertyList()
+            var mpl = new AssetMetapropertyList()
             {
-                new Metaproperty{ Id="4F1C2956-01DC-415C-94BB1D770FEE5A98", Values = new List<string>{ "Hello" } },
-                new Metaproperty{ Id="ABFC192D-A92B-47A0-9AFE96BBCBA3E79A", Values = new List<string>{ "bci", "gnr" } }
+                new AssetMetaproperty{ Id="4F1C2956-01DC-415C-94BB1D770FEE5A98", Values = new List<string>{ "Hello" } },
+                new AssetMetaproperty{ Id="ABFC192D-A92B-47A0-9AFE96BBCBA3E79A", Values = new List<string>{ "bci", "gnr" } }
             };
-            var result = bynderClient.SetMetaProperties(_testAssetId, mpl);
+            var result = bynderClient.SaveAssetMetaproperties(_testAssetId, mpl);
             Logger.Log(result);
+            Assert.IsNotNull(result);
         }
 
         [TestMethod, Ignore("only manual")]
@@ -102,10 +103,10 @@ namespace BynderTest
         }
 
         [TestMethod, Ignore("only manual")]
-        public void PostMetaPropertyOptions()
+        public void PostMetapropertyOptions()
         {
             BynderClient bynderClient = new BynderClient(BynderSettings);
-            var result = bynderClient.SaveMetadataPropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", new MetapropertyOptionCU
+            var result = bynderClient.SaveMetapropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", new MetapropertyOptionPost
             {
                 Name = "Test_optie",
                 Label = "Test_optie",
@@ -120,13 +121,14 @@ namespace BynderTest
                 IsSelectable = true,
             });
             Logger.Log(result);
+            Assert.IsNotNull(result);
         }
 
         [TestMethod, Ignore("only manual")]
-        public void UpdateMetaPropertyOption()
+        public void UpdateMetapropertyOption()
         {
             BynderClient bynderClient = new BynderClient(BynderSettings);
-            var result = bynderClient.SaveMetadataPropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", new MetapropertyOptionCU
+            var result = bynderClient.SaveMetapropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", new MetapropertyOptionPost
             {
                 Id = "F8732D3E-7BF5-4F12-97D81570E019EDC2",
                 Name = "Test_optie",
@@ -145,13 +147,14 @@ namespace BynderTest
 
             });
             Logger.Log(result);
+            Assert.IsNotNull(result);
         }
 
         [TestMethod, Ignore("only manual")]
-        public void DeleteMetaPropertyOption()
+        public void DeleteMetapropertyOption()
         {
             BynderClient bynderClient = new BynderClient(BynderSettings);
-            var result = bynderClient.DeleteMetadataPropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", "F8732D3E-7BF5-4F12-97D81570E019EDC2");
+            var result = bynderClient.DeleteMetapropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", "F8732D3E-7BF5-4F12-97D81570E019EDC2");
             Logger.Log(result);
         }
 
@@ -161,7 +164,7 @@ namespace BynderTest
             GetAccount();
             CreateAssetUsage();
             GetAssetByAssetId();
-            PostMetaProperties();
+            PostAssetMetaproperties();
             GetAssetCollection();
             DeleteAssetUsage();
         }

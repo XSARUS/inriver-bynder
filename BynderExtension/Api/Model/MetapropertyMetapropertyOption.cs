@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Bynder.Api.Model
 {
     /// <summary>
-    /// This is the metaproperty representation of the option
+    /// This is the metaproperty representation of the metaproperty option
     /// </summary>
     public class MetapropertyMetapropertyOption : MetapropertyOption
     {
@@ -15,10 +15,10 @@ namespace Bynder.Api.Model
         public bool IsSelectable { get; set; }
         [JsonProperty("product_suffix")]
         public string ProductSuffix { get; set; }
-        public bool? Active { get; set; }
+        public bool Active { get; set; }
         public Dictionary<string, string> Descriptions { get; set; }
         public string Description { get; set; }
-        public bool? HideByDefault { get; set; }
+        public bool HideByDefault { get; set; }
         /// <summary>
         /// URL to Bynder CDN
         /// </summary>

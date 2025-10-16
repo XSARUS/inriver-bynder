@@ -4,12 +4,12 @@ using System.Collections.Generic;
 namespace Bynder.Api.Model
 {
     /// <summary>
-    /// pure representation of the option
+    /// pure representation of the metaproperty option
     /// </summary>
     public class MetapropertyOption
     {
         public string DisplayLabel { get; set; }
-        public DateTime? Date { get; set; }
+        public DateTime Date { get; set; }
         public string Name { get; set; }
         public string Id { get; set; }
         public string Label { get; set; }

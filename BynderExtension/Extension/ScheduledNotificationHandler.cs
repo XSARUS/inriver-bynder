@@ -1,5 +1,4 @@
-﻿using inRiver.Remoting.Extension.Interface;
-using inRiver.Remoting.Log;
+﻿using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using Newtonsoft.Json;
 using System;

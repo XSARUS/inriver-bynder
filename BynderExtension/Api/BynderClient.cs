@@ -4,17 +4,16 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Serialization;
 
 namespace Bynder.Api
 {
     using Model;
-    using Newtonsoft.Json.Serialization;
 
     public class BynderClient : OAuthClient, IBynderClient
     {
         #region Fields
 
-        //private const string PLUGIN_GETBYNDER_URI = "https://plugin.getbynder.com/";
         private readonly string _customerBynderUrl;
 
         #endregion Fields
@@ -158,36 +157,23 @@ namespace Bynder.Api
             return JsonConvert.DeserializeObject<string>(result);
         }
 
-        /// <summary>
-        /// TODO this is a WIP method. Class does not match properties of result.
-        /// Therefore it won't return values right now.
-        /// </summary>
-        /// <param name="metaDataPropertyIds"></param>
-        /// <returns></returns>
-        public MetapropertyList GetMetadataProperties(List<string> metaDataPropertyIds = null)
+        public List<Metaproperty> GetMetaproperties(List<string> metaPropertyIds = null)
         {
-            string result = GetMetadataPropertiesJson(metaDataPropertyIds);
-
-            //TODO this MetapropertyList has other properties than the meta property json contains. 
-            // This should be updated or we should introduce a new type of model class
-            // because it doesn't match, it now returns no values
-            // This class is used on multiple occasions in the code, but has a generic name. 
-            // no time to check out the logic for now
-            var metaproperties = JsonConvert.DeserializeObject<Dictionary<string, Metaproperty>>(result);
-            return new MetapropertyList(metaproperties.Values);
-        }
-
-        public string GetMetadataPropertiesJson(List<string> metaDataPropertyIds = null)
-        {
-            if (metaDataPropertyIds == null)
+            string json;
+            if (metaPropertyIds == null)
             {
-                return GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/");
+                json = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/");
+            }
+            else
+            {
+                json = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/?ids={string.Join(",", metaPropertyIds)}");
             }
 
-            return GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/?ids={string.Join(",", metaDataPropertyIds)}");
+            var metaproperties = JsonConvert.DeserializeObject<Dictionary<string, Metaproperty>>(json);
+            return metaproperties.Values.ToList();
         }
 
-        public string SaveMetadataPropertyOption(string metaDataPropertyId, MetapropertyOptionCU metapropertyOption)
+        public string SaveMetapropertyOption(string metapropertyId, MetapropertyOptionPost metapropertyOption)
         {
             string json = JsonConvert.SerializeObject(metapropertyOption, new JsonSerializerSettings
             {
@@ -200,28 +186,28 @@ namespace Bynder.Api
 
             if (string.IsNullOrEmpty(metapropertyOption.Id))
             {
-                return Post($"{_customerBynderUrl}/api/v4/metaproperties/{metaDataPropertyId}/options", form);
+                return Post($"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options", form);
             }
             else
             {
-                return Post($"{_customerBynderUrl}/api/v4/metaproperties/{metaDataPropertyId}/options/{metapropertyOption.Id}", form);
+                return Post($"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options/{metapropertyOption.Id}", form);
             }
         }
 
-        public string DeleteMetadataPropertyOption(string metaDataPropertyId, string metaDataPropertyOptionId)
+        public string DeleteMetapropertyOption(string metapropertyId, string metapropertyOptionId)
         {
-            return Delete($"{_customerBynderUrl}/api/v4/metaproperties/{metaDataPropertyId}/options/{metaDataPropertyOptionId}");
+            return Delete($"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options/{metapropertyOptionId}");
         }
 
-        public Metaproperty GetMetadataProperty(string metaDataPropertyId)
+        public Metaproperty GetMetaproperty(string metapropertyId)
         {
-            var result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/{metaDataPropertyId}/");
+            var result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/");
             return JsonConvert.DeserializeObject<Metaproperty>(result);
         }
 
-        public List<MetapropertyOption> GetMetapropertyOptions(string metaDataPropertyId)
+        public List<MetapropertyOption> GetMetapropertyOptions(string metapropertyId)
         {
-            var result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/{metaDataPropertyId}/options");
+            var result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options");
             return JsonConvert.DeserializeObject<List<MetapropertyOption>>(result);
         }
 
@@ -279,7 +265,7 @@ namespace Bynder.Api
         /// <param name="assetId"></param>
         /// <param name="metapropertyList"></param>
         /// <returns></returns>
-        public string SetMetaProperties(string assetId, MetapropertyList metapropertyList)
+        public string SaveAssetMetaproperties(string assetId, AssetMetapropertyList metapropertyList)
         {
             return Post($"{_customerBynderUrl}/api/v4/media/{assetId}/", metapropertyList.GetPostData());
         }
@@ -290,11 +276,11 @@ namespace Bynder.Api
         /// <param name="assetId"></param>
         /// <param name="metapropertyDictionary"></param>
         /// <returns></returns>
-        public string SetMetaProperties(string assetId, Dictionary<string, List<string>> metapropertyDictionary)
+        public string SaveAssetMetaproperties(string assetId, Dictionary<string, List<string>> metapropertyDictionary)
         {
             // defence:
             if (string.IsNullOrWhiteSpace(assetId) || !metapropertyDictionary.Any()) return null;
-            return SetMetaProperties(assetId, MetapropertyList.CreateFromDictionary(metapropertyDictionary));
+            return SaveAssetMetaproperties(assetId, AssetMetapropertyList.CreateFromDictionary(metapropertyDictionary));
         }
 
         public void UploadPart(string s3Endpoint, string filename, byte[] buffer, int bytesRead, uint chunkNumber, UploadRequest uploadRequest, uint numberOfChunks)

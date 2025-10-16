@@ -86,7 +86,7 @@ namespace Bynder.Workers
             {
                 // inform bynder of the changes:
                 _inRiverContext.Log(LogLevel.Information, $"Update metaproperties {string.Join(";", newMetapropertyValues)}");
-                _bynderClient.SetMetaProperties(bynderId, newMetapropertyValues);
+                _bynderClient.SaveAssetMetaproperties(bynderId, newMetapropertyValues);
             }
             else
             {

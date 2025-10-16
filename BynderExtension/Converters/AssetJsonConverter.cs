@@ -79,17 +79,17 @@ namespace Bynder.Converters
             }
         }
 
-        private MetapropertyList GetMetapropertyList(List<JProperty> properties)
+        private AssetMetapropertyList GetMetapropertyList(List<JProperty> properties)
         {
             var propertyTokens = properties.Where(x => x.Name.StartsWith(_propertyPrefix));
             var metaProperties = propertyTokens.Select(jProperty =>
                  // property values are always send as array
-                 new Metaproperty
+                 new AssetMetaproperty
                  {
                      Name = jProperty.Name.Substring(jProperty.Name.IndexOf(_propertyPrefix) + _propertyPrefix.Length),
                      Values = GetValueAsStringList(jProperty.Value)
                  });
-            return new MetapropertyList(metaProperties);
+            return new AssetMetapropertyList(metaProperties);
         }
 
         #endregion Methods
