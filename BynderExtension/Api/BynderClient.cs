@@ -173,6 +173,12 @@ namespace Bynder.Api
             return metaproperties.Values.ToList();
         }
 
+        /// <summary>
+        /// Create or update the option
+        /// </summary>
+        /// <param name="metapropertyId"></param>
+        /// <param name="metapropertyOption"></param>
+        /// <returns></returns>
         public string SaveMetapropertyOption(string metapropertyId, MetapropertyOptionPost metapropertyOption)
         {
             string json = JsonConvert.SerializeObject(metapropertyOption, new JsonSerializerSettings
