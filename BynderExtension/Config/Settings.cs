@@ -25,7 +25,8 @@
         public const string RegularExpressionForFileName = "REGULAR_EXPRESSION_FOR_FILENAME";
         public const string ResourceSearchType = "RESOURCE_SEARCH_TYPE";
         public const string TimestampSettings = "TIMESTAMP_SETTINGS";
-        public const string LocaleMappingsInriver2Bynder = "LOCALE_MAPPINGS_INRIVER_2_BYNDER";
+        public const string LocaleMappingInriverToBynder = "LOCALE_MAPPING_INRIVER_TO_BYNDER";
+        public const string CvlMetapropertyMapping = "CVL_TO_METAPROPERTY_MAPPING";
 
         #endregion Fields
     }

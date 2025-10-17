@@ -24,9 +24,9 @@ namespace Bynder.Utils.Helpers
             }
 
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.BynderBrandName}'");
-
             return string.Empty;
         }
+
 
         /// <summary>
         /// Optional setting. Default is an empty dictionary
@@ -38,6 +38,7 @@ namespace Bynder.Utils.Helpers
             {
                 return settings[Settings.AssetPropertyMap].ToDictionary<string, string>(',', '=');
             }
+
             logger.Log(LogLevel.Verbose, "Could not find configured asset property Map");
             return new Dictionary<string, string>();
         }
@@ -54,7 +55,6 @@ namespace Bynder.Utils.Helpers
             }
 
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.CreateMissingCvlKeys}'. Using default value '{false}'");
-
             return false;
         }
 
@@ -89,7 +89,6 @@ namespace Bynder.Utils.Helpers
             }
 
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.MetapropertyMap}'");
-
             return new List<MetaPropertyMap>();
         }
 
@@ -111,6 +110,7 @@ namespace Bynder.Utils.Helpers
             {
                 return JsonConvert.DeserializeObject<DateTimeSettings>(settings[Settings.TimestampSettings]);
             }
+
             logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.TimestampSettings}");
             return null;
         }
@@ -127,7 +127,6 @@ namespace Bynder.Utils.Helpers
             }
 
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.DeleteResourceOnDeleteEvent}'. Using default value '{false}'");
-
             return false;
         }
 
@@ -139,7 +138,6 @@ namespace Bynder.Utils.Helpers
             }
 
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.DownloadMediaType}'. Using default value 'original'");
-
             return "original";
         }
 
@@ -153,6 +151,7 @@ namespace Bynder.Utils.Helpers
             {
                 return JsonConvert.DeserializeObject<List<ExportCondition>>(settings[Settings.ExportConditions]);
             }
+
             logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ExportConditions}");
             return new List<ExportCondition>();
         }
@@ -167,6 +166,7 @@ namespace Bynder.Utils.Helpers
             {
                 return JsonConvert.DeserializeObject<List<FieldValueCombination>>(settings[Settings.FieldValuesToSetOnArchiveEvent]);
             }
+
             logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.FieldValuesToSetOnArchiveEvent}");
             return new List<FieldValueCombination>();
         }
@@ -181,6 +181,7 @@ namespace Bynder.Utils.Helpers
             {
                 return JsonConvert.DeserializeObject<List<ImportCondition>>(settings[Settings.ImportConditions]);
             }
+
             logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ImportConditions}");
             return new List<ImportCondition>();
         }
@@ -193,7 +194,6 @@ namespace Bynder.Utils.Helpers
             }
 
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.InitialAssetLoadUrlQuery}'");
-
             return string.Empty;
         }
 
@@ -205,7 +205,6 @@ namespace Bynder.Utils.Helpers
             }
 
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.InRiverEntityUrl}'");
-
             return string.Empty;
         }
 
@@ -217,7 +216,6 @@ namespace Bynder.Utils.Helpers
             }
 
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.InRiverIntegrationId}'");
-
             return string.Empty;
         }
 
@@ -233,7 +231,6 @@ namespace Bynder.Utils.Helpers
             }
 
             logger.Log(LogLevel.Verbose, "Could not find configured multivalue separator");
-
             return new List<string>();
         }
 
@@ -272,7 +269,6 @@ namespace Bynder.Utils.Helpers
             }
 
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.RegularExpressionForFileName}'");
-
             return string.Empty;
         }
 
@@ -282,6 +278,7 @@ namespace Bynder.Utils.Helpers
             {
                 return setting.ToEnum<ResourceSearchType>();
             }
+
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.ResourceSearchType}'. Using default value '{ResourceSearchType.AssetId.ToString()}'");
 
             // default ResourceSearchType.AssetId for backwards compatiblity
@@ -300,14 +297,26 @@ namespace Bynder.Utils.Helpers
             return true;
         }
 
-        public static Dictionary<string, string> GetLocaleMappings(Dictionary<string, string> settings, IExtensionLog logger)
+        public static Dictionary<string, string> GetLocaleMapping(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.ContainsKey(Settings.LocaleMappingsInriver2Bynder))
+            if (settings.ContainsKey(Settings.LocaleMappingInriverToBynder))
             {
-                return JsonConvert.DeserializeObject<Dictionary<string, string>>(settings[Settings.LocaleMappingsInriver2Bynder]);
+                return JsonConvert.DeserializeObject<Dictionary<string, string>>(settings[Settings.LocaleMappingInriverToBynder]);
             }
-            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.LocaleMappingsInriver2Bynder}");
+
+            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.LocaleMappingInriverToBynder}");
             return new Dictionary<string, string>();
+        }
+
+        public static Dictionary<string, List<string>> GetCvlMetapropertyMapping(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.CvlMetapropertyMapping))
+            {
+                return JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(settings[Settings.CvlMetapropertyMapping]);
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.CvlMetapropertyMapping}");
+            return new Dictionary<string, List<string>>();
         }
 
         #endregion Methods

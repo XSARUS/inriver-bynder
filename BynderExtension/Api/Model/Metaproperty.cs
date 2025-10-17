@@ -1,41 +1,37 @@
-﻿using System;
+﻿using Bynder.Enums;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace Bynder.Api.Model
 {
     public class Metaproperty
     {
-        #region Properties
-
-        /// <summary>
-        /// Unique GUID
-        /// </summary>
-        public string Id { get; set; }
-
-        /// <summary>
-        /// Name of the metaproperty, should be alphanumeric only. Cannot be modified after the metaproperty has been created.
-        /// </summary>
         public string Name { get; set; }
+        public string Label { get; set; }
+        public List<MetapropertyMetapropertyOption> Options { get; set; }
+        public string Id { get; set; }
+        [JsonProperty("IsMultiselect")]
+        public bool IsMultiSelect { get; set; }
 
+        [JsonProperty("IsMultifilter")]
+        public bool IsMultiFilter { get; set; }
+        public bool IsRequired { get; set; }
+        public bool IsApiField { get; set; }
+        [JsonProperty("zindex")]
+        public int ZIndex { get; set; }
+        public bool ShowInGridView { get; set; }
+        public bool ShowInListView { get; set; }
+        [JsonProperty("IsMainfilter")]
+        public bool IsMainFilter { get; set; }
+        public bool IsSearchable { get; set; }
+        public bool IsDrilldown { get; set; }
+        public bool IsFilterable { get; set; }
+        public bool IsEditable { get; set; }
         /// <summary>
-        /// Values from bynder are always represented as array
+        /// Should actually be an enum...
         /// </summary>
-        public List<string> Values { get; set; }
+        public MetapropertyType Type { get; set; }
+        public bool UseDependencies { get; set; }
 
-        #endregion Properties
-
-        #region Constructors
-
-        public Metaproperty()
-        { }
-
-        [Obsolete("Use an Object Initializer instead")]
-        public Metaproperty(string id, string value)
-        {
-            Id = id;
-            Values = new List<string> { value };
-        }
-
-        #endregion Constructors
     }
 }
