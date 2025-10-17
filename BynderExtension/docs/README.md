@@ -140,3 +140,18 @@ This worker is responsible for setting the metaproperties in Bynder, based on va
 * For each configured mapping in the `METAPROPERTY_MAP`:
   * If map-value (inRiver fieldname) is on an the current entity the value is selected for updating Bynder.
 * For each linked Resource entity the [Resource Metaproperty Update worker](#ResourceMetapropertyUpdateWorker) is called with the data already collected from the 'parent' entity.
+
+## UC user creates/updates/deletes a CVL value
+
+CVL values can be synced with Bynder, which creates/updates or deletes metaproperty options.
+This can be done by enabling the CVL listener extension `Bynder.Extensions.CvlExporter`, which uses the `CvlExportWorker`.
+
+The CVL values are only synced if they are configured in the setting `CVL_TO_METAPROPERTY_MAPPING`.
+In inriver you have CVL's which can exist on multiple fields, in Bynder you have metaproperty options which only exist on a certain metaproperty.
+Therefore you can configure multiple metaproperty id's for a single CVL id in this setting.
+
+The languages which are synced are configured in the setting `LOCALE_MAPPING_INRIVER_TO_BYNDER`.
+The `Name` and `Label` are the CVL key. Note that Bynder converts spaces and symbols to an underscore in the `Name`. 
+Therefore we match them on the `Label` for updates and deletes.
+The `Labels` are filled with the languages configured in the setting and their value in the CVL value. 
+If the CVL of type string, then the label for each language is the same.
