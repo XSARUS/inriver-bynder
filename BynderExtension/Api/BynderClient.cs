@@ -187,8 +187,10 @@ namespace Bynder.Api
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
 
-            var form = new List<KeyValuePair<string, string>>();
-            form.Add(new KeyValuePair<string, string>("data", json));
+            var form = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("data", json)
+            };
 
             if (string.IsNullOrEmpty(metapropertyOption.Id))
             {

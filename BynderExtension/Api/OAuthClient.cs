@@ -143,8 +143,14 @@ namespace Bynder.Api
             var uri = message.RequestUri.ToString();
             if (message.Method.Equals(HttpMethod.Post) && message.Content.GetType() == typeof(FormUrlEncodedContent))
             {
-                uri += "?" + message.Content.ReadAsStringAsync().Result;
+                string content = message.Content.ReadAsStringAsync().Result;
+                // replace + as space for %20, otherwise it will give an unauthorized error
+                // this won't replace a + in the values, because they are encoded as %2B.
+                content = content.Replace("+", "%20");
+                uri += "?" + content;
             }
+
+            
 
             if (OAuthManager == null) throw new Exception("OAuthManager is not initialized");
             message.Headers.Add(HttpRequestHeader.Authorization.ToString(), OAuthManager.GenerateAuthzHeader(uri, message.Method.Method));
