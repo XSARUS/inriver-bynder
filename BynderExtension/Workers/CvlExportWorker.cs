@@ -58,7 +58,11 @@ namespace Bynder.Workers
 
                 // if no locales, then don't export
                 var localeMapping = SettingHelper.GetLocaleMapping(_inRiverContext.Settings, _inRiverContext.Logger);
-                if (localeMapping == null) return result;
+                if (localeMapping == null)
+                {
+                    result.Messages.Add($"No locale mapping configured!");
+                    return result;
+                }
 
                 switch (action)
                 {
@@ -159,6 +163,8 @@ namespace Bynder.Workers
                     MetapropertyOptionPost obj = GetPostData(cvlKey, localeMapping, cvlValue);
                     _bynderClient.SaveMetapropertyOption(metaproperty, obj);
                 }
+
+                result.Messages.Add($"Succesfully created the option for CVL '{cvlId}' and key '{cvlKey}' in Bynder!");
             }
             catch (Exception ex)
             {
@@ -184,6 +190,8 @@ namespace Bynder.Workers
                         _bynderClient.DeleteMetapropertyOption(metaproperty, option.Id);
                     }
                 }
+
+                result.Messages.Add($"Succesfully deleted the options for CVL '{cvlId}' in Bynder!");
             }
             catch (Exception ex)
             {
@@ -222,6 +230,8 @@ namespace Bynder.Workers
                         _bynderClient.DeleteMetapropertyOption(metaproperty, option.Id);
                     }
                 }
+
+                result.Messages.Add($"Succesfully deleted the option of CVL '{cvlId}' and key '{cvlKey}' in Bynder!");
             }
             catch (Exception ex)
             {
@@ -270,6 +280,8 @@ namespace Bynder.Workers
                     MetapropertyOptionPost obj = GetPostData(cvlKey, localeMapping, cvlValue, option?.Id);
                     _bynderClient.SaveMetapropertyOption(metaproperty, obj);
                 }
+
+                result.Messages.Add($"Succesfully updated the option for CVL '{cvlId}' and key '{cvlKey}' in Bynder!");
             }
             catch (Exception ex)
             {

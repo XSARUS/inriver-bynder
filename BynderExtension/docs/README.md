@@ -154,4 +154,6 @@ The languages which are synced are configured in the setting `LOCALE_MAPPING_INR
 The `Name` and `Label` are the CVL key. Note that Bynder converts spaces and symbols to an underscore in the `Name`. 
 Therefore we match them on the `Label` for updates and deletes.
 The `Labels` are filled with the languages configured in the setting and their value in the CVL value. 
-If the CVL of type string, then the label for each language is the same.
+If the CVL of type string, then the label for each language will be the same value.
+
+When an option does not exist yet in Bynder and the CVL value gets an update, then it will be synced as a new option as well.
