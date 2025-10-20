@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiTest.local.cs" />
     <Compile Include="AssetLoaderTest.cs" />
     <Compile Include="CvlSyncListenerTest.cs" />
     <Compile Include="JsonConvertTest.cs" />
@@ -56,6 +57,7 @@
     <Compile Include="ResourceMetapropertyUpdateWorkerTest.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="ApiTest.cs" />
+    <Compile Include="TestBase.local.cs" />
     <Compile Include="WorkerTest.cs" />
   </ItemGroup>
   <ItemGroup>
