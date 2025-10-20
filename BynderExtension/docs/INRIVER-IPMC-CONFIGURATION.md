@@ -40,7 +40,7 @@ After adding and saving a connector press 'Get Default Settings' to get the defa
 | BynderAssetWorkerEntities | Bynder.zip | Bynder.dll | Bynder.Extension.Worker | EntityListener |
 | BynderAssetWorkerLinks | Bynder.zip | Bynder.dll | Bynder.Extension.Worker | LinkListener |
 | ScheduledNotificationHandler| Bynder.zip | Bynder.dll | Bynder.Extension.ScheduledNotificationHandler | ScheduledExtension |
-| CvlExportListener | Bynder.zip | Bynder.dll | Bynder.Extension.CvlExportListener | CvlListener |
+| CvlSyncListener | Bynder.zip | Bynder.dll | Bynder.Extension.CvlSyncListener | CvlListener |
 
 ### Extension settings
 Unfortunately you have to configure 4 extensions to make the integration complete and they cannot share configuration values.
@@ -72,7 +72,7 @@ Unfortunately you have to configure 4 extensions to make the integration complet
 | RESOURCE_SEARCH_TYPE | Filename | Searches the existing Resource in the AssetUpdatedWorker by `AssetId`, `Filename` or `PrefixedFilename`. Default `AssetId`  |
 | CRON_EXPRESSION | * * * * * | Cron expression to use for the ScheduledNotificationHandler. Default '* * * * *' which means every minute  |
 | LOCALE_MAPPING_INRIVER_TO_BYNDER | {"en-US":"en_US","nl":"nl_NL"} | Mappings from inRiver language codes to Bynder language codes. Used when uploading metaproperty options. |
-| CVL_TO_METAPROPERTY_MAPPING |{"cvl1":["metapropertyguid1","metapropertyguid2"], "cvl2":["metapropertyguid3","metapropertyguid4"]}|Mapping of CVL Id to Bynder MetaProperties. Option lists in Bynder a coupled to the metaproperty, thats why you could have multiple metaproperties for one cvl in the mapping. Setting is used in the MetapropertyOptionExportListener.
+| CVL_METAPROPERTY_MAPPING |{"cvl1":["metapropertyguid1","metapropertyguid2"], "cvl2":["metapropertyguid3","metapropertyguid4"]}|Mapping of CVL Id to Bynder MetaProperties. Option lists in Bynder a coupled to the metaproperty, thats why you could have multiple metaproperties for one cvl in the mapping. Setting is used in the MetapropertyOptionExportListener.
 
 Press Test on each connector (in the extensions page) to see if the connector works and your settings are valid
 

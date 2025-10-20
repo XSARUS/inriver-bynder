@@ -144,9 +144,9 @@ This worker is responsible for setting the metaproperties in Bynder, based on va
 ## UC user creates/updates/deletes a CVL value
 
 CVL values can be synced with Bynder, which creates/updates or deletes metaproperty options.
-This can be done by enabling the CVL listener extension `Bynder.Extension.CvlExportListener`, which uses the `CvlExportWorker`.
+This can be done by enabling the CVL listener extension `Bynder.Extension.CvlSyncListener`, which uses the `CvlExportWorker`.
 
-The CVL values are only synced if they are configured in the setting `CVL_TO_METAPROPERTY_MAPPING`.
+The CVL values are only synced if they are configured in the setting `CVL_METAPROPERTY_MAPPING`.
 In inriver you have CVL's which can exist on multiple fields, in Bynder you have metaproperty options which only exist on a certain metaproperty.
 Therefore you can configure multiple metaproperty id's for a single CVL id in this setting.
 
