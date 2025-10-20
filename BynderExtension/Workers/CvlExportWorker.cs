@@ -13,6 +13,7 @@ namespace Bynder.Workers
 
     public class CvlExportWorker : IWorker
     {
+
         #region Fields
 
         private readonly IBynderClient _bynderClient;
@@ -30,6 +31,7 @@ namespace Bynder.Workers
 
         #endregion Constructors
 
+        #region Methods
 
         /// <summary>
         /// Main method of the worker
@@ -90,9 +92,45 @@ namespace Bynder.Workers
             return result;
         }
 
-        private WorkerResult ProcessUpdate(string cvlId, string cvlKey, List<string> metaproperties, Dictionary<string, string> localeMapping)
+        private static MetapropertyOptionPost GetPostData(string cvlKey, Dictionary<string, string> localeMapping, CVLValue cvlValue, string id = null)
+        {
+            var obj = new MetapropertyOptionPost
+            {
+                Id = id,
+                ZIndex = cvlValue.Index,
+                IsSelectable = true,
+                Name = cvlKey,
+                Label = cvlKey,
+                Labels = new Dictionary<string, string>()
+            };
+
+            var ls = cvlValue.Value as LocaleString;
+            if (ls != null)
+            {
+                foreach (var language in ls.Languages)
+                {
+                    if (!localeMapping.ContainsKey(language.Name)) continue;
+
+                    string bynderLanguage = localeMapping[language.Name];
+                    obj.Labels[bynderLanguage] = ls[language];
+                }
+            }
+            else
+            {
+                var value = cvlValue.Value?.ToString() ?? "";
+                foreach (var bynderLanguage in localeMapping.Values)
+                {
+                    obj.Labels[bynderLanguage] = value;
+                }
+            }
+
+            return obj;
+        }
+
+        private WorkerResult ProcessCreation(string cvlId, string cvlKey, List<string> metaproperties, Dictionary<string, string> localeMapping)
         {
             var result = new WorkerResult();
+
             try
             {
                 if (string.IsNullOrWhiteSpace(cvlId))
@@ -118,48 +156,13 @@ namespace Bynder.Workers
                 // export value to each metaproperty it is mapped to
                 foreach (var metaproperty in metaproperties)
                 {
-                    List<MetapropertyOption> options = _bynderClient.GetMetapropertyOptions(metaproperty);
-
-                    // match on label because inriver can have characters which are not allowed in their name in bynder. We use cvlkey as label and as name, so this should work correctly.
-                    // only taking the first, if you have more on the same metaproperty, then clean those up in Bynder
-                    MetapropertyOption option = options.FirstOrDefault(x => x.Label.Equals(cvlKey));
-
-                    var obj = new MetapropertyOptionPost
-                    {
-                        Id = option?.Id, // option might not exist at all, then create it, because it is found in inriver
-                        ZIndex = cvlValue.Index,
-                        IsSelectable = true,
-                        Label = cvlKey,
-                        Labels = new Dictionary<string, string>()
-                    };
-
-                    var ls = cvlValue.Value as LocaleString;
-                    if (ls != null)
-                    {
-                        foreach (var language in ls.Languages)
-                        {
-                            if (!localeMapping.ContainsKey(language.Name)) continue;
-
-                            obj.Labels[language.Name] = ls[language];
-                        }
-                    }
-                    else
-                    {
-                        obj.Label = cvlValue.Value?.ToString() ?? "";
-                        foreach (var language in ls.Languages)
-                        {
-                            if (!localeMapping.ContainsKey(language.Name)) continue;
-
-                            obj.Labels[language.Name] = ls[language];
-                        }
-                    }
-
+                    MetapropertyOptionPost obj = GetPostData(cvlKey, localeMapping, cvlValue);
                     _bynderClient.SaveMetapropertyOption(metaproperty, obj);
                 }
             }
             catch (Exception ex)
             {
-                result.Messages.Add($"Error while processing update of option for CVL id '{cvlId}' and CVL key '{cvlKey}'!");
+                result.Messages.Add($"Error while processing creation of option for CVL id '{cvlId}' and CVL key '{cvlKey}'!");
                 result.Messages.Add(ex.Message);
             }
 
@@ -229,10 +232,9 @@ namespace Bynder.Workers
             return result;
         }
 
-        private WorkerResult ProcessCreation(string cvlId, string cvlKey, List<string> metaproperties, Dictionary<string, string> localeMapping)
+        private WorkerResult ProcessUpdate(string cvlId, string cvlKey, List<string> metaproperties, Dictionary<string, string> localeMapping)
         {
             var result = new WorkerResult();
-
             try
             {
                 if (string.IsNullOrWhiteSpace(cvlId))
@@ -258,45 +260,26 @@ namespace Bynder.Workers
                 // export value to each metaproperty it is mapped to
                 foreach (var metaproperty in metaproperties)
                 {
-                    var obj = new MetapropertyOptionPost
-                    {
-                        ZIndex = cvlValue.Index,
-                        IsSelectable = true,
-                        Name = cvlKey,
-                        Label = cvlKey,
-                        Labels = new Dictionary<string, string>()
-                    };
+                    List<MetapropertyOption> options = _bynderClient.GetMetapropertyOptions(metaproperty);
 
-                    var ls = cvlValue.Value as LocaleString;
-                    if (ls != null)
-                    {
-                        foreach (var language in ls.Languages)
-                        {
-                            if (!localeMapping.ContainsKey(language.Name)) continue;
+                    // match on label because inriver can have characters which are not allowed in their name in bynder. We use cvlkey as label and as name, so this should work correctly.
+                    // only taking the first, if you have more on the same metaproperty, then clean those up in Bynder
+                    MetapropertyOption option = options.FirstOrDefault(x => x.Label.Equals(cvlKey));
 
-                            string bynderLanguage = localeMapping[language.Name];
-                            obj.Labels[bynderLanguage] = ls[language];
-                        }
-                    }
-                    else
-                    {
-                        var value = cvlValue.Value?.ToString() ?? "";
-                        foreach (var bynderLanguage in localeMapping.Values)
-                        {
-                            obj.Labels[bynderLanguage] = value;
-                        }
-                    }
-
+                    // option might not exist at all, then create it, because it is found in inriver
+                    MetapropertyOptionPost obj = GetPostData(cvlKey, localeMapping, cvlValue, option?.Id);
                     _bynderClient.SaveMetapropertyOption(metaproperty, obj);
                 }
             }
             catch (Exception ex)
             {
-                result.Messages.Add($"Error while processing creation of option for CVL id '{cvlId}' and CVL key '{cvlKey}'!");
+                result.Messages.Add($"Error while processing update of option for CVL id '{cvlId}' and CVL key '{cvlKey}'!");
                 result.Messages.Add(ex.Message);
             }
 
             return result;
         }
+
+        #endregion Methods
     }
 }
