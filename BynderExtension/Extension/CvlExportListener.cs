@@ -36,7 +36,10 @@ namespace Bynder.Extension
             try
             {
                 var result = Container.GetInstance<CvlExportWorker>().Execute(CvlAction.Created, cvlId, cvlValueKey);
-                Context.Log(LogLevel.Verbose, $"Result for {nameof(CVLValueCreated)} event with CVL id '{cvlId}' and CVL Key '{cvlValueKey}': {string.Join(Environment.NewLine, result.Messages)}");
+                if (result.Messages.Count > 0)
+                {
+                    Context.Log(LogLevel.Verbose, $"Result for {nameof(CVLValueCreated)} event with CVL id '{cvlId}' and CVL Key '{cvlValueKey}': {string.Join(Environment.NewLine, result.Messages)}");
+                }
             }
             catch (Exception ex)
             {
@@ -49,7 +52,10 @@ namespace Bynder.Extension
             try
             {
                 var result = Container.GetInstance<CvlExportWorker>().Execute(CvlAction.Deleted, cvlId, cvlValueKey);
-                Context.Log(LogLevel.Verbose, $"Result for {nameof(CVLValueDeleted)} event with CVL id '{cvlId}' and CVL Key '{cvlValueKey}': {string.Join(Environment.NewLine, result.Messages)}");
+                if (result.Messages.Count > 0)
+                {
+                    Context.Log(LogLevel.Verbose, $"Result for {nameof(CVLValueDeleted)} event with CVL id '{cvlId}' and CVL Key '{cvlValueKey}': {string.Join(Environment.NewLine, result.Messages)}");
+                }
             }
             catch (Exception ex)
             {
@@ -62,7 +68,10 @@ namespace Bynder.Extension
             try
             {
                 var result = Container.GetInstance<CvlExportWorker>().Execute(CvlAction.DeletedAll, cvlId);
-                Context.Log(LogLevel.Verbose, $"Result for {nameof(CVLValueDeletedAll)} event with CVL id '{cvlId}': {string.Join(Environment.NewLine, result.Messages)}");
+                if (result.Messages.Count > 0)
+                {
+                    Context.Log(LogLevel.Verbose, $"Result for {nameof(CVLValueDeletedAll)} event with CVL id '{cvlId}': {string.Join(Environment.NewLine, result.Messages)}");
+                }
             }
             catch (Exception ex)
             {
@@ -75,7 +84,10 @@ namespace Bynder.Extension
             try
             {
                 var result = Container.GetInstance<CvlExportWorker>().Execute(CvlAction.Updated, cvlId, cvlValueKey);
-                Context.Log(LogLevel.Verbose, $"Result for {nameof(CVLValueUpdated)} event with CVL id '{cvlId}' and CVL Key '{cvlValueKey}': {string.Join(Environment.NewLine, result.Messages)}");
+                if (result.Messages.Count > 0)
+                {
+                    Context.Log(LogLevel.Verbose, $"Result for {nameof(CVLValueUpdated)} event with CVL id '{cvlId}' and CVL Key '{cvlValueKey}': {string.Join(Environment.NewLine, result.Messages)}");
+                }
             }
             catch (Exception ex)
             {
