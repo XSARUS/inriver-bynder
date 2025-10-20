@@ -262,6 +262,7 @@ namespace Bynder.Workers
                     {
                         ZIndex = cvlValue.Index,
                         IsSelectable = true,
+                        Name = cvlKey,
                         Label = cvlKey,
                         Labels = new Dictionary<string, string>()
                     };
@@ -273,17 +274,16 @@ namespace Bynder.Workers
                         {
                             if (!localeMapping.ContainsKey(language.Name)) continue;
 
-                            obj.Labels[language.Name] = ls[language];
+                            string bynderLanguage = localeMapping[language.Name];
+                            obj.Labels[bynderLanguage] = ls[language];
                         }
                     }
                     else
                     {
-                        obj.Label = cvlValue.Value?.ToString() ?? "";
-                        foreach (var language in ls.Languages)
+                        var value = cvlValue.Value?.ToString() ?? "";
+                        foreach (var bynderLanguage in localeMapping.Values)
                         {
-                            if (!localeMapping.ContainsKey(language.Name)) continue;
-
-                            obj.Labels[language.Name] = ls[language];
+                            obj.Labels[bynderLanguage] = value;
                         }
                     }
 
