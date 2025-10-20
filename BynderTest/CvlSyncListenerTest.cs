@@ -16,7 +16,7 @@ namespace BynderTest
             _extension = new CvlSyncListener();
             _extension.Context = InRiverContext;
             TestSettings[Settings.LocaleMappingInriverToBynder] = "{\"nl\":\"nl_NL\", \"de\": \"de_DE\", \"fr\": \"fr_FR\", \"it\":\"it_IT\" }";
-            TestSettings[Settings.CvletapropertyMapping] = "{\"InriverCvlOne\":[\"5A9H4A32-1F0B-582A-94KF9243CD178926\"], \"BynderTest\":[\"1U5EA4D7-53E1-4E0F-RB28E61BE3904F58\"]}";
+            TestSettings[Settings.CvlMetapropertyMapping] = "{\"InriverCvlOne\":[\"5A9H4A32-1F0B-582A-94KF9243CD178926\"], \"BynderTest\":[\"1U5EA4D7-53E1-4E0F-RB28E61BE3904F58\"]}";
 
             _extension.Context.Settings = TestSettings;
         }

@@ -310,12 +310,12 @@ namespace Bynder.Utils.Helpers
 
         public static Dictionary<string, List<string>> GetCvlMetapropertyMapping(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.ContainsKey(Settings.CvletapropertyMapping))
+            if (settings.ContainsKey(Settings.CvlMetapropertyMapping))
             {
-                return JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(settings[Settings.CvletapropertyMapping]);
+                return JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(settings[Settings.CvlMetapropertyMapping]);
             }
 
-            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.CvletapropertyMapping}");
+            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.CvlMetapropertyMapping}");
             return new Dictionary<string, List<string>>();
         }
 

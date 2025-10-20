@@ -22,7 +22,7 @@ namespace Bynder.Extension
             {
                 var settings = SettingNames.GetDefaultBynderApiSettings();
                 settings.Add(Config.Settings.LocaleMappingInriverToBynder, "");
-                settings.Add(Config.Settings.CvletapropertyMapping, "");
+                settings.Add(Config.Settings.CvlMetapropertyMapping, "");
                 return settings;
             }
         }
