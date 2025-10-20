@@ -11,7 +11,10 @@ namespace Bynder.Workers
     using Enums;
     using Utils.Helpers;
 
-    public class CvlExportWorker : IWorker
+    /// <summary>
+    /// Used to sync CVL values to Bynder
+    /// </summary>
+    public class CvlSyncWorker : IWorker
     {
 
         #region Fields
@@ -23,7 +26,7 @@ namespace Bynder.Workers
 
         #region Constructors
 
-        public CvlExportWorker(inRiverContext inRiverContext, IBynderClient bynderClient)
+        public CvlSyncWorker(inRiverContext inRiverContext, IBynderClient bynderClient)
         {
             _inRiverContext = inRiverContext;
             _bynderClient = bynderClient;

@@ -87,7 +87,7 @@
     <Compile Include="Exceptions\MissingDataException.cs" />
     <Compile Include="Extension\AbstractScheduledExtension.cs" />
     <Compile Include="Extension\AssetLoader.cs" />
-    <Compile Include="Extension\CvlExportListener.cs" />
+    <Compile Include="Extension\CvlSyncListener.cs" />
     <Compile Include="Extension\Registry.cs" />
     <Compile Include="Extension\Extension.cs" />
     <Compile Include="Extension\ScheduledNotificationHandler.cs" />
@@ -116,7 +116,7 @@
     <Compile Include="Workers\AssetDownloadWorker.cs" />
     <Compile Include="Workers\AssetUpdatedWorker.cs" />
     <Compile Include="Workers\AssetUploadWorker.cs" />
-    <Compile Include="Workers\CvlExportWorker.cs" />
+    <Compile Include="Workers\CvlSyncWorker.cs" />
     <Compile Include="Workers\IWorker.cs" />
     <Compile Include="Workers\ResourceMetapropertyUpdateWorker.cs" />
     <Compile Include="Workers\BynderSettingsValidationWorker.cs" />

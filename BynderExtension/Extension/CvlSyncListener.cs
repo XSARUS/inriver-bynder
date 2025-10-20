@@ -12,7 +12,7 @@ namespace Bynder.Extension
     /// <summary>
     /// Used to sync CVL values to Bynder
     /// </summary>
-    public class CvlExportListener : Extension, ICVLListener
+    public class CvlSyncListener : Extension, ICVLListener
     {
         #region Properties
 
@@ -22,7 +22,7 @@ namespace Bynder.Extension
             {
                 var settings = SettingNames.GetDefaultBynderApiSettings();
                 settings.Add(Config.Settings.LocaleMappingInriverToBynder, "");
-                settings.Add(Config.Settings.CvlMetapropertyMapping, "");
+                settings.Add(Config.Settings.CvletapropertyMapping, "");
                 return settings;
             }
         }
@@ -35,7 +35,7 @@ namespace Bynder.Extension
         {
             try
             {
-                var result = Container.GetInstance<CvlExportWorker>().Execute(CvlAction.Created, cvlId, cvlValueKey);
+                var result = Container.GetInstance<CvlSyncWorker>().Execute(CvlAction.Created, cvlId, cvlValueKey);
                 if (result.Messages.Count > 0)
                 {
                     Context.Log(LogLevel.Verbose, $"Result for {nameof(CVLValueCreated)} event with CVL id '{cvlId}' and CVL Key '{cvlValueKey}': {string.Join(Environment.NewLine, result.Messages)}");
@@ -51,7 +51,7 @@ namespace Bynder.Extension
         {
             try
             {
-                var result = Container.GetInstance<CvlExportWorker>().Execute(CvlAction.Deleted, cvlId, cvlValueKey);
+                var result = Container.GetInstance<CvlSyncWorker>().Execute(CvlAction.Deleted, cvlId, cvlValueKey);
                 if (result.Messages.Count > 0)
                 {
                     Context.Log(LogLevel.Verbose, $"Result for {nameof(CVLValueDeleted)} event with CVL id '{cvlId}' and CVL Key '{cvlValueKey}': {string.Join(Environment.NewLine, result.Messages)}");
@@ -67,7 +67,7 @@ namespace Bynder.Extension
         {
             try
             {
-                var result = Container.GetInstance<CvlExportWorker>().Execute(CvlAction.DeletedAll, cvlId);
+                var result = Container.GetInstance<CvlSyncWorker>().Execute(CvlAction.DeletedAll, cvlId);
                 if (result.Messages.Count > 0)
                 {
                     Context.Log(LogLevel.Verbose, $"Result for {nameof(CVLValueDeletedAll)} event with CVL id '{cvlId}': {string.Join(Environment.NewLine, result.Messages)}");
@@ -83,7 +83,7 @@ namespace Bynder.Extension
         {
             try
             {
-                var result = Container.GetInstance<CvlExportWorker>().Execute(CvlAction.Updated, cvlId, cvlValueKey);
+                var result = Container.GetInstance<CvlSyncWorker>().Execute(CvlAction.Updated, cvlId, cvlValueKey);
                 if (result.Messages.Count > 0)
                 {
                     Context.Log(LogLevel.Verbose, $"Result for {nameof(CVLValueUpdated)} event with CVL id '{cvlId}' and CVL Key '{cvlValueKey}': {string.Join(Environment.NewLine, result.Messages)}");
