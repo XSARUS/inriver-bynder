@@ -47,9 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiTest.local.cs" />
     <Compile Include="AssetLoaderTest.cs" />
     <Compile Include="CvlSyncListenerTest.cs" />
+    <Compile Include="CvlSyncListenerTest.local.cs" />
     <Compile Include="JsonConvertTest.cs" />
     <Compile Include="ListenerTest.cs" />
     <Compile Include="Logger.cs" />

@@ -9,6 +9,7 @@ namespace Bynder.Workers
     using Api;
     using Api.Model;
     using Enums;
+    using Utils.Extensions;
     using Utils.Helpers;
 
     /// <summary>
@@ -106,7 +107,7 @@ namespace Bynder.Workers
                 Id = id,
                 ZIndex = cvlValue.Index,
                 IsSelectable = true,
-                Name = cvlKey,
+                Name = cvlKey.SanitizeBynderName(),
                 Label = cvlKey,
                 Labels = new Dictionary<string, string>()
             };
@@ -223,12 +224,14 @@ namespace Bynder.Workers
                     return result;
                 }
 
+                var sanitizedName = cvlKey.SanitizeBynderName();
+
                 foreach (var metaproperty in metaproperties)
                 {
                     var options = _bynderClient.GetMetapropertyOptions(metaproperty);
 
-                    // match on label because inriver can have characters which are not allowed in their name in bynder. We use cvlkey as label and as name, so this should work correctly.
-                    foreach (var option in options.Where(x => x.Label.Equals(cvlKey)))
+                    // match on a sanitized name. Matchin on Label is not possible with the CVL key, because that one will be overwritten by a value in the Labels (over time).
+                    foreach (var option in options.Where(x => x.Name.Equals(sanitizedName)))
                     {
                         _bynderClient.DeleteMetapropertyOption(metaproperty, option.Id);
                     }
@@ -270,6 +273,8 @@ namespace Bynder.Workers
                     return result;
                 }
 
+                var sanitizedName = cvlKey.SanitizeBynderName();
+
                 // export value to each metaproperty it is mapped to
                 foreach (var metaproperty in metaproperties)
                 {
@@ -277,7 +282,7 @@ namespace Bynder.Workers
 
                     // match on label because inriver can have characters which are not allowed in their name in bynder. We use cvlkey as label and as name, so this should work correctly.
                     // only taking the first, if you have more on the same metaproperty, then clean those up in Bynder
-                    MetapropertyOption option = options.FirstOrDefault(x => x.Label.Equals(cvlKey));
+                    MetapropertyOption option = options.FirstOrDefault(x => x.Name.Equals(sanitizedName));
 
                     // option might not exist at all, then create it, because it is found in inriver
                     MetapropertyOptionPost obj = GetPostData(cvlKey, localeMapping, cvlValue, option?.Id);
