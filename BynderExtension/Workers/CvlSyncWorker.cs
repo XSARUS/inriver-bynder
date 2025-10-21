@@ -62,7 +62,7 @@ namespace Bynder.Workers
 
                 // if no locales, then don't export
                 var localeMapping = SettingHelper.GetLocaleMapping(_inRiverContext.Settings, _inRiverContext.Logger);
-                if (localeMapping == null)
+                if (localeMapping.Count == 0)
                 {
                     result.Messages.Add($"No locale mapping configured!");
                     return result;

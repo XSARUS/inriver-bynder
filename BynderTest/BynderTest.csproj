@@ -49,7 +49,6 @@
   <ItemGroup>
     <Compile Include="AssetLoaderTest.cs" />
     <Compile Include="CvlSyncListenerTest.cs" />
-    <Compile Include="CvlSyncListenerTest.local.cs" />
     <Compile Include="JsonConvertTest.cs" />
     <Compile Include="ListenerTest.cs" />
     <Compile Include="Logger.cs" />
@@ -57,7 +56,6 @@
     <Compile Include="ResourceMetapropertyUpdateWorkerTest.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="ApiTest.cs" />
-    <Compile Include="TestBase.local.cs" />
     <Compile Include="WorkerTest.cs" />
   </ItemGroup>
   <ItemGroup>
