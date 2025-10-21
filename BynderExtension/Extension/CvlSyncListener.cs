@@ -6,7 +6,9 @@ using System.Collections.Generic;
 namespace Bynder.Extension
 {
     using Api;
+    using Bynder.Utils.Helpers;
     using Enums;
+    using System.Text;
     using Workers;
 
     /// <summary>
@@ -94,6 +96,28 @@ namespace Bynder.Extension
                 Context.Log(LogLevel.Error, ex.ToString(), ex);
             }
         }
+
+        public override string Test()
+        {
+            var sb = new StringBuilder();
+            try
+            {
+                sb.AppendLine(base.Test());
+
+                var cvlMetapropertyMapping = SettingHelper.GetCvlMetapropertyMapping(Context.Settings, Context.Logger);
+                sb.AppendLine($"CVLs configured: {string.Join(", ", cvlMetapropertyMapping.Keys)}");
+
+                var localeMapping = SettingHelper.GetLocaleMapping(Context.Settings, Context.Logger);
+                sb.AppendLine($"Languages configured: {string.Join(", ", localeMapping.Keys)}");
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine(ex.ToString());
+            }
+
+            return sb.ToString();
+        }
+
 
         #endregion Methods
     }
