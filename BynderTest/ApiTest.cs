@@ -62,32 +62,99 @@ namespace BynderTest
             Logger.Log("Total assets in result: " + collection.Total.Count);
         }
 
-        [TestMethod, Ignore("currently only used to retreive the metaproperties in the bynderclient")]
+        [Ignore("currently only used to retreive the metaproperties in the bynderclient")]
+        [TestMethod]
         public void GetMetaproperties()
         {
             BynderClient bynderClient = new BynderClient(BynderSettings);
-            var metaproperties = bynderClient.GetMetadataProperties();
-            Assert.IsTrue(true);
+            var metaproperties = bynderClient.GetMetaproperties();
+            Assert.IsNotNull(metaproperties);
         }
 
         [TestMethod]
         public void GetMetaproperty()
         {
             BynderClient bynderClient = new BynderClient(BynderSettings);
-            var metaproperty = bynderClient.GetMetadataProperty(_testMetaPropertyId);
+            var metaproperty = bynderClient.GetMetaproperty(_testMetaPropertyId);
             Assert.IsNotNull(metaproperty?.Name);
         }
 
         [TestMethod]
-        public void PostMetaProperties()
+        public void PostAssetMetaproperties()
         {
             BynderClient bynderClient = new BynderClient(BynderSettings);
-            var mpl = new MetapropertyList()
+            var mpl = new AssetMetapropertyList()
             {
-                new Metaproperty{ Id="4F1C2956-01DC-415C-94BB1D770FEE5A98", Values = new List<string>{ "Hello" } },
-                new Metaproperty{ Id="ABFC192D-A92B-47A0-9AFE96BBCBA3E79A", Values = new List<string>{ "bci", "gnr" } }
+                new AssetMetaproperty{ Id="4F1C2956-01DC-415C-94BB1D770FEE5A98", Values = new List<string>{ "Hello" } },
+                new AssetMetaproperty{ Id="ABFC192D-A92B-47A0-9AFE96BBCBA3E79A", Values = new List<string>{ "bci", "gnr" } }
             };
-            var result = bynderClient.SetMetaProperties(_testAssetId, mpl);
+            var result = bynderClient.SaveAssetMetaproperties(_testAssetId, mpl);
+            Logger.Log(result);
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod, Ignore("only manual")]
+        public void GetMetapropertyOptions()
+        {
+            string metaPropertyId = "5A9F4A52-1F5B-421A-94DF9249CA177926";
+            BynderClient bynderClient = new BynderClient(BynderSettings);
+            var options = bynderClient.GetMetapropertyOptions(metaPropertyId);
+            Assert.IsNotNull(options);
+        }
+
+        [TestMethod, Ignore("only manual")]
+        public void PostMetapropertyOptions()
+        {
+            BynderClient bynderClient = new BynderClient(BynderSettings);
+            var result = bynderClient.SaveMetapropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", new MetapropertyOptionPost
+            {
+                Name = "Test_optie",
+                Label = "Test_optie",
+                Labels = new Dictionary<string, string>
+                {
+                    { "nl_NL", "Test_optie" },
+                    { "de_DE", "Test_option" },
+                    { "fr_FR", "Test_option" },
+                    { "it_IT", "Test_opzione" }
+                },
+                ZIndex = 5,
+                IsSelectable = true,
+            });
+            Logger.Log(result);
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod, Ignore("only manual")]
+        public void UpdateMetapropertyOption()
+        {
+            BynderClient bynderClient = new BynderClient(BynderSettings);
+            var result = bynderClient.SaveMetapropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", new MetapropertyOptionPost
+            {
+                Id = "F8732D3E-7BF5-4F12-97D81570E019EDC2",
+                Name = "Test_optie",
+                Label = "Test_optie",
+                Labels = new Dictionary<string, string>
+                {
+                    { "nl_NL", "Test_optie" },
+                    //{ "en_GB", "Test_option" },
+                    { "de_DE", "Test_option" },
+                    { "fr_FR", "Test_option" },
+                    { "it_IT", "Test_opzione" }
+                },
+                ZIndex = 5,
+                IsSelectable = true,
+                //Options = new List<MetapropertyOptionCU>()
+
+            });
+            Logger.Log(result);
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod, Ignore("only manual")]
+        public void DeleteMetapropertyOption()
+        {
+            BynderClient bynderClient = new BynderClient(BynderSettings);
+            var result = bynderClient.DeleteMetapropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", "F8732D3E-7BF5-4F12-97D81570E019EDC2");
             Logger.Log(result);
         }
 
@@ -97,7 +164,7 @@ namespace BynderTest
             GetAccount();
             CreateAssetUsage();
             GetAssetByAssetId();
-            PostMetaProperties();
+            PostAssetMetaproperties();
             GetAssetCollection();
             DeleteAssetUsage();
         }
