@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Bynder.Utils.Extensions
@@ -49,6 +50,45 @@ namespace Bynder.Utils.Extensions
         #endregion Fields
 
         #region Methods
+
+        /// <summary>
+        /// Replace symbols, special characters, letters with accent
+        /// for an underscore.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string SanitizeBynderName(this string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return "_";
+
+            var sb = new StringBuilder();
+
+            foreach (char c in input)
+            {
+                string decomposed = c.ToString().Normalize(NormalizationForm.FormD);
+                bool hasAccent = false;
+                foreach (var dc in decomposed)
+                {
+                    if (CharUnicodeInfo.GetUnicodeCategory(dc) == UnicodeCategory.NonSpacingMark)
+                    {
+                        hasAccent = true;
+                        break;
+                    }
+                }
+
+                if ((char.IsLetterOrDigit(c)) && !hasAccent)
+                {
+                    sb.Append(c);
+                }
+                else
+                {
+                    sb.Append('_');
+                }
+            }
+
+            return sb.ToString();
+        }
 
         public static string RemoveControlCharacters(this string input)
         {

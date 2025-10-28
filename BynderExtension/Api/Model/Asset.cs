@@ -106,7 +106,7 @@ namespace Bynder.Api.Model
         /// Note that the list of (metaproperty) options should include all the (metaproperty) options available in the lower hierarchy;
         /// meaning it should include the (metaproperty) options of the (metaproperty) options etc.
         /// </summary>
-        public MetapropertyList MetaProperties { get; set; }
+        public AssetMetapropertyList MetaProperties { get; set; }
 
         /// <summary>
         /// Name of the asset, beware the asset will have no name when this is empty.

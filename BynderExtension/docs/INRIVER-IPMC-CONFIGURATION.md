@@ -33,13 +33,14 @@ At the extensions page add the following connectors with configurations.
 
 After adding and saving a connector press 'Get Default Settings' to get the default configuration options. After editing and saving this settings, restart the service.
 
-| ExtensionId | Package | Assemby Name | Assembly Type | Extension Type | ApiKey |
+| ExtensionId | Package | Assembly Name | Assembly Type | Extension Type | ApiKey |
 | ----------- | ------- | ------------ | ------------- | -------------- | ------ |
 | BynderAssetNotify | Bynder.zip | Bynder.dll | Bynder.Extension.NotificationListener | InboundDataExtension |
 | BynderAssetLoader | Bynder.zip | Bynder.dll | Bynder.Extension.AssetLoader | ScheduledExtension |
 | BynderAssetWorkerEntities | Bynder.zip | Bynder.dll | Bynder.Extension.Worker | EntityListener |
 | BynderAssetWorkerLinks | Bynder.zip | Bynder.dll | Bynder.Extension.Worker | LinkListener |
-| ScheduledNotificationHandler| Bynder.zip | Bynder.dll | Bynder.Extension.ScheduledNotificationHandler | ScheduledExtension|
+| ScheduledNotificationHandler| Bynder.zip | Bynder.dll | Bynder.Extension.ScheduledNotificationHandler | ScheduledExtension |
+| CvlSyncListener | Bynder.zip | Bynder.dll | Bynder.Extension.CvlSyncListener | CvlListener |
 
 ### Extension settings
 Unfortunately you have to configure 4 extensions to make the integration complete and they cannot share configuration values.
@@ -69,7 +70,10 @@ Unfortunately you have to configure 4 extensions to make the integration complet
 | DOWNLOAD_MEDIA_TYPE | webimage | The media type you want to use for downloads of the Bynder file to inriver. This could be `original` or a derivative/thumbnail. Default `original`  |
 | ADD_ASSET_ID_PREFIX_TO_FILENAME_OF_NEW_RESOURCE | false | Adds prefix `{assetId}_` to the filename to make it more unique. Default `true`  |
 | RESOURCE_SEARCH_TYPE | Filename | Searches the existing Resource in the AssetUpdatedWorker by `AssetId`, `Filename` or `PrefixedFilename`. Default `AssetId`  |
-| CRON_EXPRESSION | * * * * * | Cron expression to use for the SCheduledNotificationHandler. Default '* * * * *' which means every minute  |
+| CRON_EXPRESSION | * * * * * | Cron expression to use for the ScheduledNotificationHandler. Default '* * * * *' which means every minute  |
+| MAX_RETRY_ATTEMPTS | 3 | Number of retry attempts for downloading and processing an asset. Default `3` |
+| LOCALE_MAPPING_INRIVER_TO_BYNDER | {"en-US":"en_US","nl":"nl_NL"} | Mappings from inRiver language codes to Bynder language codes. Used when uploading metaproperty options. |
+| CVL_METAPROPERTY_MAPPING |{"cvl1":["metapropertyguid1","metapropertyguid2"], "cvl2":["metapropertyguid3","metapropertyguid4"]}|Mapping of CVL Id to Bynder MetaProperties. Option lists in Bynder a coupled to the metaproperty, thats why you could have multiple metaproperties for one cvl in the mapping. Setting is used in the MetapropertyOptionExportListener.
 
 Press Test on each connector (in the extensions page) to see if the connector works and your settings are valid
 
