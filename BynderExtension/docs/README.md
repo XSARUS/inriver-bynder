@@ -151,9 +151,15 @@ In inriver you have CVL's which can exist on multiple fields, in Bynder you have
 Therefore you can configure multiple metaproperty id's for a single CVL id in this setting.
 
 The languages which are synced are configured in the setting `LOCALE_MAPPING_INRIVER_TO_BYNDER`.
-The `Name` and `Label` are the CVL key. Note that Bynder converts spaces and symbols to an underscore in the `Name`. 
-Therefore we match them on the `Label` for updates and deletes.
+The `Name` will be filled by a sanitized CVL key. `Name` is saved in Bynder metaproperty option as `database name`
+This is because Bynder converts spaces and symbols to an underscore. 
+We match CVL values on the `Name` for updates and deletes.
+
 The `Labels` are filled with the languages configured in the setting and their value in the CVL value. 
 If the CVL of type string, then the label for each language will be the same value.
+
+`Label` is shown as Name in the configuration of Bynder metaproperties. 
+You can set a language in `BYNDER_LOCALE_FOR_METAPROPERTY_OPTION_LABEL` to set a cvl value for a certain language as `Label`. 
+If you leave this empty or the cvl value for that language is empty, then it will set the (not sanitized) CVL key.
 
 When an option does not exist yet in Bynder and the CVL value gets an update, then it will be synced as a new option as well.

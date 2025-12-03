@@ -73,6 +73,7 @@ Unfortunately you have to configure 4 extensions to make the integration complet
 | CRON_EXPRESSION | * * * * * | Cron expression to use for the ScheduledNotificationHandler. Default '* * * * *' which means every minute  |
 | MAX_RETRY_ATTEMPTS | 3 | Number of retry attempts for downloading and processing an asset. Default `3` |
 | LOCALE_MAPPING_INRIVER_TO_BYNDER | {"en-US":"en_US","nl":"nl_NL"} | Mappings from inRiver language codes to Bynder language codes. Used when uploading metaproperty options. |
+| BYNDER_LOCALE_FOR_METAPROPERTY_OPTION_LABEL | nl_NL | When syncing the CVL values to Bynder, choose which language you want to use as a base language for the Label/Name in Bynder in configuration. If you leave this empty or the cvl value for that language is empty, then it will set the (not sanitized) CVL key. |
 | CVL_METAPROPERTY_MAPPING |{"cvl1":["metapropertyguid1","metapropertyguid2"], "cvl2":["metapropertyguid3","metapropertyguid4"]}|Mapping of CVL Id to Bynder MetaProperties. Option lists in Bynder a coupled to the metaproperty, thats why you could have multiple metaproperties for one cvl in the mapping. Setting is used in the MetapropertyOptionExportListener.
 
 Press Test on each connector (in the extensions page) to see if the connector works and your settings are valid

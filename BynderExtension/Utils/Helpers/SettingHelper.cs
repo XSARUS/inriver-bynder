@@ -14,6 +14,7 @@ namespace Bynder.Utils.Helpers
 
     public static class SettingHelper
     {
+
         #region Methods
 
         public static string GetBynderBrandName(Dictionary<string, string> settings, IExtensionLog logger)
@@ -27,6 +28,17 @@ namespace Bynder.Utils.Helpers
             return string.Empty;
         }
 
+
+        public static string GetBynderLocaleForMetapropertyOptionLabel(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.BynderLocaleForMetapropertyOptionLabel))
+            {
+                return settings[Settings.BynderLocaleForMetapropertyOptionLabel];
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.BynderLocaleForMetapropertyOptionLabel}'");
+            return string.Empty;
+        }
 
         /// <summary>
         /// Optional setting. Default is an empty dictionary
@@ -102,6 +114,17 @@ namespace Bynder.Utils.Helpers
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.CronExpression}'. Using default value '* * * * *'");
 
             return "* * * * *";
+        }
+
+        public static Dictionary<string, List<string>> GetCvlMetapropertyMapping(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.CvlMetapropertyMapping))
+            {
+                return JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(settings[Settings.CvlMetapropertyMapping]);
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.CvlMetapropertyMapping}");
+            return new Dictionary<string, List<string>>();
         }
 
         public static DateTimeSettings GetDateTimeSettings(Dictionary<string, string> settings, IExtensionLog logger)
@@ -234,6 +257,17 @@ namespace Bynder.Utils.Helpers
             return new List<string>();
         }
 
+        public static Dictionary<string, string> GetLocaleMapping(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.LocaleMappingInriverToBynder))
+            {
+                return JsonConvert.DeserializeObject<Dictionary<string, string>>(settings[Settings.LocaleMappingInriverToBynder]);
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.LocaleMappingInriverToBynder}");
+            return new Dictionary<string, string>();
+        }
+
         public static int GetMaxRetryAttempts(Dictionary<string, string> settings, IExtensionLog logger)
         {
             if (settings.ContainsKey(Settings.MaxRetryAttempts) && int.TryParse(settings[Settings.MaxRetryAttempts], out int maxRetryAttempts))
@@ -295,28 +329,6 @@ namespace Bynder.Utils.Helpers
 
             // default true for backwards compatiblity
             return true;
-        }
-
-        public static Dictionary<string, string> GetLocaleMapping(Dictionary<string, string> settings, IExtensionLog logger)
-        {
-            if (settings.ContainsKey(Settings.LocaleMappingInriverToBynder))
-            {
-                return JsonConvert.DeserializeObject<Dictionary<string, string>>(settings[Settings.LocaleMappingInriverToBynder]);
-            }
-
-            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.LocaleMappingInriverToBynder}");
-            return new Dictionary<string, string>();
-        }
-
-        public static Dictionary<string, List<string>> GetCvlMetapropertyMapping(Dictionary<string, string> settings, IExtensionLog logger)
-        {
-            if (settings.ContainsKey(Settings.CvlMetapropertyMapping))
-            {
-                return JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(settings[Settings.CvlMetapropertyMapping]);
-            }
-
-            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.CvlMetapropertyMapping}");
-            return new Dictionary<string, List<string>>();
         }
 
         #endregion Methods

@@ -26,6 +26,7 @@
         public const string ResourceSearchType = "RESOURCE_SEARCH_TYPE";
         public const string TimestampSettings = "TIMESTAMP_SETTINGS";
         public const string LocaleMappingInriverToBynder = "LOCALE_MAPPING_INRIVER_TO_BYNDER";
+        public const string BynderLocaleForMetapropertyOptionLabel = "BYNDER_LOCALE_FOR_METAPROPERTY_OPTION_LABEL";
         public const string CvlMetapropertyMapping = "CVL_METAPROPERTY_MAPPING";
 
         #endregion Fields

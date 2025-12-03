@@ -100,7 +100,7 @@ namespace Bynder.Workers
             return result;
         }
 
-        private static MetapropertyOptionPost GetPostData(string cvlKey, Dictionary<string, string> localeMapping, CVLValue cvlValue, string id = null)
+        private MetapropertyOptionPost GetPostData(string cvlKey, Dictionary<string, string> localeMapping, CVLValue cvlValue, string id = null)
         {
             var obj = new MetapropertyOptionPost
             {
@@ -108,7 +108,6 @@ namespace Bynder.Workers
                 ZIndex = cvlValue.Index,
                 IsSelectable = true,
                 Name = cvlKey.SanitizeBynderName(),
-                Label = cvlKey,
                 Labels = new Dictionary<string, string>()
             };
 
@@ -130,6 +129,16 @@ namespace Bynder.Workers
                 {
                     obj.Labels[bynderLanguage] = value;
                 }
+            }
+
+            var labelLocale = SettingHelper.GetBynderLocaleForMetapropertyOptionLabel(_inRiverContext.Settings, _inRiverContext.Logger);
+            if (!string.IsNullOrEmpty(labelLocale) && obj.Labels.ContainsKey(labelLocale) && !string.IsNullOrWhiteSpace(obj.Labels[labelLocale]))
+            {
+                obj.Label = obj.Labels[labelLocale];
+            }
+            else
+            {
+                obj.Label = cvlKey;
             }
 
             return obj;
