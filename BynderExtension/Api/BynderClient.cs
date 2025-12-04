@@ -8,6 +8,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace Bynder.Api
 {
+    using Enums;
     using Model;
 
     public class BynderClient : OAuthClient, IBynderClient
@@ -215,7 +216,34 @@ namespace Bynder.Api
 
         public List<MetapropertyOption> GetMetapropertyOptions(string metapropertyId)
         {
-            var result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options");
+            var allResults = new List<MetapropertyOption>();
+
+            int page = 1;
+            var lastResult = new List<MetapropertyOption>();
+
+            do
+            {
+                lastResult = GetMetapropertyOptions(metapropertyId, SortOrder.Asc, page, 50);
+                allResults.AddRange(lastResult);
+                page++;
+            } while (lastResult.Count > 0);
+
+            return allResults;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="metapropertyId"></param>
+        /// <param name="order"></param>
+        /// <param name="page"></param>
+        /// <param name="limit">50 is default</param>
+        /// <returns></returns>
+        public List<MetapropertyOption> GetMetapropertyOptions(string metapropertyId, SortOrder order, int page, int limit)
+        {
+            var query = $"?order={order.ToString()}&page={page}&limit={limit}";
+
+            var result = GetWithRetry($"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options{query}");
             return JsonConvert.DeserializeObject<List<MetapropertyOption>>(result);
         }
 

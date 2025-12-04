@@ -82,6 +82,7 @@
     <Compile Include="Enums\MatchType.cs" />
     <Compile Include="Enums\MetapropertyType.cs" />
     <Compile Include="Enums\NotificationType.cs" />
+    <Compile Include="Enums\SortOrder.cs" />
     <Compile Include="Enums\ResourceSearchType.cs" />
     <Compile Include="Enums\SchedulerStatus.cs" />
     <Compile Include="Exceptions\MissingDataException.cs" />
