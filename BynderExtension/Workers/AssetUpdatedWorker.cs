@@ -222,8 +222,15 @@ namespace Bynder.Workers
             {
                 // get updated fields
                 var updatedFields = resourceEntity.Fields.Where(x => oldFieldValues.First(y => Equals(y.FieldType.Id, x.FieldType.Id)).ValueHasBeenModified(x.Data)).ToList();
-                resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(updatedFields);
-                resultString.Append($"Resource {resourceEntity.Id} updated");
+                if (updatedFields.Count > 0)
+                {
+                    resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(updatedFields);
+                    resultString.Append($"Resource {resourceEntity.Id} updated");
+                }
+                else
+                {
+                    _inRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for asset {asset.Id}");
+                }
             }
 
             var relatedEntityData = evaluatorResult.GetRelatedEntityDataInFilename();
@@ -597,8 +604,16 @@ namespace Bynder.Workers
 
             // get updated fields
             var updatedFields = resourceEntity.Fields.Where(x => oldFieldValues.First(y => Equals(y.FieldType.Id, x.FieldType.Id)).ValueHasBeenModified(x.Data)).ToList();
-            resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(updatedFields);
-            result.Messages.Add($"Resource {resourceEntity.Id} updated");
+            if (updatedFields.Count > 0)
+            {
+                resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(updatedFields);
+                result.Messages.Add($"Resource {resourceEntity.Id} updated");
+            }
+            else
+            {
+                _inRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for asset {asset.Id}");
+            }
+
             return result;
         }
 
