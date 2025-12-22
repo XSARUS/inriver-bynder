@@ -9,6 +9,8 @@ namespace Bynder.Workers
     using Api.Model;
     using Bynder.Models;
     using Names;
+    using System;
+    using System.IO;
     using System.Linq;
     using Utils.Helpers;
 
@@ -78,8 +80,8 @@ namespace Bynder.Workers
                 return;
             }
 
-            string fileUrl = GetFileUrl(asset);
-            if (string.IsNullOrWhiteSpace(fileUrl))
+            Tuple<string, string> fileUrl = GetDownloadUrlAndFilename(asset);
+            if (string.IsNullOrWhiteSpace(fileUrl.Item1))
             {
                 _inRiverContext.Log(LogLevel.Error, "File url is empty");
 
@@ -89,7 +91,7 @@ namespace Bynder.Workers
                 return;
             }
 
-            int newFileId = _inRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(resourceFilename, fileUrl);
+            int newFileId = _inRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(resourceFilename, fileUrl.Item1);
 
             // delete older asset file
             if (existingFileId > 0)
@@ -111,33 +113,38 @@ namespace Bynder.Workers
             _inRiverContext.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
         }
 
-        private string GetFileUrl(Asset asset)
+        /// <summary>
+        /// Returns the download URL and filename to use
+        /// </summary>
+        /// <param name="asset"></param>
+        /// <returns></returns>
+        private Tuple<string, string> GetDownloadUrlAndFilename(Asset asset)
         {
-            IEnumerable<FilenameExtensionMediaTypeMapping> mappings = SettingHelper.GetFilenameExtensionMediaTypeMapping(_inRiverContext.Settings, _inRiverContext.Logger);
+            var originalFileExtension = Path.GetExtension(asset.GetOriginalFileName()).Replace(".", "").ToLower();
+            FilenameExtensionMediaTypeMapping mapping = SettingHelper
+                .GetFilenameExtensionMediaTypeMapping(_inRiverContext.Settings, _inRiverContext.Logger)
+                .FirstOrDefault(m => m.FileExtension.Equals(originalFileExtension, StringComparison.OrdinalIgnoreCase));
 
-            if (mappings == null || !mappings.Any())
+            // Default to original when no mapping is found
+            if (mapping == null)
             {
                 string downloadMediaType = SettingHelper.GetDownloadMediaType(_inRiverContext.Settings, _inRiverContext.Logger);
 
                 if (downloadMediaType.Equals("original"))
                 {
-                    return _bynderClient.GetAssetDownloadLocation(asset.Id)?.S3_File;
+                    return new Tuple<string, string>(_bynderClient.GetAssetDownloadLocation(asset.Id)?.S3_File, asset.GetOriginalFileName());
                 }
 
                 if (asset.Thumbnails.ContainsKey(downloadMediaType))
                 {
-                    return asset.Thumbnails[downloadMediaType];
+                    return new Tuple<string, string>(asset.Thumbnails[downloadMediaType], asset.Thumbnails[downloadMediaType]);
                 }
 
                 _inRiverContext.Log(LogLevel.Warning, $"Download media type (original or a derivative/thumbnail) '{downloadMediaType}' not found!");
                 return null;
             }
 
-            foreach (var mapping in mappings)
-            {
-                var fileExtension = asset.Extension;
 
-            }
 
             return null;
         }
