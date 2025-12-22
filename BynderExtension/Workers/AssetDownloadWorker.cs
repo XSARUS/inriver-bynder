@@ -7,7 +7,9 @@ namespace Bynder.Workers
 {
     using Api;
     using Api.Model;
+    using Bynder.Models;
     using Names;
+    using System.Linq;
     using Utils.Helpers;
 
     internal class AssetDownloadWorker : IWorker
@@ -111,19 +113,32 @@ namespace Bynder.Workers
 
         private string GetFileUrl(Asset asset)
         {
-            string downloadMediaType = SettingHelper.GetDownloadMediaType(_inRiverContext.Settings, _inRiverContext.Logger);
+            IEnumerable<FilenameExtensionMediaTypeMapping> mappings = SettingHelper.GetFilenameExtensionMediaTypeMapping(_inRiverContext.Settings, _inRiverContext.Logger);
 
-            if (downloadMediaType.Equals("original"))
+            if (mappings == null || !mappings.Any())
             {
-                return _bynderClient.GetAssetDownloadLocation(asset.Id)?.S3_File;
+                string downloadMediaType = SettingHelper.GetDownloadMediaType(_inRiverContext.Settings, _inRiverContext.Logger);
+
+                if (downloadMediaType.Equals("original"))
+                {
+                    return _bynderClient.GetAssetDownloadLocation(asset.Id)?.S3_File;
+                }
+
+                if (asset.Thumbnails.ContainsKey(downloadMediaType))
+                {
+                    return asset.Thumbnails[downloadMediaType];
+                }
+
+                _inRiverContext.Log(LogLevel.Warning, $"Download media type (original or a derivative/thumbnail) '{downloadMediaType}' not found!");
+                return null;
             }
 
-            if (asset.Thumbnails.ContainsKey(downloadMediaType))
+            foreach (var mapping in mappings)
             {
-                return asset.Thumbnails[downloadMediaType];
+                var fileExtension = asset.Extension;
+
             }
 
-            _inRiverContext.Log(LogLevel.Warning, $"Download media type (original or a derivative/thumbnail) '{downloadMediaType}' not found!");
             return null;
         }
 
