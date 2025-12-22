@@ -98,8 +98,7 @@
     <Compile Include="Models\ExportCondition.cs" />
     <Compile Include="Models\ImportCondition.cs" />
     <Compile Include="Models\DateTimeSettings.cs" />
-    <Compile Include="Models\FilenameExtensionMediaTypeMapping.cs" />
-    <Compile Include="Models\MediaTypeConfiguration.cs" />
+    <Compile Include="Models\MediaTypeTransformConfig.cs" />
     <Compile Include="Models\MetapropertyMap.cs" />
     <Compile Include="Models\AttemptSNSMessageWrapper.cs" />
     <Compile Include="Names\ConnectorStateIds.cs" />

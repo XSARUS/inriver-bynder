@@ -131,28 +131,30 @@ namespace Bynder.Workers
         private Tuple<string, string> GetDownloadUrlAndFilename(Asset asset)
         {
             var originalFileExtension = Path.GetExtension(asset.GetOriginalFileName()).Replace(".", "").ToLower();
-            FilenameExtensionMediaTypeMapping mapping = SettingHelper
-                .GetFilenameExtensionMediaTypeMapping(_inRiverContext.Settings, _inRiverContext.Logger)
-                .FirstOrDefault(m => m.FileExtension.Equals(originalFileExtension, StringComparison.OrdinalIgnoreCase));
+            var mappings = SettingHelper.GetFilenameExtensionMediaTypeMapping(_inRiverContext.Settings, _inRiverContext.Logger);
 
-            foreach (var mediaTypeConfig in mapping.MediaTypeConfiguration)
-            {
-                MediaItem mediaItem = asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(mediaTypeConfig.MediaType, StringComparison.OrdinalIgnoreCase));
-                if (mediaItem == null)
+            // Loop through all mappings if the file-extension has any mappings configured.
+            // Use the first mapping which applies and skip the rest 
+            if (mappings.ContainsKey(originalFileExtension)) {
+                foreach (var mapping in mappings[originalFileExtension])
                 {
-                    continue;
-                }
-
-                if (asset.Thumbnails.ContainsKey(mediaTypeConfig.MediaType))
-                {
-                    string formattedFilename = asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(mediaTypeConfig.MediaType, StringComparison.OrdinalIgnoreCase))?.FileName ?? asset.GetOriginalFileName();
-                    
-                    if (!string.IsNullOrWhiteSpace(mediaTypeConfig.FilenameRegex?.Trim()))
+                    MediaItem mediaItem = asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(mapping.MediaType, StringComparison.OrdinalIgnoreCase));
+                    if (mediaItem == null)
                     {
-                        formattedFilename = Regex.Replace(formattedFilename, @mediaTypeConfig.FilenameRegex, "");
+                        continue;
                     }
-                    
-                    return new Tuple<string, string>(asset.Thumbnails[mediaTypeConfig.MediaType], formattedFilename);
+
+                    if (asset.Thumbnails.ContainsKey(mapping.MediaType))
+                    {
+                        string formattedFilename = asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(mapping.MediaType, StringComparison.OrdinalIgnoreCase))?.FileName ?? asset.GetOriginalFileName();
+
+                        if (!string.IsNullOrWhiteSpace(mapping.FilenameRegex?.Trim()))
+                        {
+                            formattedFilename = Regex.Replace(formattedFilename, mapping.FilenameRegex, "");
+                        }
+
+                        return new Tuple<string, string>(asset.Thumbnails[mapping.MediaType], formattedFilename);
+                    }
                 }
             }
 
