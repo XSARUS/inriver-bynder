@@ -12,6 +12,7 @@ namespace Bynder.Workers
     using System;
     using System.IO;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using Utils.Helpers;
 
     internal class AssetDownloadWorker : IWorker
@@ -69,10 +70,11 @@ namespace Bynder.Workers
             int existingFileId = (int?)resourceEntity.GetField(FieldTypeIds.ResourceFileId)?.Data ?? 0;
 
             // add new asset
-            string resourceFilename = (string)resourceEntity.GetField(FieldTypeIds.ResourceFilename)?.Data;
+            Field resourceFilenameField = resourceEntity.GetField(FieldTypeIds.ResourceFilename);
+            string resourceFilename = (string)resourceFilenameField?.Data;
             if (string.IsNullOrWhiteSpace(resourceFilename))
             {
-                _inRiverContext.Log(LogLevel.Error, $"Field '{FieldTypeIds.ResourceFilename}' is empty");
+                _inRiverContext.Log(LogLevel.Error, $"Field '{FieldTypeIds.ResourceFilename}' is empty or does not exist");
 
                 // set error state when the asset could not be found
                 bynderDownloadStateField.Data = BynderStates.Error;
@@ -80,8 +82,9 @@ namespace Bynder.Workers
                 return;
             }
 
-            Tuple<string, string> fileUrl = GetDownloadUrlAndFilename(asset);
-            if (string.IsNullOrWhiteSpace(fileUrl.Item1))
+            /** 1 = download url, 2 = formatted filename */
+            Tuple<string, string> fileHandlingDetails = GetDownloadUrlAndFilename(asset);
+            if (string.IsNullOrWhiteSpace(fileHandlingDetails.Item1))
             {
                 _inRiverContext.Log(LogLevel.Error, "File url is empty");
 
@@ -91,7 +94,7 @@ namespace Bynder.Workers
                 return;
             }
 
-            int newFileId = _inRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(resourceFilename, fileUrl.Item1);
+            int newFileId = _inRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(fileHandlingDetails.Item2, fileHandlingDetails.Item1);
 
             // delete older asset file
             if (existingFileId > 0)
@@ -108,8 +111,15 @@ namespace Bynder.Workers
             resourceMimeTypeField.Data = asset.GetOriginalMimeType();
 
             bynderDownloadStateField.Data = BynderStates.Done;
+            resourceFilenameField.Data = fileHandlingDetails.Item2;
 
-            resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderDownloadStateField, resourceFileIdField, resourceMimeTypeField });
+            resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> {
+                resourceFilenameField,
+                bynderDownloadStateField, 
+                resourceFileIdField, 
+                resourceMimeTypeField
+            });
+
             _inRiverContext.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
         }
 
@@ -125,27 +135,44 @@ namespace Bynder.Workers
                 .GetFilenameExtensionMediaTypeMapping(_inRiverContext.Settings, _inRiverContext.Logger)
                 .FirstOrDefault(m => m.FileExtension.Equals(originalFileExtension, StringComparison.OrdinalIgnoreCase));
 
-            // Default to original when no mapping is found
-            if (mapping == null)
+            foreach (var mediaTypeConfig in mapping.MediaTypeConfiguration)
             {
-                string downloadMediaType = SettingHelper.GetDownloadMediaType(_inRiverContext.Settings, _inRiverContext.Logger);
-
-                if (downloadMediaType.Equals("original"))
+                MediaItem mediaItem = asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(mediaTypeConfig.MediaType, StringComparison.OrdinalIgnoreCase));
+                if (mediaItem == null)
                 {
-                    return new Tuple<string, string>(_bynderClient.GetAssetDownloadLocation(asset.Id)?.S3_File, asset.GetOriginalFileName());
+                    continue;
                 }
 
-                if (asset.Thumbnails.ContainsKey(downloadMediaType))
+                if (asset.Thumbnails.ContainsKey(mediaTypeConfig.MediaType))
                 {
-                    return new Tuple<string, string>(asset.Thumbnails[downloadMediaType], asset.Thumbnails[downloadMediaType]);
+                    string formattedFilename = asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(mediaTypeConfig.MediaType, StringComparison.OrdinalIgnoreCase))?.FileName ?? asset.GetOriginalFileName();
+                    
+                    if (!string.IsNullOrWhiteSpace(mediaTypeConfig.FilenameRegex?.Trim()))
+                    {
+                        formattedFilename = Regex.Replace(formattedFilename, @mediaTypeConfig.FilenameRegex, "");
+                    }
+                    
+                    return new Tuple<string, string>(asset.Thumbnails[mediaTypeConfig.MediaType], formattedFilename);
                 }
-
-                _inRiverContext.Log(LogLevel.Warning, $"Download media type (original or a derivative/thumbnail) '{downloadMediaType}' not found!");
-                return null;
             }
 
+            // Default to original when no mapping is found
+            string downloadMediaType = SettingHelper.GetDownloadMediaType(_inRiverContext.Settings, _inRiverContext.Logger);
 
+            if (downloadMediaType.Equals("original"))
+            {
+                return new Tuple<string, string>(_bynderClient.GetAssetDownloadLocation(asset.Id)?.S3_File, asset.GetOriginalFileName());
+            }
 
+            if (asset.Thumbnails.ContainsKey(downloadMediaType))
+            {
+                return new Tuple<string, string>(
+                    asset.Thumbnails[downloadMediaType], 
+                    asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(downloadMediaType, StringComparison.OrdinalIgnoreCase))?.FileName ?? asset.GetOriginalFileName()
+                );
+            }
+
+            _inRiverContext.Log(LogLevel.Warning, $"Download media type (original or a derivative/thumbnail) '{downloadMediaType}' not found!");
             return null;
         }
 
