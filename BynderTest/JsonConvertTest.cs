@@ -1,6 +1,8 @@
 ﻿using Bynder.Api.Model;
+using Bynder.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace BynderTest
 {
@@ -10,7 +12,7 @@ namespace BynderTest
         #region Methods
 
         [TestMethod]
-        public void TestConverion()
+        public void TestConversion()
         {
             string assetApiJson = "";
             Asset assetObj = JsonConvert.DeserializeObject<Asset>(assetApiJson);
@@ -20,6 +22,27 @@ namespace BynderTest
 
             string assetWithMetaproperties = "";
             Assert.AreEqual(assetWithMetaproperties, assetString);
+        }
+
+        [TestMethod]
+        public void TestFilenameExtensionMediatypeMappingSerialization()
+        {
+            var mappings = new Dictionary<string, List<MediaTypeTransformConfig>>
+            {
+                ["tif"] = new List<MediaTypeTransformConfig>
+                {
+                    new MediaTypeTransformConfig { MediaType = "webimage",  FilenameRegex = "idk" },
+                    new MediaTypeTransformConfig { MediaType = "ecommerce", FilenameRegex = "idk" },
+                },
+                ["idk"] = new List<MediaTypeTransformConfig>
+                {
+                    new MediaTypeTransformConfig { MediaType = "webimage", FilenameRegex = "idk" },
+                }
+            };
+
+            var json = JsonConvert.SerializeObject(mappings, Formatting.Indented);
+
+            Assert.AreNotEqual(json, string.Empty);
         }
 
         #endregion Methods

@@ -11,7 +11,6 @@
         public const string CronExpression = "CRON_EXPRESSION";
         public const int DefaultMaxRetryAttempts = 3;
         public const string DeleteResourceOnDeleteEvent = "DELETE_RESOURCE_ON_DELETE_EVENT";
-        /** to be deprecated */
         public const string DownloadMediaType = "DOWNLOAD_MEDIA_TYPE";
         public const string FilenameExtensionMediaTypeMapping = "FILENAME_EXTENSION_MEDIA_TYPE_MAPPING";
         public const string ExportConditions = "EXPORT_CONDITIONS";
