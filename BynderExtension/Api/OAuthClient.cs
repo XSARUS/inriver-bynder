@@ -1,8 +1,10 @@
 ﻿using Bynder.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 
 namespace Bynder.Api
 {
@@ -110,12 +112,17 @@ namespace Bynder.Api
         /// <returns></returns>
         public string Post(string uri, List<KeyValuePair<string, string>> formData)
         {
-            var response = SendRequest(new HttpRequestMessage
+            var request = new HttpRequestMessage
             {
                 RequestUri = new Uri(uri),
                 Method = HttpMethod.Post,
-                Content = new FormUrlEncodedContent(formData)
-            });
+            };
+
+            SignRequestMessage(request, formData);
+
+            request.Content = new FormUrlEncodedContent(formData);
+
+            var response = SendRequest(request, true);
             response.EnsureSuccessStatusCode();
             return response.Content.ReadAsStringAsync().Result;
         }
@@ -124,34 +131,37 @@ namespace Bynder.Api
         /// sign and send the http request, return the response
         /// </summary>
         /// <param name="requestMessage"></param>
+        /// <param name="isSigned"></param>
         /// <returns></returns>
-        protected HttpResponseMessage SendRequest(HttpRequestMessage requestMessage)
+        protected HttpResponseMessage SendRequest(HttpRequestMessage requestMessage, bool isSigned = false)
         {
             using (var httpClient = new HttpClient())
             {
-                SignRequestMessage(requestMessage);
+                if (!isSigned)
+                {
+                    SignRequestMessage(requestMessage);
+                }
                 return httpClient.SendAsync(requestMessage).Result;
             }
         }
 
-        private void SignRequestMessage(HttpRequestMessage message)
+        /// <summary>
+        /// sign the request using Oauth
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="formValues"></param>
+        private void SignRequestMessage(HttpRequestMessage message, List<KeyValuePair<string, string>> formValues = null)
         {
-            if (OAuthManager == null)
-                throw new Exception("OAuthManager is not initialized");
+            var uri = message.RequestUri.ToString();
 
-            string uriForSigning = message.RequestUri.ToString();
-
-            if (message.Method == HttpMethod.Post && message.Content is FormUrlEncodedContent)
+            if (message.Method.Equals(HttpMethod.Post) && formValues != null)
             {
-                string content = message.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                
-                // replace + as space for %20, otherwise it will give an unauthorized error
-                // this won't replace a + in the values, because they are encoded as %2B.
-                uriForSigning += "?" + content.Replace("+", "%20");
+                var queryString = string.Join("&", formValues.Select(kvp => $"{HttpUtility.UrlEncode(kvp.Key)}={HttpUtility.UrlEncode(kvp.Value)}"));
+                uri += $"?{queryString}";
             }
 
-            message.Headers.Add(HttpRequestHeader.Authorization.ToString(),
-                OAuthManager.GenerateAuthzHeader(uriForSigning, message.Method.Method));
+            if (OAuthManager == null) throw new Exception("OAuthManager is not initialized");
+            message.Headers.Add(HttpRequestHeader.Authorization.ToString(), OAuthManager.GenerateAuthzHeader(uri, message.Method.Method));
         }
 
         #endregion Methods
