@@ -138,19 +138,21 @@ namespace Bynder.Workers
             if (mappings.ContainsKey(originalFileExtension)) {
                 foreach (var mapping in mappings[originalFileExtension])
                 {
-                    MediaItem mediaItem = asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(mapping.MediaType, StringComparison.OrdinalIgnoreCase));
-                    if (mediaItem == null)
-                    {
-                        continue;
-                    }
-
                     if (asset.Thumbnails.ContainsKey(mapping.MediaType))
                     {
-                        string formattedFilename = asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(mapping.MediaType, StringComparison.OrdinalIgnoreCase))?.FileName ?? asset.GetOriginalFileName();
+                        string downloadUrl = asset.Thumbnails[mapping.MediaType];
+                        var uri = new Uri(downloadUrl);
+                        string formattedFilename = Path.GetFileName(uri.LocalPath);
+                        string extension = Path.GetExtension(formattedFilename);
+
+                        if (string.IsNullOrWhiteSpace(extension)) {
+                            formattedFilename = asset.GetOriginalFileName();
+                        }                      
 
                         if (!string.IsNullOrWhiteSpace(mapping.FilenameRegex?.Trim()))
                         {
-                            formattedFilename = Regex.Replace(formattedFilename, mapping.FilenameRegex, "");
+                            string regexPattern = mapping.FilenameRegex?.Replace(@"\\", @"\");
+                            formattedFilename = Regex.Replace(formattedFilename, regexPattern, "");
                         }
 
                         return new Tuple<string, string>(asset.Thumbnails[mapping.MediaType], formattedFilename);
