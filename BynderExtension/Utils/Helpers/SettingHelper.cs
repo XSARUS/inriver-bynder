@@ -164,6 +164,17 @@ namespace Bynder.Utils.Helpers
             return "original";
         }
 
+        public static IEnumerable<FilenameExtensionMediaTypeMapping> GetFilenameExtensionMediaTypeMapping(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.FilenameExtensionMediaTypeMapping))
+            {
+                return JsonConvert.DeserializeObject<IEnumerable<FilenameExtensionMediaTypeMapping>>(settings[Settings.FilenameExtensionMediaTypeMapping]);
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for {Settings.FilenameExtensionMediaTypeMapping}");
+            return new List<FilenameExtensionMediaTypeMapping>();
+        }
+
         /// <summary>
         /// Optional setting. Default is an empty list.
         /// </summary>
