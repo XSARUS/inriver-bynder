@@ -74,6 +74,7 @@ Unfortunately you have to configure 4 extensions to make the integration complet
 | MAX_RETRY_ATTEMPTS | 3 | Number of retry attempts for downloading and processing an asset. Default `3` |
 | LOCALE_MAPPING_INRIVER_TO_BYNDER | {"en-US":"en_US","nl":"nl_NL"} | Mappings from inRiver language codes to Bynder language codes. Used when uploading metaproperty options. |
 | CVL_METAPROPERTY_MAPPING |{"cvl1":["metapropertyguid1","metapropertyguid2"], "cvl2":["metapropertyguid3","metapropertyguid4"]}|Mapping of CVL Id to Bynder MetaProperties. Option lists in Bynder a coupled to the metaproperty, thats why you could have multiple metaproperties for one cvl in the mapping. Setting is used in the MetapropertyOptionExportListener.
+| FILENAME_EXTENSION_MEDIA_TYPE_MAPPING |{"tif":[{"mediaType":"Ecommerce","filenameRegex":"-tif(?=\\.[^.]+$)"}],"jpg":[{"mediaType":"webimage","filenameRegex":"-jpg(?=\\.[^.]+$)"}]}|If you don't want to download the original file you can supply the derivative-type also you can specify a regex to apply on the filename which is being substracted from te download-url for the choosen derivative-type. If no mapping could be found it falls back to `DOWNLOAD_MEDIA_TYPE`|
 
 Press Test on each connector (in the extensions page) to see if the connector works and your settings are valid
 
