@@ -182,25 +182,18 @@ namespace Bynder.Api
         /// <returns></returns>
         public string SaveMetapropertyOption(string metapropertyId, MetapropertyOptionPost metapropertyOption)
         {
-            string json = JsonConvert.SerializeObject(metapropertyOption, new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            });
+            var json = JsonConvert.SerializeObject(
+                metapropertyOption,
+                new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                });
 
-            var form = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>("data", json)
-            };
-
-            if (string.IsNullOrEmpty(metapropertyOption.Id))
-            {
-                return Post($"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options", form);
-            }
-            else
-            {
-                return Post($"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options/{metapropertyOption.Id}", form);
-            }
+            return PostJson(
+                $"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options",
+                json
+            );
         }
 
         public string DeleteMetapropertyOption(string metapropertyId, string metapropertyOptionId)
@@ -217,9 +210,9 @@ namespace Bynder.Api
         public List<MetapropertyOption> GetMetapropertyOptions(string metapropertyId)
         {
             var allResults = new List<MetapropertyOption>();
+            List<MetapropertyOption> lastResult;
 
             int page = 1;
-            var lastResult = new List<MetapropertyOption>();
 
             do
             {
