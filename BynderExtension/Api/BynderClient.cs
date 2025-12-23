@@ -182,16 +182,31 @@ namespace Bynder.Api
         /// <returns></returns>
         public string SaveMetapropertyOption(string metapropertyId, MetapropertyOptionPost metapropertyOption)
         {
-            var json = JsonConvert.SerializeObject(
-                metapropertyOption,
+            var payload = new
+            {
+                data = metapropertyOption
+            };
+
+            string json = JsonConvert.SerializeObject(
+                payload,
                 new JsonSerializerSettings
                 {
                     NullValueHandling = NullValueHandling.Ignore,
                     ContractResolver = new CamelCasePropertyNamesContractResolver()
                 });
 
+            // CREATE
+            if (string.IsNullOrWhiteSpace(metapropertyOption.Id))
+            {
+                return PostJson(
+                    $"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options",
+                    json
+                );
+            }
+
+            // UPDATE
             return PostJson(
-                $"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options",
+                $"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options/{metapropertyOption.Id}",
                 json
             );
         }
