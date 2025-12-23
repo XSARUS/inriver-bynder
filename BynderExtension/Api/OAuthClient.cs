@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Web;
 
 namespace Bynder.Api
@@ -163,6 +164,23 @@ namespace Bynder.Api
             if (OAuthManager == null) throw new Exception("OAuthManager is not initialized");
             message.Headers.Add(HttpRequestHeader.Authorization.ToString(), OAuthManager.GenerateAuthzHeader(uri, message.Method.Method));
         }
+
+        protected string PostJson(string uri, string json)
+        {
+            var request = new HttpRequestMessage
+            {
+                RequestUri = new Uri(uri),
+                Method = HttpMethod.Post,
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+
+            SignRequestMessage(request); // GEEN formValues
+
+            var response = SendRequest(request, true);
+            response.EnsureSuccessStatusCode();
+            return response.Content.ReadAsStringAsync().Result;
+        }
+
 
         #endregion Methods
     }
