@@ -182,33 +182,25 @@ namespace Bynder.Api
         /// <returns></returns>
         public string SaveMetapropertyOption(string metapropertyId, MetapropertyOptionPost metapropertyOption)
         {
-            var payload = new
+            string json = JsonConvert.SerializeObject(metapropertyOption, new JsonSerializerSettings
             {
-                data = metapropertyOption
+                NullValueHandling = NullValueHandling.Ignore,
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
+
+            var form = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("data", json)
             };
 
-            string json = JsonConvert.SerializeObject(
-                payload,
-                new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    ContractResolver = new CamelCasePropertyNamesContractResolver()
-                });
-
-            // CREATE
-            if (string.IsNullOrWhiteSpace(metapropertyOption.Id))
+            if (string.IsNullOrEmpty(metapropertyOption.Id))
             {
-                return PostJson(
-                    $"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options",
-                    json
-                );
+                return Post($"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options", form);
             }
-
-            // UPDATE
-            return PostJson(
-                $"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options/{metapropertyOption.Id}",
-                json
-            );
+            else
+            {
+                return Post($"{_customerBynderUrl}/api/v4/metaproperties/{metapropertyId}/options/{metapropertyOption.Id}", form);
+            }
         }
 
         public string DeleteMetapropertyOption(string metapropertyId, string metapropertyOptionId)
@@ -225,9 +217,9 @@ namespace Bynder.Api
         public List<MetapropertyOption> GetMetapropertyOptions(string metapropertyId)
         {
             var allResults = new List<MetapropertyOption>();
-            List<MetapropertyOption> lastResult;
 
             int page = 1;
+            var lastResult = new List<MetapropertyOption>();
 
             do
             {

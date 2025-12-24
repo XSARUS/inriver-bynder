@@ -15,7 +15,7 @@ namespace Bynder.Workers
     using System.Text.RegularExpressions;
     using Utils.Helpers;
 
-    internal class AssetDownloadWorker : IWorker
+    public class AssetDownloadWorker : IWorker
     {
         #region Fields
 
@@ -128,7 +128,7 @@ namespace Bynder.Workers
         /// </summary>
         /// <param name="asset"></param>
         /// <returns></returns>
-        private Tuple<string, string> GetDownloadUrlAndFilename(Asset asset)
+        public Tuple<string, string> GetDownloadUrlAndFilename(Asset asset)
         {
             var originalFileExtension = Path.GetExtension(asset.GetOriginalFileName()).Replace(".", "").ToLower();
             var mappings = SettingHelper.GetFilenameExtensionMediaTypeMapping(_inRiverContext.Settings, _inRiverContext.Logger);

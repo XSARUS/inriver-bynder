@@ -1,11 +1,8 @@
 ﻿using Bynder.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Web;
 
 namespace Bynder.Api
 {
@@ -113,17 +110,12 @@ namespace Bynder.Api
         /// <returns></returns>
         public string Post(string uri, List<KeyValuePair<string, string>> formData)
         {
-            var request = new HttpRequestMessage
+            var response = SendRequest(new HttpRequestMessage
             {
                 RequestUri = new Uri(uri),
                 Method = HttpMethod.Post,
-            };
-
-            SignRequestMessage(request, formData);
-
-            request.Content = new FormUrlEncodedContent(formData);
-
-            var response = SendRequest(request, true);
+                Content = new FormUrlEncodedContent(formData)
+            });
             response.EnsureSuccessStatusCode();
             return response.Content.ReadAsStringAsync().Result;
         }
@@ -132,55 +124,35 @@ namespace Bynder.Api
         /// sign and send the http request, return the response
         /// </summary>
         /// <param name="requestMessage"></param>
-        /// <param name="isSigned"></param>
         /// <returns></returns>
-        protected HttpResponseMessage SendRequest(HttpRequestMessage requestMessage, bool isSigned = false)
+        protected HttpResponseMessage SendRequest(HttpRequestMessage requestMessage)
         {
             using (var httpClient = new HttpClient())
             {
-                if (!isSigned)
-                {
-                    SignRequestMessage(requestMessage);
-                }
+                SignRequestMessage(requestMessage);
                 return httpClient.SendAsync(requestMessage).Result;
             }
         }
 
-        /// <summary>
-        /// sign the request using Oauth
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="formValues"></param>
-        private void SignRequestMessage(HttpRequestMessage message, List<KeyValuePair<string, string>> formValues = null)
+        private void SignRequestMessage(HttpRequestMessage message)
         {
-            var uri = message.RequestUri.ToString();
+            if (OAuthManager == null)
+                throw new Exception("OAuthManager is not initialized");
 
-            if (message.Method.Equals(HttpMethod.Post) && formValues != null)
+            string uriForSigning = message.RequestUri.ToString();
+
+            if (message.Method == HttpMethod.Post && message.Content is FormUrlEncodedContent)
             {
-                var queryString = string.Join("&", formValues.Select(kvp => $"{HttpUtility.UrlEncode(kvp.Key)}={HttpUtility.UrlEncode(kvp.Value)}"));
-                uri += $"?{queryString}";
+                string content = message.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+                // replace + as space for %20, otherwise it will give an unauthorized error
+                // this won't replace a + in the values, because they are encoded as %2B.
+                uriForSigning += "?" + content.Replace("+", "%20");
             }
 
-            if (OAuthManager == null) throw new Exception("OAuthManager is not initialized");
-            message.Headers.Add(HttpRequestHeader.Authorization.ToString(), OAuthManager.GenerateAuthzHeader(uri, message.Method.Method));
+            message.Headers.Add(HttpRequestHeader.Authorization.ToString(),
+                OAuthManager.GenerateAuthzHeader(uriForSigning, message.Method.Method));
         }
-
-        protected string PostJson(string uri, string json)
-        {
-            var request = new HttpRequestMessage
-            {
-                RequestUri = new Uri(uri),
-                Method = HttpMethod.Post,
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
-            };
-
-            SignRequestMessage(request); // GEEN formValues
-
-            var response = SendRequest(request, true);
-            response.EnsureSuccessStatusCode();
-            return response.Content.ReadAsStringAsync().Result;
-        }
-
 
         #endregion Methods
     }
