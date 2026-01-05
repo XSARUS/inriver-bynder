@@ -7,10 +7,13 @@ using System.Linq;
 namespace Bynder.Workers
 {
     using Api;
-    using Api.Model;
+    using Bynder.Sdk.Model;
+    using Bynder.Sdk.Query.Asset;
     using Enums;
+    using inRiver.Remoting.Query;
     using Utils.Extensions;
     using Utils.Helpers;
+    using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
 
     /// <summary>
     /// Used to sync CVL values to Bynder
@@ -20,14 +23,14 @@ namespace Bynder.Workers
 
         #region Fields
 
-        private readonly IBynderClient _bynderClient;
+        private readonly SdkIBynderClient _bynderClient;
         private readonly inRiverContext _inRiverContext;
 
         #endregion Fields
 
         #region Constructors
 
-        public CvlSyncWorker(inRiverContext inRiverContext, IBynderClient bynderClient)
+        public CvlSyncWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient)
         {
             _inRiverContext = inRiverContext;
             _bynderClient = bynderClient;
@@ -100,13 +103,14 @@ namespace Bynder.Workers
             return result;
         }
 
-        private MetapropertyOptionPost GetPostData(string cvlKey, Dictionary<string, string> localeMapping, CVLValue cvlValue, string id = null)
+        private MetapropertyOption GetPostData(string cvlKey, Dictionary<string, string> localeMapping, CVLValue cvlValue, string id = null)
         {
-            var obj = new MetapropertyOptionPost
+            var obj = new MetapropertyOption
             {
                 Id = id,
-                ZIndex = cvlValue.Index,
+                ZIndex = cvlValue.Index.ToString(),
                 IsSelectable = true,
+                DisplayLabel = cvlKey.SanitizeBynderName(),
                 Name = cvlKey.SanitizeBynderName(),
                 Labels = new Dictionary<string, string>()
             };
@@ -171,10 +175,10 @@ namespace Bynder.Workers
                 }
 
                 // export value to each metaproperty it is mapped to
-                foreach (var metaproperty in metaproperties)
+                foreach (var metapropertyId in metaproperties)
                 {
-                    MetapropertyOptionPost obj = GetPostData(cvlKey, localeMapping, cvlValue);
-                    _bynderClient.SaveMetapropertyOption(metaproperty, obj);
+                    MetapropertyOption obj = GetPostData(cvlKey, localeMapping, cvlValue);
+                    _bynderClient.GetAssetService().UpsertMetapropertyOption(metapropertyId, obj).GetAwaiter().GetResult();
                 }
 
                 result.Messages.Add($"Succesfully created the option for CVL '{cvlId}' and key '{cvlKey}' in Bynder!");
@@ -194,13 +198,13 @@ namespace Bynder.Workers
 
             try
             {
-                foreach (var metaproperty in metaproperties)
+                foreach (var metapropertyId in metaproperties)
                 {
-                    var options = _bynderClient.GetMetapropertyOptions(metaproperty);
+                    var options = _bynderClient.GetAssetService().GetMetapropertyOptions(metapropertyId, new MetapropertyOptionQuery()).GetAwaiter().GetResult();
 
                     foreach (var option in options)
                     {
-                        _bynderClient.DeleteMetapropertyOption(metaproperty, option.Id);
+                        _bynderClient.GetAssetService().DeleteMetapropertyOption(metapropertyId, option.Id).GetAwaiter().GetResult();
                     }
                 }
 
@@ -235,14 +239,14 @@ namespace Bynder.Workers
 
                 var sanitizedName = cvlKey.SanitizeBynderName();
 
-                foreach (var metaproperty in metaproperties)
+                foreach (var metapropertyId in metaproperties)
                 {
-                    var options = _bynderClient.GetMetapropertyOptions(metaproperty);
+                    var options = _bynderClient.GetAssetService().GetMetapropertyOptions(metapropertyId, new MetapropertyOptionQuery()).GetAwaiter().GetResult();
 
                     // match on a sanitized name. Matchin on Label is not possible with the CVL key, because that one will be overwritten by a value in the Labels (over time).
                     foreach (var option in options.Where(x => x.Name.Equals(sanitizedName)))
                     {
-                        _bynderClient.DeleteMetapropertyOption(metaproperty, option.Id);
+                        _bynderClient.GetAssetService().DeleteMetapropertyOption(metapropertyId, option.Id).GetAwaiter().GetResult();
                     }
                 }
 
@@ -285,17 +289,17 @@ namespace Bynder.Workers
                 var sanitizedName = cvlKey.SanitizeBynderName();
 
                 // export value to each metaproperty it is mapped to
-                foreach (var metaproperty in metaproperties)
+                foreach (var metapropertyId in metaproperties)
                 {
-                    List<MetapropertyOption> options = _bynderClient.GetMetapropertyOptions(metaproperty);
+                    IEnumerable<MetapropertyOption> options = _bynderClient.GetAssetService().GetMetapropertyOptions(metapropertyId, new MetapropertyOptionQuery()).GetAwaiter().GetResult();
 
                     // match on label because inriver can have characters which are not allowed in their name in bynder. We use cvlkey as label and as name, so this should work correctly.
                     // only taking the first, if you have more on the same metaproperty, then clean those up in Bynder
                     MetapropertyOption option = options.FirstOrDefault(x => x.Name.Equals(sanitizedName));
 
                     // option might not exist at all, then create it, because it is found in inriver
-                    MetapropertyOptionPost obj = GetPostData(cvlKey, localeMapping, cvlValue, option?.Id);
-                    _bynderClient.SaveMetapropertyOption(metaproperty, obj);
+                    MetapropertyOption obj = GetPostData(cvlKey, localeMapping, cvlValue, option?.Id);
+                    _bynderClient.GetAssetService().UpsertMetapropertyOption(metapropertyId, obj).GetAwaiter().GetResult();
                 }
 
                 result.Messages.Add($"Succesfully updated the option for CVL '{cvlId}' and key '{cvlKey}' in Bynder!");

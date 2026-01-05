@@ -28,7 +28,7 @@ namespace Bynder.Api
         public BynderClient(BynderClientSettings settings)
         {
             _customerBynderUrl = settings.CustomerBynderUrl;
-            InitializeManager(settings.ConsumerKey, settings.ConsumerSecret, settings.Token, settings.TokenSecret);
+            InitializeManager(settings.ConsumerKey, settings.ConsumerSecret, string.Empty, string.Empty);
         }
 
         #endregion Constructors

@@ -76,7 +76,6 @@
     <Compile Include="Api\Model\S3File.cs" />
     <Compile Include="Api\OAuthClient.cs" />
     <Compile Include="Api\SettingNames.cs" />
-    <Compile Include="Api\BynderOauth2Client.cs" />
     <Compile Include="Converters\AssetJsonConverter.cs" />
     <Compile Include="Enums\AssetType.cs" />
     <Compile Include="Enums\CvlAction.cs" />
@@ -109,6 +108,7 @@
     <Compile Include="Utils\Extensions\ParseExtensions.cs" />
     <Compile Include="Utils\Extensions\TypeExtensions.cs" />
     <Compile Include="Utils\Generics.cs" />
+    <Compile Include="Utils\Helpers\BynderHelper.cs" />
     <Compile Include="Utils\Helpers\ConditionHelper.cs" />
     <Compile Include="Utils\Helpers\DateTimeHelper.cs" />
     <Compile Include="Utils\Helpers\EntityHelper.cs" />
@@ -170,9 +170,12 @@
     <PackageReference Include="StructureMap">
       <Version>4.7.1</Version>
     </PackageReference>
-    <PackageReference Include="Webdam.Sdk">
-      <Version>1.0.1</Version>
-    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Bynder\BynderSDK.csproj">
+      <Project>{e709fd06-1016-4711-a661-bda0fa07cbfc}</Project>
+      <Name>BynderSDK</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

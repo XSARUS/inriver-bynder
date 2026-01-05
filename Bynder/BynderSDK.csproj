@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E709FD06-1016-4711-A661-BDA0FA07CBFC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Bynder</RootNamespace>
+    <AssemblyName>BynderSDK</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Api\Converters\BooleanJsonConverter.cs" />
+    <Compile Include="Api\Converters\DateTimeOffsetConverter.cs" />
+    <Compile Include="Api\Converters\ITypeToDictionaryConverter.cs" />
+    <Compile Include="Api\Converters\ITypeToStringConverter.cs" />
+    <Compile Include="Api\Converters\JsonConverter.cs" />
+    <Compile Include="Api\Converters\ListConverter.cs" />
+    <Compile Include="Api\Converters\LowerCaseEnumConverter.cs" />
+    <Compile Include="Api\Converters\MetapropertyOptionsConverter.cs" />
+    <Compile Include="Api\Converters\TagsOrderByConverter.cs" />
+    <Compile Include="Api\RequestSender\ApiRequestSender.cs" />
+    <Compile Include="Api\RequestSender\HttpRequestSender.cs" />
+    <Compile Include="Api\RequestSender\IApiRequestSender.cs" />
+    <Compile Include="Api\RequestSender\IHttpRequestSender.cs" />
+    <Compile Include="Api\Requests\ApiRequest.cs" />
+    <Compile Include="Api\Requests\OAuthRequest.cs" />
+    <Compile Include="Api\Requests\Request.cs" />
+    <Compile Include="Exceptions\BynderUploadException.cs" />
+    <Compile Include="Exceptions\InvalidConfigurationException.cs" />
+    <Compile Include="Exceptions\MissingTokenException.cs" />
+    <Compile Include="Extensions\UriBuilderExtensions.cs" />
+    <Compile Include="Model\AssetMetaproperty.cs" />
+    <Compile Include="Model\AssetMetapropertyList.cs" />
+    <Compile Include="Model\AssetType.cs" />
+    <Compile Include="Model\MetapropertyOptionStatus.cs" />
+    <Compile Include="Model\RequestData.cs" />
+    <Compile Include="Model\User.cs" />
+    <Compile Include="Model\Profile.cs" />
+    <Compile Include="Model\Brand.cs" />
+    <Compile Include="Model\Collection.cs" />
+    <Compile Include="Model\CollectionCover.cs" />
+    <Compile Include="Model\CollectionsOrderByType.cs" />
+    <Compile Include="Model\DownloadFileUrl.cs" />
+    <Compile Include="Model\FinalizeResponse.cs" />
+    <Compile Include="Model\Media.cs" />
+    <Compile Include="Model\MediaFullResult.cs" />
+    <Compile Include="Model\MediaItem.cs" />
+    <Compile Include="Model\Metaproperty.cs" />
+    <Compile Include="Model\MetapropertyOption.cs" />
+    <Compile Include="Model\MultipartParameters.cs" />
+    <Compile Include="Model\PollStatus.cs" />
+    <Compile Include="Model\S3File.cs" />
+    <Compile Include="Model\SaveMediaResponse.cs" />
+    <Compile Include="Model\Status.cs" />
+    <Compile Include="Model\Tag.cs" />
+    <Compile Include="Model\TagsOrderByType.cs" />
+    <Compile Include="Model\Thumbnails.cs" />
+    <Compile Include="Model\Token.cs" />
+    <Compile Include="Model\UploadRequest.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Query\Asset\AddTagToMediaQuery.cs" />
+    <Compile Include="Query\Asset\AssetUsageQuery.cs" />
+    <Compile Include="Query\Asset\DownloadMediaQuery.cs" />
+    <Compile Include="Query\Asset\GetTagsQuery.cs" />
+    <Compile Include="Query\Asset\MediaInformationQuery.cs" />
+    <Compile Include="Query\Asset\MediaQuery.cs" />
+    <Compile Include="Query\Asset\MediaQueryFull.cs" />
+    <Compile Include="Query\Asset\MetapropertyOptionQuery.cs" />
+    <Compile Include="Query\Asset\MetapropertyQuery.cs" />
+    <Compile Include="Query\Asset\ModifyMediaQuery.cs" />
+    <Compile Include="Query\Collection\AddMediaQuery.cs" />
+    <Compile Include="Query\Collection\CreateCollectionQuery.cs" />
+    <Compile Include="Query\Collection\GetCollectionsQuery.cs" />
+    <Compile Include="Query\Collection\GetMediaQuery.cs" />
+    <Compile Include="Query\Collection\RemoveMediaQuery.cs" />
+    <Compile Include="Query\Collection\ShareQuery.cs" />
+    <Compile Include="Query\Collection\SharingPermission.cs" />
+    <Compile Include="Query\Decoder\ApiField.cs" />
+    <Compile Include="Query\Decoder\QueryDecoder.cs" />
+    <Compile Include="Query\Profile\ProfileQuery.cs" />
+    <Compile Include="Query\TokenQuery.cs" />
+    <Compile Include="Query\Upload\FinalizeUploadQuery.cs" />
+    <Compile Include="Query\Upload\PollQuery.cs" />
+    <Compile Include="Query\Upload\RegisterChunkQuery.cs" />
+    <Compile Include="Query\Upload\RequestUploadQuery.cs" />
+    <Compile Include="Query\Upload\SaveMediaQuery.cs" />
+    <Compile Include="Query\Upload\UploadQuery.cs" />
+    <Compile Include="Query\User\UserQuery.cs" />
+    <Compile Include="Query\User\UsersQuery.cs" />
+    <Compile Include="Service\Profile\ProfileService.cs" />
+    <Compile Include="Service\Profile\IProfileService.cs" />
+    <Compile Include="Service\Asset\AssetService.cs" />
+    <Compile Include="Service\Asset\IAssetService.cs" />
+    <Compile Include="Service\BynderClient.cs" />
+    <Compile Include="Service\ClientFactory.cs" />
+    <Compile Include="Service\Collection\CollectionService.cs" />
+    <Compile Include="Service\Collection\ICollectionService.cs" />
+    <Compile Include="Service\IBynderClient.cs" />
+    <Compile Include="Service\OAuth\IOAuthService.cs" />
+    <Compile Include="Service\OAuth\OAuthService.cs" />
+    <Compile Include="Service\Upload\AmazonApi.cs" />
+    <Compile Include="Service\Upload\FileUploader.cs" />
+    <Compile Include="Service\Upload\IAmazonApi.cs" />
+    <Compile Include="Service\User\IUserService.cs" />
+    <Compile Include="Service\User\UserService.cs" />
+    <Compile Include="Settings\Configuration.cs" />
+    <Compile Include="Settings\Credentials.cs" />
+    <Compile Include="Settings\ICredentials.cs" />
+    <Compile Include="Settings\Validators\ConfigurationValidator.cs" />
+    <Compile Include="Settings\Validators\OAuth2ServiceConfigurationValidator.cs" />
+    <Compile Include="Utils\Url.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="PackageResources\BynderLogo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="PackageResources\LICENSE" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client">
+      <Version>5.2.9</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>13.0.4</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json.Bson">
+      <Version>1.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="System.Memory">
+      <Version>4.5.5</Version>
+    </PackageReference>
+    <PackageReference Include="System.ServiceModel.Http">
+      <Version>4.8.0</Version>
+    </PackageReference>
+    <PackageReference Include="System.Text.Json">
+      <Version>4.6.0</Version>
+    </PackageReference>
+    <PackageReference Include="System.Threading.Tasks.Extensions">
+      <Version>4.5.4</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

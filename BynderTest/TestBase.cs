@@ -1,5 +1,7 @@
 ﻿using Bynder.Api;
 using Bynder.Enums;
+using Bynder.Sdk.Settings;
+using BynderClient = Bynder.Sdk.Service.BynderClient;
 using inRiver.Remoting;
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
@@ -23,11 +25,9 @@ namespace BynderTest
         {
             // set your settings here
 
-            {SettingNames.CustomerBynderUrl, "***.getbynder.com" },
-            {SettingNames.ConsumerKey, "***" },
-            {SettingNames.ConsumerSecret, "***" },
-            {SettingNames.Token, "***" },
-            {SettingNames.TokenSecret, "***" },
+            {SettingNames.CustomerBynderUrl, "https://dam.flamingo.be" /*"https://inriver.getbynder.com"*/ },
+            {SettingNames.ConsumerKey, "05ec26de-d647-4eca-ae00-a78dce17f476" /*"72d6fccf-a158-43ce-aca9-e8028ea9033e"*/ },
+            {SettingNames.ConsumerSecret, "37760144-5eeb-44b3-88d8-654a1d6659da" /*"be55367c-4d13-430c-8031-4c8471f1ede1"*/ },
 
             {Bynder.Config.Settings.AddAssetIdPrefixToFilenameOfNewResource, false.ToString() },
             {Bynder.Config.Settings.AssetPropertyMap, "" },
@@ -62,9 +62,9 @@ namespace BynderTest
             ConsumerKey = TestSettings[SettingNames.ConsumerKey],
             ConsumerSecret = TestSettings[SettingNames.ConsumerSecret],
             CustomerBynderUrl = TestSettings[SettingNames.CustomerBynderUrl],
-            Token = TestSettings[SettingNames.Token],
-            TokenSecret = TestSettings[SettingNames.TokenSecret]
         };
+
+        internal BynderClient _bynderClient { get; set; }
 
         #endregion Properties
 
@@ -77,10 +77,17 @@ namespace BynderTest
             Logger.Log(LogLevel.Information, $"Initialize connection to inRiver Server");
 
             // set your inRiver user api key here
-            InRiverContext = new inRiverContext(RemoteManager.CreateInstance(_customerRemotingUrl, "***"), Logger);
+            // InRiverContext = new inRiverContext(RemoteManager.CreateInstance(_customerRemotingUrl, "***"), Logger);
 
-            Assert.IsNotNull(InRiverContext?.ExtensionManager, "Connection to inRiver failed. Please check the url and credentials within the test initialize method.");
-            InRiverContext.Settings = TestSettings;
+            // Assert.IsNotNull(InRiverContext?.ExtensionManager, "Connection to inRiver failed. Please check the url and credentials within the test initialize method.");
+            // InRiverContext.Settings = TestSettings;
+
+            _bynderClient = new BynderClient(new Configuration()
+            {
+                BaseUrl = new System.Uri(BynderSettings.CustomerBynderUrl),
+                ClientId = BynderSettings.ConsumerKey,
+                ClientSecret = BynderSettings.ConsumerSecret,
+            });
         }
 
         #endregion Methods

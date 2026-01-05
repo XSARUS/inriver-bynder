@@ -1,0 +1,357 @@
+// Copyright (c) Bynder. All rights reserved.
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+using Bynder.Model;
+using Bynder.Sdk.Api.Requests;
+using Bynder.Sdk.Api.RequestSender;
+using Bynder.Sdk.Model;
+using Bynder.Sdk.Query.Asset;
+using Bynder.Sdk.Query.Upload;
+using Bynder.Sdk.Service.Upload;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Reflection;
+using System.Runtime.Remoting.Messaging;
+using System.Threading.Tasks;
+using System.Web;
+using System.Web.UI.WebControls;
+using System.Xml.Linq;
+
+namespace Bynder.Sdk.Service.Asset
+{
+    /// <summary>
+    /// Implementation of <see cref="IAssetService"/>
+    /// </summary>
+    internal class AssetService : IAssetService
+    {
+        /// <summary>
+        /// Request sender to communicate with the Bynder API
+        /// </summary>
+        private readonly IApiRequestSender _requestSender;
+
+        /// <summary>
+        /// Instance to upload file to Bynder
+        /// </summary>
+        private readonly FileUploader _uploader;
+
+        /// <summary>
+        /// Initializes a new instance of the class
+        /// </summary>
+        /// <param name="requestSender">instance to communicate with the Bynder API</param>
+        public AssetService(IApiRequestSender requestSender)
+        {
+            _requestSender = requestSender;
+            _uploader = FileUploader.Create(_requestSender);
+        }
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<IList<Brand>> GetBrandsAsync()
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest<IList<Brand>>
+            {
+                Path = "/api/v4/brands/",
+                HTTPMethod = HttpMethod.Get,
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<IDictionary<string, Metaproperty>> GetMetapropertiesAsync()
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest<IDictionary<string, Metaproperty>>
+            {
+                Path = "/api/v4/metaproperties/",
+                HTTPMethod = HttpMethod.Get,
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <param name="query">Check <see cref="IAssetService"/> for more information</param>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<Metaproperty> GetMetapropertyAsync(MetapropertyQuery query)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest<Metaproperty>
+            {
+                Path = $"/api/v4/metaproperties/{query.MetapropertyId}",
+                HTTPMethod = HttpMethod.Get
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <param name="query">Check <see cref="IAssetService"/> for more information</param>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<IList<String>> GetMetapropertyDependenciesAsync(MetapropertyQuery query)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest<IList<string>>
+            {
+                Path = $"api/v4/metaproperties/{query.MetapropertyId}/dependencies/",
+                HTTPMethod = HttpMethod.Get
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <param name="query">Check <see cref="IAssetService"/> for more information</param>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<IList<Media>> GetMediaListAsync(MediaQuery query)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest<IList<Media>>
+            {
+                Path = "/api/v4/media/",
+                HTTPMethod = HttpMethod.Get,
+                Query = query,
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <param name="query">Check <see cref="IAssetService"/> for more information</param>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<Uri> GetDownloadFileUrlAsync(DownloadMediaQuery query)
+        {
+            string path;
+            if (query.MediaItemId == null)
+            {
+                path = $"/api/v4/media/{query.MediaId}/download/";
+            }
+            else
+            {
+                path = $"/api/v4/media/{query.MediaId}/download/{query.MediaItemId}/";
+            }
+
+            var downloadFileInformation = await _requestSender.SendRequestAsync(new ApiRequest<DownloadFileUrl>
+            {
+                Path = path,
+                HTTPMethod = HttpMethod.Get,
+            }).ConfigureAwait(false);
+            return downloadFileInformation.S3File;
+        }
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <param name="query">Check <see cref="IAssetService"/> for more information</param>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<SaveMediaResponse> UploadFileAsync(UploadQuery query)
+        {
+            return await _uploader.UploadFileAsync(query).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <param name="fileStream">Check <see cref="IAssetService"/> for more information</param>
+        /// <param name="query">Check <see cref="IAssetService"/> for more information</param>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<SaveMediaResponse> UploadFileAsync(Stream fileStream, UploadQuery query)
+        {
+            return await _uploader.UploadFileAsync(fileStream, query).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <param name="query">Check <see cref="IAssetService"/> for more information</param>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<Media> GetMediaInfoAsync(MediaInformationQuery query)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest<Media>
+            {
+                Path = $"/api/v4/media/{query.MediaId}/",
+                HTTPMethod = HttpMethod.Get,
+                Query = query,
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <param name="query">Check <see cref="IAssetService"/> for more information</param>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<Status> ModifyMediaAsync(ModifyMediaQuery query)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest
+            {
+                Path = $"/api/v4/media/{query.MediaId}/",
+                HTTPMethod = HttpMethod.Post,
+                Query = query,
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<IList<Tag>> GetTagsAsync(GetTagsQuery query)
+        {
+            var queryToUse = string.IsNullOrEmpty(query.Keyword) ? query : new GetTagsQuerySimple() { 
+                Keyword = query.Keyword, 
+                Limit = query.Limit,
+                OrderBy = query.OrderBy,
+                Page = query.Page
+            };
+            return await _requestSender.SendRequestAsync(new ApiRequest<IList<Tag>>
+            {
+                Path = "/api/v4/tags/",
+                HTTPMethod = HttpMethod.Get,
+                Query = queryToUse
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<Status> AddTagToMediaAsync(AddTagToMediaQuery query)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest
+            {
+                Path = $"/api/v4/tags/{query.TagId}/media/",
+                HTTPMethod = HttpMethod.Post,
+                Query = query,
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<Status> RemoveTagFromMediaAsync(string tagId, IEnumerable<string> assetIds)
+        {
+            var encodedIdList = HttpUtility.UrlEncode(string.Join(",", assetIds));
+            return await _requestSender.SendRequestAsync(new ApiRequest
+            {
+                Path = $"/api/v4/tags/{tagId}/media/?deleteIds={encodedIdList}",
+                HTTPMethod = HttpMethod.Delete,
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Create an asset usage operation to track usage of Bynder assets in third party applications.
+        /// </summary>
+        /// <param name="query">Information about the asset usage</param>
+        /// <returns>Task representing the operation</returns>
+        /// <exception cref="HttpRequestException">Can be thrown when requests to server can't be completed or HTTP code returned by server is an error</exception>
+        public async Task<Status> CreateAssetUsage(AssetUsageQuery query)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest
+            {
+                Path = $"/api/media/usage/",
+                HTTPMethod = HttpMethod.Post,
+                Query = query,
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Delete an asset usage operation to track usage of Bynder assets in third party applications.
+        /// </summary>
+        /// <param name="query">Information about the asset usage</param>
+        /// <returns>Task representing the operation</returns>
+        /// <exception cref="HttpRequestException">Can be thrown when requests to server can't be completed or HTTP code returned by server is an error</exception>
+        public async Task<Status> DeleteAssetUsage(AssetUsageQuery query)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest
+            {
+                Path = $"/api/media/usage/",
+                HTTPMethod = HttpMethod.Delete,
+                Query = query
+            }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Check <see cref="IAssetService"/> for more information
+        /// </summary>
+        /// <returns>Check <see cref="IAssetService"/> for more information</returns>
+        public async Task<MediaFullResult> GetMediaFullResultAsync(MediaQuery query)
+        {
+            var mediaQueryFull = query is MediaQueryFull ? query as MediaQueryFull : CloneIntoFullMediaQuery(query);
+            return await _requestSender.SendRequestAsync(new ApiRequest<MediaFullResult>
+            {
+                Path = "/api/v4/media/",
+                HTTPMethod = HttpMethod.Get,
+                Query = mediaQueryFull,
+            }).ConfigureAwait(false);
+        }
+
+        private static MediaQueryFull CloneIntoFullMediaQuery(MediaQuery query)
+        {
+            return new MediaQueryFull()
+            {
+                BrandId = query.BrandId,
+                CategoryId = query.CategoryId,  
+                CollectionId = query.CollectionId,
+                Ids = query.Ids,
+                Keyword = query.Keyword,
+                Limit = query.Limit,
+                MetaProperties = query.MetaProperties,
+                Page = query.Page,
+                PropertyOptionId = query.PropertyOptionId,
+                SubBrandId = query.SubBrandId,
+                Type = query.Type,
+                Total = true
+            };
+        }
+
+        public async Task<Status> DeleteAssetAsync(string assetId)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest<Status>
+            {
+                Path = "/api/v4/media/" + assetId,
+                HTTPMethod = HttpMethod.Delete,
+            }).ConfigureAwait(false);
+        }
+
+        public async Task<MetapropertyOptionStatus> UpsertMetapropertyOption(string metapropertyId, MetapropertyOption metapropertyOption)
+        {
+            string path = $"/api/v4/metaproperties/{metapropertyId}/options";
+            if (!string.IsNullOrWhiteSpace(metapropertyOption?.Id))
+            {
+                path += $"/{metapropertyOption.Id}";
+            }
+
+            RequestData data = new RequestData() { Data = metapropertyOption };
+
+            return await _requestSender.SendRequestAsync(new ApiRequest<MetapropertyOptionStatus>
+            {
+                Path = path,
+                HTTPMethod = HttpMethod.Post,
+                Query = data
+            }).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<MetapropertyOption>> GetMetapropertyOptions(string metapropertyId, MetapropertyOptionQuery query)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest<IEnumerable<MetapropertyOption>>
+            {
+                Path = $"/api/v4/metaproperties/{metapropertyId}/options",
+                HTTPMethod = HttpMethod.Get,
+                Query = query
+            }).ConfigureAwait(false);
+        }
+
+        public async Task<Status> DeleteMetapropertyOption(string metapropertyId, string optionId)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest
+            {
+                Path = $"/api/v4/metaproperties/{metapropertyId}/options/{optionId}",
+                HTTPMethod = HttpMethod.Delete,
+            }).ConfigureAwait(false);
+        }
+    }
+}

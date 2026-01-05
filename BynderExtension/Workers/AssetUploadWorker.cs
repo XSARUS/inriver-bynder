@@ -11,26 +11,29 @@ namespace Bynder.Workers
 {
     using Api;
     using Api.Model;
+    using Bynder.Sdk.Model;
     using Exceptions;
     using Names;
     using Utils.Helpers;
+    using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
+    using SdkUploadQuery = Sdk.Query.Upload.UploadQuery;
 
     public class AssetUploadWorker : IWorker
     {
         #region Fields
 
-        private const int CHUNK_SIZE = 1024 * 1024 * 5;
+        /*private const int CHUNK_SIZE = 1024 * 1024 * 5;
         private const int MAX_POLLING_ITERATIONS = 60;
-        private const int POLLING_IDDLE_TIME = 2000;
+        private const int POLLING_IDDLE_TIME = 2000;*/
 
-        private readonly IBynderClient _bynderClient;
+        private readonly SdkIBynderClient _bynderClient;
         private readonly inRiverContext _inRiverContext;
 
         #endregion Fields
 
         #region Constructors
 
-        public AssetUploadWorker(inRiverContext inRiverContext, IBynderClient bynderClient = null)
+        public AssetUploadWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null)
         {
             _inRiverContext = inRiverContext;
             _bynderClient = bynderClient;
@@ -60,13 +63,14 @@ namespace Bynder.Workers
             var brandName = SettingHelper.GetBynderBrandName(_inRiverContext.Settings, _inRiverContext.Logger);
             if (string.IsNullOrEmpty(brandName)) return null;
 
-            var brands = _bynderClient.GetAvailableBranches();
+            var brands = _bynderClient.GetAssetService().GetBrandsAsync().GetAwaiter().GetResult();
+            
             return brands
-                .FirstOrDefault(b => b.name.Equals(brandName, StringComparison.InvariantCultureIgnoreCase))
+                .FirstOrDefault(b => b.Name.Equals(brandName, StringComparison.InvariantCultureIgnoreCase))
                 ?.Id;
         }
 
-        private string GetBynderUploadStateFromEntity(Entity resourceEntity)
+        private static string GetBynderUploadStateFromEntity(Entity resourceEntity)
         {
             return (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState)?.Data;
         }
@@ -93,7 +97,7 @@ namespace Bynder.Workers
                 throw new MissingDataException($"Upload resource entity {resourceEntity.Id} failed, because there is no resource avaiable!");
             }
 
-            var s3Bucket = _bynderClient.GetClosestS3Endpoint();
+            /*var s3Bucket = _bynderClient.GetAssetService().UploadFileAsync  // .GetClosestS3Endpoint();
             if (s3Bucket == null)
             {
                 throw new MissingDataException($"Upload resource entity {resourceEntity.Id} failed, because the amazon s3 bucket endpoint cannot be defined!");
@@ -103,26 +107,24 @@ namespace Bynder.Workers
             if (uploadRequest == null)
             {
                 throw new MissingDataException($"Upload resource entity {resourceEntity.Id} failed, because we could not get upload information from Bynder!");
-            }
+            }*/
 
             return new ResourceUploadData
             {
                 BrandId = brandId,
                 Filename = filename,
                 FileId = fileId,
-                Bytes = bytes,
-                S3Bucket = s3Bucket,
-                UploadRequest = uploadRequest
+                Bytes = bytes
             };
         }
 
-        private int GetFileIdFromEntity(Entity resourceEntity)
+        private static int GetFileIdFromEntity(Entity resourceEntity)
         {
             var resourceFileId = resourceEntity.GetField(FieldTypeIds.ResourceFileId)?.Data;
             return resourceFileId != null ? (int)resourceFileId : 0;
         }
 
-        private string GetFileNameFromEntity(Entity resourceEntity)
+        private static string GetFileNameFromEntity(Entity resourceEntity)
         {
             return (string)resourceEntity.GetField(FieldTypeIds.ResourceFilename)?.Data;
         }
@@ -132,7 +134,7 @@ namespace Bynder.Workers
             return _inRiverContext.ExtensionManager.UtilityService.GetFile(fileId, "Original");
         }
 
-        private bool HasFinishedSuccessfully(FinalizeResponse finalizeResponse)
+        /*private bool HasFinishedSuccessfully(FinalizeResponse finalizeResponse)
         {
             for (int iterations = MAX_POLLING_ITERATIONS; iterations > 0; --iterations)
             {
@@ -150,9 +152,9 @@ namespace Bynder.Workers
             }
 
             return false;
-        }
+        }*/
 
-        private uint UploadResourceAsChunksToS3Bucket(string fileName, byte[] bytes, string s3Bucket, UploadRequest uploadRequest)
+        /*private uint UploadResourceAsChunksToS3Bucket(string fileName, byte[] bytes, string s3Bucket, UploadRequest uploadRequest)
         {
             uint chunkNumber = 0;
 
@@ -170,7 +172,7 @@ namespace Bynder.Workers
             }
 
             return chunkNumber;
-        }
+        }*/
 
         private void UploadResourceForEntity(Entity resourceEntity)
         {
@@ -179,7 +181,21 @@ namespace Bynder.Workers
             try
             {
                 var resourceUploadData = GetDataForUpload(resourceEntity);
-                uint chunkNumber = UploadResourceAsChunksToS3Bucket(resourceUploadData.Filename, resourceUploadData.Bytes, resourceUploadData.S3Bucket, resourceUploadData.UploadRequest);
+
+                var fileStream = new MemoryStream(resourceUploadData.Bytes, writable: false);
+                SaveMediaResponse uploadResult = _bynderClient.GetAssetService().UploadFileAsync(fileStream, new SdkUploadQuery()
+                {
+                    BrandId = resourceUploadData.BrandId,
+                    Name = resourceUploadData.Filename,
+                    MediaId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId)?.Data,
+                    /// MOET HIER NOG IETS BIJ
+                    /// FILEPATH moet leegblijven volgens mij
+                }).GetAwaiter().GetResult();
+                
+
+                // IS DIT ALLEMAAL NOG WEL NODIG?!?
+
+                /*uint chunkNumber = UploadResourceAsChunksToS3Bucket(resourceUploadData.Filename, resourceUploadData.Bytes, resourceUploadData.S3Bucket, resourceUploadData.UploadRequest);
                 var finalizeResponse = _bynderClient.FinalizeUpload(resourceUploadData.UploadRequest, chunkNumber);
                 if (HasFinishedSuccessfully(finalizeResponse))
                 {
@@ -193,6 +209,14 @@ namespace Bynder.Workers
 
                     var bynderAssetIdField = resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId);
                     bynderAssetIdField.Data = result.MediaId;
+                    fieldsToUpdate.Add(bynderAssetIdField);
+                }*/
+
+                /// VERVANGEN DOOR
+                if (uploadResult.IsSuccessful)
+                {
+                    var bynderAssetIdField = resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId);
+                    bynderAssetIdField.Data = uploadResult.MediaId;
                     fieldsToUpdate.Add(bynderAssetIdField);
                 }
 
@@ -214,7 +238,7 @@ namespace Bynder.Workers
 
         #region Classes
 
-        private class ResourceUploadData
+        private sealed class ResourceUploadData
         {
             #region Properties
 
@@ -223,7 +247,7 @@ namespace Bynder.Workers
             public int FileId { get; set; }
             public string Filename { get; set; }
             public string S3Bucket { get; set; }
-            public UploadRequest UploadRequest { get; set; }
+            public Api.Model.UploadRequest UploadRequest { get; set; }
 
             #endregion Properties
         }

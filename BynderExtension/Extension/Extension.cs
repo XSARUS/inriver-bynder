@@ -28,6 +28,7 @@ namespace Bynder.Extension
             get
             {
                 var settings = SettingNames.GetDefaultBynderApiSettings();
+
                 settings.Add(Config.Settings.InitialAssetLoadUrlQuery, "type=image");
                 settings.Add(Config.Settings.RegularExpressionForFileName, @"^(?<ProductNumber>[0-9a-zA-Z]+)_(?<ResourcePosition>[0-9]+)");
                 settings.Add(Config.Settings.MetapropertyMap, "metapropertyguid1=inriverfield1,metapropertyguid2=inriverfield2");

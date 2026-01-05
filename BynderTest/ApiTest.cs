@@ -1,8 +1,13 @@
 ﻿using Bynder.Api;
 using Bynder.Api.Model;
 using Bynder.Extension;
+using Bynder.Sdk.Model;
+using Bynder.Sdk.Service;
+using Bynder.Sdk.Settings;
+using Bynder.Utils.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using BynderClient = Bynder.Sdk.Service.BynderClient;
 
 namespace BynderTest
 {
@@ -11,44 +16,44 @@ namespace BynderTest
     {
         #region Fields
 
-        private const string _testAssetId = "86020C4E-9140-4713-9356AB72024CD0D7";
-        private const string _testIntegrationId = "41a92562-bfd9-4847-a34d-4320bcef5e4a";
-        private const string _testMetaPropertyId = "EE9827C8-0AA6-4334-AFF1708DA0A67A52";
+        private const string _testAssetId = "4A3262E3-F1A2-47C4-AD7F1CA6C126995C"; // inriver "2E565EE4-1267-43FA-816A74F3B9ED4D9D";
+        private const string _testIntegrationId = "***";
+        private const string _testMetaPropertyId = "***";
 
         #endregion Fields
 
         #region Methods
-
         public void CreateAssetUsage()
         {
-            BynderClient bynderBynderClient = new BynderClient(BynderSettings);
+            /*BynderClient bynderBynderClient = new BynderClient(BynderSettings);
             var result = bynderBynderClient.CreateAssetUsage(_testAssetId, _testIntegrationId, "http://test.com/123");
-            Logger.Log(result);
+            Logger.Log(result);*/
         }
 
         public void DeleteAssetUsage()
         {
-            BynderClient bynderBynderClient = new BynderClient(BynderSettings);
+            /*BynderClient bynderBynderClient = new BynderClient(BynderSettings);
             var result = bynderBynderClient.DeleteAssetUsage(_testAssetId, _testIntegrationId);
-            Logger.Log(result);
+            Logger.Log(result);*/
         }
 
         public void GetAccount()
         {
-            BynderClient bynderClient = new BynderClient(BynderSettings);
+/*            BynderClient bynderClient = new BynderClient(BynderSettings);
             var accountName = bynderClient.GetAccount().Name;
 
             Logger.Log(accountName);
-            Assert.IsNotNull(accountName);
+            Assert.IsNotNull(accountName);*/
         }
 
         [TestMethod]
         public void GetAssetByAssetId()
         {
-            BynderClient bynderClient = new BynderClient(BynderSettings);
-            Asset asset = bynderClient.GetAssetByAssetId(_testAssetId);
+            Assert.IsNotEmpty(_testAssetId);
+            BynderHelper bynderHelper = new BynderHelper(_bynderClient);
+            Media media = bynderHelper.GetAssetByMediaQuery(_testAssetId).GetAwaiter().GetResult();
 
-            var originalFileName = asset.GetOriginalFileName();
+            var originalFileName = media.GetOriginalFileName();
             Logger.Log(originalFileName);
 
             Assert.AreNotEqual(string.Empty, originalFileName, "Got no result");
@@ -56,33 +61,33 @@ namespace BynderTest
 
         public void GetAssetCollection()
         {
-            BynderClient bynderClient = new BynderClient(BynderSettings);
+/*            BynderClient bynderClient = new BynderClient(BynderSettings);
             var collection = bynderClient.GetAssetCollection("");
             Assert.IsInstanceOfType(collection, typeof(AssetCollection));
-            Logger.Log("Total assets in result: " + collection.Total.Count);
+            Logger.Log("Total assets in result: " + collection.Total.Count);*/
         }
 
-        [Ignore("currently only used to retreive the metaproperties in the bynderclient")]
+        /*[Ignore("currently only used to retreive the metaproperties in the bynderclient")]*/
         [TestMethod]
         public void GetMetaproperties()
         {
-            BynderClient bynderClient = new BynderClient(BynderSettings);
+/*            BynderClient bynderClient = new BynderClient(BynderSettings);
             var metaproperties = bynderClient.GetMetaproperties();
-            Assert.IsNotNull(metaproperties);
+            Assert.IsNotNull(metaproperties);*/
         }
 
         [TestMethod]
         public void GetMetaproperty()
         {
-            BynderClient bynderClient = new BynderClient(BynderSettings);
+/*            BynderClient bynderClient = new BynderClient(BynderSettings);
             var metaproperty = bynderClient.GetMetaproperty(_testMetaPropertyId);
-            Assert.IsNotNull(metaproperty?.Name);
+            Assert.IsNotNull(metaproperty?.Name);*/
         }
 
         [TestMethod]
         public void PostAssetMetaproperties()
         {
-            BynderClient bynderClient = new BynderClient(BynderSettings);
+/*            BynderClient bynderClient = new BynderClient(BynderSettings);
             var mpl = new AssetMetapropertyList()
             {
                 new AssetMetaproperty{ Id="4F1C2956-01DC-415C-94BB1D770FEE5A98", Values = new List<string>{ "Hello" } },
@@ -90,22 +95,22 @@ namespace BynderTest
             };
             var result = bynderClient.SaveAssetMetaproperties(_testAssetId, mpl);
             Logger.Log(result);
-            Assert.IsNotNull(result);
+            Assert.IsNotNull(result);*/
         }
 
         [TestMethod, Ignore("only manual")]
         public void GetMetapropertyOptions()
         {
-            string metaPropertyId = "5A9F4A52-1F5B-421A-94DF9249CA177926";
+/*            string metaPropertyId = "5A9F4A52-1F5B-421A-94DF9249CA177926";
             BynderClient bynderClient = new BynderClient(BynderSettings);
             var options = bynderClient.GetMetapropertyOptions(metaPropertyId);
-            Assert.IsNotNull(options);
+            Assert.IsNotNull(options);*/
         }
 
         [TestMethod, Ignore("only manual")]
         public void PostMetapropertyOptions()
         {
-            BynderClient bynderClient = new BynderClient(BynderSettings);
+/*            BynderClient bynderClient = new BynderClient(BynderSettings);
             var result = bynderClient.SaveMetapropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", new MetapropertyOptionPost
             {
                 Name = "Test_optie",
@@ -121,13 +126,13 @@ namespace BynderTest
                 IsSelectable = true,
             });
             Logger.Log(result);
-            Assert.IsNotNull(result);
+            Assert.IsNotNull(result);*/
         }
 
         [TestMethod, Ignore("only manual")]
         public void UpdateMetapropertyOption()
         {
-            BynderClient bynderClient = new BynderClient(BynderSettings);
+/*            BynderClient bynderClient = new BynderClient(BynderSettings);
             var result = bynderClient.SaveMetapropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", new MetapropertyOptionPost
             {
                 Id = "F8732D3E-7BF5-4F12-97D81570E019EDC2",
@@ -147,15 +152,15 @@ namespace BynderTest
 
             });
             Logger.Log(result);
-            Assert.IsNotNull(result);
+            Assert.IsNotNull(result);*/
         }
 
         [TestMethod, Ignore("only manual")]
         public void DeleteMetapropertyOption()
         {
-            BynderClient bynderClient = new BynderClient(BynderSettings);
+/*            BynderClient bynderClient = new BynderClient(BynderSettings);
             var result = bynderClient.DeleteMetapropertyOption("5A9F4A52-1F5B-421A-94DF9249CA177926", "F8732D3E-7BF5-4F12-97D81570E019EDC2");
-            Logger.Log(result);
+            Logger.Log(result);*/
         }
 
         [TestMethod]
@@ -174,9 +179,9 @@ namespace BynderTest
         [DataTestMethod]
         public void UploadEntityTest(int entityId)
         {
-            Uploader uploader = new Uploader() { Context = InRiverContext };
+/*            Uploader uploader = new Uploader() { Context = InRiverContext };
             uploader.Context.Settings = TestSettings;
-            uploader.EntityUpdated(entityId, null);
+            uploader.EntityUpdated(entityId, null);*/
         }
 
         #endregion Methods

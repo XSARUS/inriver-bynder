@@ -8,28 +8,35 @@ namespace Bynder.Workers
     using Api;
     using Api.Model;
     using Bynder.Models;
+    using Bynder.Sdk.Model;
+    using Bynder.Sdk.Query.Asset;
     using Names;
+    using Newtonsoft.Json.Linq;
     using System;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
     using Utils.Helpers;
+    using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
 
     public class AssetDownloadWorker : IWorker
     {
         #region Fields
 
-        private readonly IBynderClient _bynderClient;
+        private readonly SdkIBynderClient _bynderClient;
         private readonly inRiverContext _inRiverContext;
+        private readonly BynderHelper _bynderHelper;
 
         #endregion Fields
 
         #region Constructors
 
-        public AssetDownloadWorker(inRiverContext inRiverContext, IBynderClient bynderClient = null)
+        public AssetDownloadWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null)
         {
             _inRiverContext = inRiverContext;
             _bynderClient = bynderClient;
+            _bynderHelper = new BynderHelper(bynderClient);
         }
 
         #endregion Constructors
@@ -55,8 +62,9 @@ namespace Bynder.Workers
             if (string.IsNullOrWhiteSpace(bynderId)) return;
 
             // download asset information
-            Asset asset = _bynderClient.GetAssetByAssetId(bynderId);
-            if (asset == null)
+            Media media = _bynderHelper.GetAssetByMediaQuery(bynderId).GetAwaiter().GetResult();
+
+            if (media == null)
             {
                 _inRiverContext.Log(LogLevel.Error, "Asset information is empty");
 
@@ -83,7 +91,7 @@ namespace Bynder.Workers
             }
 
             /** 1 = download url, 2 = formatted filename */
-            Tuple<string, string> fileHandlingDetails = GetDownloadUrlAndFilename(asset);
+            Tuple<string, string> fileHandlingDetails = GetDownloadUrlAndFilename(media).GetAwaiter().GetResult();
             if (string.IsNullOrWhiteSpace(fileHandlingDetails.Item1))
             {
                 _inRiverContext.Log(LogLevel.Error, "File url is empty");
@@ -108,7 +116,7 @@ namespace Bynder.Workers
             resourceFileIdField.Data = newFileId;
 
             var resourceMimeTypeField = resourceEntity.GetField(FieldTypeIds.ResourceMimeType);
-            resourceMimeTypeField.Data = asset.GetOriginalMimeType();
+            resourceMimeTypeField.Data = media.GetOriginalMimeType();
 
             bynderDownloadStateField.Data = BynderStates.Done;
             resourceFilenameField.Data = fileHandlingDetails.Item2;
@@ -128,7 +136,7 @@ namespace Bynder.Workers
         /// </summary>
         /// <param name="asset"></param>
         /// <returns></returns>
-        public Tuple<string, string> GetDownloadUrlAndFilename(Asset asset)
+        public async Task<Tuple<string, string>> GetDownloadUrlAndFilename(Media asset)
         {
             var originalFileExtension = Path.GetExtension(asset.GetOriginalFileName()).Replace(".", "").ToLower();
             var mappings = SettingHelper.GetFilenameExtensionMediaTypeMapping(_inRiverContext.Settings, _inRiverContext.Logger);
@@ -138,9 +146,9 @@ namespace Bynder.Workers
             if (mappings.ContainsKey(originalFileExtension)) {
                 foreach (var mapping in mappings[originalFileExtension])
                 {
-                    if (asset.Thumbnails.ContainsKey(mapping.MediaType))
+                    if (asset.Thumbnails.All.ContainsKey(mapping.MediaType))
                     {
-                        string downloadUrl = asset.Thumbnails[mapping.MediaType];
+                        string downloadUrl = asset.Thumbnails.All[mapping.MediaType].Value<string>();
                         var uri = new Uri(downloadUrl);
                         string formattedFilename = Path.GetFileName(uri.LocalPath);
                         string extension = Path.GetExtension(formattedFilename);
@@ -155,7 +163,7 @@ namespace Bynder.Workers
                             formattedFilename = Regex.Replace(formattedFilename, regexPattern, "");
                         }
 
-                        return new Tuple<string, string>(asset.Thumbnails[mapping.MediaType], formattedFilename);
+                        return new Tuple<string, string>(downloadUrl, formattedFilename);
                     }
                 }
             }
@@ -165,14 +173,15 @@ namespace Bynder.Workers
 
             if (downloadMediaType.Equals("original"))
             {
-                return new Tuple<string, string>(_bynderClient.GetAssetDownloadLocation(asset.Id)?.S3_File, asset.GetOriginalFileName());
+                Uri assetDownloadLocation = await _bynderClient.GetAssetService().GetDownloadFileUrlAsync(new DownloadMediaQuery() { MediaId = asset.Id });
+                return new Tuple<string, string>(assetDownloadLocation.ToString(), asset.GetOriginalFileName());
             }
 
-            if (asset.Thumbnails.ContainsKey(downloadMediaType))
+            if (asset.Thumbnails.All.ContainsKey(downloadMediaType))
             {
                 return new Tuple<string, string>(
-                    asset.Thumbnails[downloadMediaType], 
-                    asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(downloadMediaType, StringComparison.OrdinalIgnoreCase))?.FileName ?? asset.GetOriginalFileName()
+                    asset.Thumbnails.All[downloadMediaType].Value<string>(), 
+                    asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(downloadMediaType, StringComparison.OrdinalIgnoreCase))?.Name ?? asset.GetOriginalFileName()
                 );
             }
 

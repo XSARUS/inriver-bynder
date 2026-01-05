@@ -4,6 +4,7 @@ using inRiver.Remoting.Objects;
 namespace Bynder.Utils.Helpers
 {
     using Api.Model;
+    using Sdk.Model;
     using Enums;
     using Names;
 
@@ -11,7 +12,7 @@ namespace Bynder.Utils.Helpers
     {
         #region Methods
 
-        public static Entity GetResourceByAsset(Asset asset, ResourceSearchType resourceSearchType, IDataService dataService, LoadLevel loadLevel)
+        public static Entity GetResourceByAsset(Media asset, ResourceSearchType resourceSearchType, IDataService dataService, LoadLevel loadLevel)
         {
             switch (resourceSearchType)
             {

@@ -10,8 +10,6 @@ namespace Bynder.Api
         public string ConsumerKey { get; set; }
         public string ConsumerSecret { get; set; }
         public string CustomerBynderUrl { get; set; }
-        public string Token { get; set; }
-        public string TokenSecret { get; set; }
 
         #endregion Properties
 
@@ -25,9 +23,7 @@ namespace Bynder.Api
                 {
                     ConsumerKey = connectorSettings[SettingNames.ConsumerKey],
                     ConsumerSecret = connectorSettings[SettingNames.ConsumerSecret],
-                    CustomerBynderUrl = connectorSettings[SettingNames.CustomerBynderUrl],
-                    Token = connectorSettings[SettingNames.Token],
-                    TokenSecret = connectorSettings[SettingNames.TokenSecret],
+                    CustomerBynderUrl = connectorSettings[SettingNames.CustomerBynderUrl]
                 };
                 return clientsettings;
             }

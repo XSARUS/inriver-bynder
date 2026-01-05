@@ -12,6 +12,7 @@ namespace Bynder.Api.Model
         public string Name { get; set; }
         public string Label { get; set; }
         public Dictionary<string, string> Labels { get; set; }
+        
         [JsonProperty("zindex")]
         public int? ZIndex { get; set; }
         public bool? IsSelectable { get; set; }

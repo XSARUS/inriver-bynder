@@ -11,6 +11,7 @@ namespace Bynder.Workers
 {
     using Api;
     using Api.Model;
+    using Bynder.Sdk.Model;
     using Config;
     using Enums;
     using Models;
@@ -18,23 +19,23 @@ namespace Bynder.Workers
     using Utils;
     using Utils.Extensions;
     using Utils.Helpers;
+    using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
 
     public class AssetUpdatedWorker : IWorker
     {
         #region Fields
-
-        private readonly IBynderClient _bynderClient;
-        private readonly FilenameEvaluator _fileNameEvaluator;
         private readonly inRiverContext _inRiverContext;
+        private readonly BynderHelper _bynderHelper;
+        private readonly FilenameEvaluator _fileNameEvaluator;
 
         #endregion Fields
 
         #region Constructors
 
-        public AssetUpdatedWorker(inRiverContext inRiverContext, IBynderClient bynderClient, FilenameEvaluator fileNameEvaluator)
+        public AssetUpdatedWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient, FilenameEvaluator fileNameEvaluator)
         {
             _inRiverContext = inRiverContext;
-            _bynderClient = bynderClient;
+            _bynderHelper = new BynderHelper(bynderClient);
             _fileNameEvaluator = fileNameEvaluator;
         }
 
@@ -53,10 +54,15 @@ namespace Bynder.Workers
             var result = new WorkerResult();
 
             // get original filename, as we need to evaluate this for further processing
-            var asset = _bynderClient.GetAssetByAssetId(bynderAssetId);
+            Media media = _bynderHelper.GetAssetByMediaQuery(bynderAssetId).GetAwaiter().GetResult();
+            if (media == null)
+            {
+                result.Messages.Add($"Not processing '{bynderAssetId}'; asset not found.");
+                return result;
+            }
 
             // evaluate filename
-            string originalFileName = asset.GetOriginalFileName();
+            string originalFileName = media.GetOriginalFileName();
             var evaluatorResult = _fileNameEvaluator.Evaluate(originalFileName);
             if (!evaluatorResult.IsMatch())
             {
@@ -65,7 +71,7 @@ namespace Bynder.Workers
             }
 
             // evaluate conditions
-            if (!AssetAppliesToConditions(asset))
+            if (!AssetAppliesToConditions(media))
             {
                 _inRiverContext.Log(LogLevel.Debug, $"Asset {bynderAssetId} does not apply to the conditions");
 
@@ -73,25 +79,25 @@ namespace Bynder.Workers
                 return result;
             }
 
-            _inRiverContext.Log(LogLevel.Debug, $"Asset {asset.Id} applies to conditions.");
+            _inRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} applies to conditions.");
 
             var resourceSearchType = SettingHelper.GetResourceSearchType(_inRiverContext.Settings, _inRiverContext.Logger);
-            Entity resourceEntity = EntityHelper.GetResourceByAsset(asset, resourceSearchType, _inRiverContext.ExtensionManager.DataService, LoadLevel.DataAndLinks);
+            Entity resourceEntity = EntityHelper.GetResourceByAsset(media, resourceSearchType, _inRiverContext.ExtensionManager.DataService, LoadLevel.DataAndLinks);
 
             // handle notification logic
             switch (notificationType)
             {
                 case NotificationType.DataUpsert:
-                    return CreateOrUpdateEntityAndRelations(result, asset, evaluatorResult, resourceEntity);
+                    return CreateOrUpdateEntityAndRelations(result, media, evaluatorResult, resourceEntity);
 
                 case NotificationType.MetadataUpdated:
                     if (resourceEntity != null)
                     {
-                        return UpdateMetadata(result, asset, resourceEntity);
+                        return UpdateMetadata(result, media, resourceEntity);
                     }
                     else
                     {
-                        return CreateOrUpdateEntityAndRelations(result, asset, evaluatorResult, resourceEntity);
+                        return CreateOrUpdateEntityAndRelations(result, media, evaluatorResult, resourceEntity);
                     }
 
                 case NotificationType.IsArchived:
@@ -169,7 +175,7 @@ namespace Bynder.Workers
         /// </summary>
         /// <param name="asset"></param>
         /// <returns></returns>
-        private bool AssetAppliesToConditions(Asset asset)
+        private bool AssetAppliesToConditions(Media asset)
         {
             var conditions = SettingHelper.GetImportConditions(_inRiverContext.Settings, _inRiverContext.Logger);
 
@@ -184,7 +190,7 @@ namespace Bynder.Workers
             return true;
         }
 
-        private WorkerResult CreateOrUpdateEntityAndRelations(WorkerResult result, Asset asset, FilenameEvaluator.Result evaluatorResult, Entity resourceEntity)
+        private WorkerResult CreateOrUpdateEntityAndRelations(WorkerResult result, Media asset, FilenameEvaluator.Result evaluatorResult, Entity resourceEntity)
         {
             _inRiverContext.Log(LogLevel.Verbose, $"Create or update entity, metadata and relations for bynder asset {asset.Id}");
 
@@ -240,7 +246,7 @@ namespace Bynder.Workers
             return result;
         }
 
-        private Entity CreateResourceEntity(Asset asset)
+        private Entity CreateResourceEntity(Media asset)
         {
             Entity resourceEntity;
             EntityType resourceType = _inRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
@@ -349,12 +355,18 @@ namespace Bynder.Workers
             return null;
         }
 
-        private static bool GetConditionResult(Asset asset, ImportCondition condition)
+        private static bool GetConditionResult(Media asset, ImportCondition condition)
         {
-            var metaproperty = asset.MetaProperties.FirstOrDefault(x => x.Name.Equals(condition.PropertyName));
+            if (asset.PropertyOptionsDictionary.ContainsKey(condition.PropertyName))
+            {
+                return false;
+            }
+
+            // metapropertyValue = JToken
+            var metapropertyValue = asset.PropertyOptionsDictionary[condition.PropertyName];
 
             // metaproperty is not included in asset, when the value is null
-            if (metaproperty == null)
+            if (metapropertyValue == null)
             {
                 // check if there are conditions or if the only condition value is null
                 if (condition.Values.Count == 0 || (condition.Values.Count == 1 && string.IsNullOrEmpty(condition.Values[0]))) return true;
@@ -363,8 +375,9 @@ namespace Bynder.Workers
                 return false;
             }
 
-            return ConditionHelper.ValuesApplyToCondition(metaproperty.Values, condition);
+            return ConditionHelper.ValuesApplyToCondition(JsonHelper.GetValueAsStringList(metapropertyValue), condition);
         }
+
 
         private object GetParsedValueForField(WorkerResult result, string propertyName, List<string> values, Field field)
         {
@@ -425,7 +438,7 @@ namespace Bynder.Workers
             }
         }
 
-        private void LogMessageIfMultipleValuesForSingleField(WorkerResult result, string propertyName, Field field, List<string> values, string firstVal, string mergedVal)
+        private static void LogMessageIfMultipleValuesForSingleField(WorkerResult result, string propertyName, Field field, List<string> values, string firstVal, string mergedVal)
         {
             if (values != null && values.Count > 1)
             {
@@ -433,7 +446,7 @@ namespace Bynder.Workers
             }
         }
 
-        private void SetAssetProperties(Entity resourceEntity, Asset asset, WorkerResult result)
+        private void SetAssetProperties(Entity resourceEntity, Media asset, WorkerResult result)
         {
             _inRiverContext.Log(LogLevel.Verbose, $"Setting asset properties on entity {resourceEntity.Id}");
 
@@ -478,7 +491,7 @@ namespace Bynder.Workers
             }
         }
 
-        private void SetMetapropertyData(Entity resourceEntity, Asset asset, WorkerResult result)
+        private void SetMetapropertyData(Entity resourceEntity, Media asset, WorkerResult result)
         {
             var metaPropertyMapping = SettingHelper.GetConfiguredMetaPropertyMap(_inRiverContext.Settings, _inRiverContext.Logger);
             if (metaPropertyMapping.Count == 0)
@@ -512,7 +525,7 @@ namespace Bynder.Workers
             }
         }
 
-        private void SetResourceFilenameData(Entity resourceEntity, Dictionary<FieldType, string> filenameData)
+        private static void SetResourceFilenameData(Entity resourceEntity, Dictionary<FieldType, string> filenameData)
         {
             // resource fields from regular expression created from filename
             foreach (var keyValuePair in filenameData)
@@ -587,7 +600,7 @@ namespace Bynder.Workers
             return result;
         }
 
-        private WorkerResult UpdateMetadata(WorkerResult result, Asset asset, Entity resourceEntity)
+        private WorkerResult UpdateMetadata(WorkerResult result, Media asset, Entity resourceEntity)
         {
             _inRiverContext.Log(LogLevel.Verbose, $"Update metadata only for Resource {resourceEntity.Id}");
 

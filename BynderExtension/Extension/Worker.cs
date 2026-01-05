@@ -4,7 +4,10 @@ using System.Linq;
 
 namespace Bynder.Extension
 {
+    using Bynder.Api.Model;
+    using Bynder.Sdk.Query.Asset;
     using Names;
+    using System.Threading.Tasks;
     using Utils.InRiver;
     using Workers;
 

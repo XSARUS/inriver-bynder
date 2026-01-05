@@ -5,22 +5,25 @@ using inRiver.Remoting.Objects;
 namespace Bynder.Workers
 {
     using Api;
+    using Bynder.Sdk.Query.Asset;
     using Names;
     using Utils.Helpers;
     using Utils.InRiver;
+    using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
+    using SdkUploadQuery = Sdk.Query.Upload.UploadQuery;
 
     internal class AssetUsageUpdateWorker : IWorker
     {
         #region Fields
 
-        private readonly IBynderClient _bynderBynderClient;
+        private readonly SdkIBynderClient _bynderBynderClient;
         private readonly inRiverContext _inRiverContext;
 
         #endregion Fields
 
         #region Constructors
 
-        public AssetUsageUpdateWorker(inRiverContext inRiverContext, IBynderClient bynderBynderClient)
+        public AssetUsageUpdateWorker(inRiverContext inRiverContext, SdkIBynderClient bynderBynderClient)
         {
             _inRiverContext = inRiverContext;
             _bynderBynderClient = bynderBynderClient;
@@ -50,10 +53,13 @@ namespace Bynder.Workers
 
             // clear all current usages
             _inRiverContext.Log(LogLevel.Information, $"Set asset usage for asset {assetId}");
-            _bynderBynderClient.DeleteAssetUsage(assetId, integrationId);
+            _bynderBynderClient.GetAssetService().DeleteAssetUsage(new AssetUsageQuery(integrationId, assetId));
 
             // and set new one
-            _bynderBynderClient.CreateAssetUsage(assetId, integrationId, formattedInriverResourceUrl);
+            _bynderBynderClient.GetAssetService().CreateAssetUsage(new AssetUsageQuery(integrationId, assetId)
+            {
+                Uri = formattedInriverResourceUrl
+            });
         }
 
         #endregion Methods

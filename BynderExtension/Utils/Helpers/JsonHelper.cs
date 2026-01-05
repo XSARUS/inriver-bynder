@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 
 namespace Bynder.Utils.Helpers
 {
@@ -40,6 +41,29 @@ namespace Bynder.Utils.Helpers
 
                 default:
                     return token.Value<string>();
+            }
+        }
+
+        public static List<string> GetValueAsStringList(JToken token)
+        {
+            if (token == null) return new List<string>();
+
+            switch (token.Type)
+            {
+                case JTokenType.Null:
+                    return new List<string>();
+
+                case JTokenType.Array:
+                    var arr = (JArray)token;
+                    return arr.ToObject<List<string>>();
+
+                // We do not need to implement this for now.
+                // It depends on what will be send as value for the metaproperty types in bynder. We have only seen strings and string arrays.
+                case JTokenType.Object:
+                    throw new NotImplementedException("No implementation to process JToken Object yet");
+
+                default:
+                    return new List<string> { token.Value<string>() };
             }
         }
 

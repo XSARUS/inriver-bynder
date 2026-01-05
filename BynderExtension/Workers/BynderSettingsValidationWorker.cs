@@ -35,8 +35,6 @@ namespace Bynder.Workers
 
             AssumeSettingIsSet(SettingNames.ConsumerSecret);
             AssumeSettingIsSet(SettingNames.ConsumerKey);
-            AssumeSettingIsSet(SettingNames.Token);
-            AssumeSettingIsSet(SettingNames.TokenSecret);
             AssumeSettingIsSet(SettingNames.CustomerBynderUrl);
             AssumeSettingIsValidUrl(SettingNames.CustomerBynderUrl);
 
