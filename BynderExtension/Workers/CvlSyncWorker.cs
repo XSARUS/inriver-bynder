@@ -178,7 +178,7 @@ namespace Bynder.Workers
                 foreach (var metapropertyId in metaproperties)
                 {
                     MetapropertyOption obj = GetPostData(cvlKey, localeMapping, cvlValue);
-                    _bynderClient.GetAssetService().UpsertMetapropertyOption(metapropertyId, obj).GetAwaiter().GetResult();
+                    _bynderClient.GetAssetService().UpsertMetapropertyOptionAsync(metapropertyId, obj).GetAwaiter().GetResult();
                 }
 
                 result.Messages.Add($"Succesfully created the option for CVL '{cvlId}' and key '{cvlKey}' in Bynder!");
@@ -200,11 +200,11 @@ namespace Bynder.Workers
             {
                 foreach (var metapropertyId in metaproperties)
                 {
-                    var options = _bynderClient.GetAssetService().GetMetapropertyOptions(metapropertyId, new MetapropertyOptionQuery()).GetAwaiter().GetResult();
+                    var options = _bynderClient.GetAssetService().GetMetapropertyOptionsAsync(metapropertyId, new MetapropertyOptionQuery()).GetAwaiter().GetResult();
 
                     foreach (var option in options)
                     {
-                        _bynderClient.GetAssetService().DeleteMetapropertyOption(metapropertyId, option.Id).GetAwaiter().GetResult();
+                        _bynderClient.GetAssetService().DeleteMetapropertyOptionAsync(metapropertyId, option.Id).GetAwaiter().GetResult();
                     }
                 }
 
@@ -241,12 +241,12 @@ namespace Bynder.Workers
 
                 foreach (var metapropertyId in metaproperties)
                 {
-                    var options = _bynderClient.GetAssetService().GetMetapropertyOptions(metapropertyId, new MetapropertyOptionQuery()).GetAwaiter().GetResult();
+                    var options = _bynderClient.GetAssetService().GetMetapropertyOptionsAsync(metapropertyId, new MetapropertyOptionQuery()).GetAwaiter().GetResult();
 
                     // match on a sanitized name. Matchin on Label is not possible with the CVL key, because that one will be overwritten by a value in the Labels (over time).
                     foreach (var option in options.Where(x => x.Name.Equals(sanitizedName)))
                     {
-                        _bynderClient.GetAssetService().DeleteMetapropertyOption(metapropertyId, option.Id).GetAwaiter().GetResult();
+                        _bynderClient.GetAssetService().DeleteMetapropertyOptionAsync(metapropertyId, option.Id).GetAwaiter().GetResult();
                     }
                 }
 
@@ -291,7 +291,7 @@ namespace Bynder.Workers
                 // export value to each metaproperty it is mapped to
                 foreach (var metapropertyId in metaproperties)
                 {
-                    IEnumerable<MetapropertyOption> options = _bynderClient.GetAssetService().GetMetapropertyOptions(metapropertyId, new MetapropertyOptionQuery()).GetAwaiter().GetResult();
+                    IEnumerable<MetapropertyOption> options = _bynderClient.GetAssetService().GetMetapropertyOptionsAsync(metapropertyId, new MetapropertyOptionQuery()).GetAwaiter().GetResult();
 
                     // match on label because inriver can have characters which are not allowed in their name in bynder. We use cvlkey as label and as name, so this should work correctly.
                     // only taking the first, if you have more on the same metaproperty, then clean those up in Bynder
@@ -299,7 +299,7 @@ namespace Bynder.Workers
 
                     // option might not exist at all, then create it, because it is found in inriver
                     MetapropertyOption obj = GetPostData(cvlKey, localeMapping, cvlValue, option?.Id);
-                    _bynderClient.GetAssetService().UpsertMetapropertyOption(metapropertyId, obj).GetAwaiter().GetResult();
+                    _bynderClient.GetAssetService().UpsertMetapropertyOptionAsync(metapropertyId, obj).GetAwaiter().GetResult();
                 }
 
                 result.Messages.Add($"Succesfully updated the option for CVL '{cvlId}' and key '{cvlKey}' in Bynder!");

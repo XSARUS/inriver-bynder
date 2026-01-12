@@ -25,8 +25,8 @@ namespace Bynder.Workers
     {
         #region Fields
         private readonly inRiverContext _inRiverContext;
-        private readonly BynderHelper _bynderHelper;
         private readonly FilenameEvaluator _fileNameEvaluator;
+        private readonly SdkIBynderClient _bynderClient;
 
         #endregion Fields
 
@@ -35,7 +35,7 @@ namespace Bynder.Workers
         public AssetUpdatedWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient, FilenameEvaluator fileNameEvaluator)
         {
             _inRiverContext = inRiverContext;
-            _bynderHelper = new BynderHelper(bynderClient);
+            _bynderClient = bynderClient;
             _fileNameEvaluator = fileNameEvaluator;
         }
 
@@ -54,7 +54,7 @@ namespace Bynder.Workers
             var result = new WorkerResult();
 
             // get original filename, as we need to evaluate this for further processing
-            Media media = _bynderHelper.GetAssetByMediaQuery(bynderAssetId).GetAwaiter().GetResult();
+            Media media = _bynderClient.GetAssetService().GetAssetByMediaQuery(bynderAssetId).GetAwaiter().GetResult();
             if (media == null)
             {
                 result.Messages.Add($"Not processing '{bynderAssetId}'; asset not found.");

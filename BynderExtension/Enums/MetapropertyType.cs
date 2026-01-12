@@ -3,7 +3,11 @@
     public enum MetapropertyType
     {
         Select,
+        Select2,
+        Autocomplete,
         Text,
-        Date
+        Longtext,
+        Date,
+        LinkedAssets
     }
 }

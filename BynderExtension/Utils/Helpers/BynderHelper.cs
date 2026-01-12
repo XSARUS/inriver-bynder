@@ -21,7 +21,7 @@ namespace Bynder.Utils.Helpers
             _bynderClient = bynderClient;
         }
 
-        public async Task<Media> GetAssetByMediaQuery(string mediaId)
+        /*public async Task<Media> GetAssetByMediaQuery(string mediaId)
         {
             return await _bynderClient
                 .GetAssetService()
@@ -30,6 +30,6 @@ namespace Bynder.Utils.Helpers
                     Versions = 1
                 })
                 .ConfigureAwait(false);
-        }
+        }*/
     }
 }

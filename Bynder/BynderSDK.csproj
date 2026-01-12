@@ -53,6 +53,7 @@
     <Compile Include="Api\Converters\ListConverter.cs" />
     <Compile Include="Api\Converters\LowerCaseEnumConverter.cs" />
     <Compile Include="Api\Converters\MetapropertyOptionsConverter.cs" />
+    <Compile Include="Api\Converters\ObjectToStringConverter.cs" />
     <Compile Include="Api\Converters\TagsOrderByConverter.cs" />
     <Compile Include="Api\RequestSender\ApiRequestSender.cs" />
     <Compile Include="Api\RequestSender\HttpRequestSender.cs" />
@@ -61,6 +62,7 @@
     <Compile Include="Api\Requests\ApiRequest.cs" />
     <Compile Include="Api\Requests\OAuthRequest.cs" />
     <Compile Include="Api\Requests\Request.cs" />
+    <Compile Include="Enums\MetapropertyType.cs" />
     <Compile Include="Exceptions\BynderUploadException.cs" />
     <Compile Include="Exceptions\InvalidConfigurationException.cs" />
     <Compile Include="Exceptions\MissingTokenException.cs" />
@@ -68,7 +70,9 @@
     <Compile Include="Model\AssetMetaproperty.cs" />
     <Compile Include="Model\AssetMetapropertyList.cs" />
     <Compile Include="Model\AssetType.cs" />
+    <Compile Include="Model\MetapropertyStatus.cs" />
     <Compile Include="Model\MetapropertyOptionStatus.cs" />
+    <Compile Include="Model\PostRequestData.cs" />
     <Compile Include="Model\RequestData.cs" />
     <Compile Include="Model\User.cs" />
     <Compile Include="Model\Profile.cs" />
@@ -174,6 +178,9 @@
     </PackageReference>
     <PackageReference Include="System.Memory">
       <Version>4.5.5</Version>
+    </PackageReference>
+    <PackageReference Include="System.Runtime.Serialization.Primitives">
+      <Version>4.3.0</Version>
     </PackageReference>
     <PackageReference Include="System.ServiceModel.Http">
       <Version>4.8.0</Version>

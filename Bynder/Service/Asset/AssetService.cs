@@ -11,8 +11,10 @@ using Bynder.Sdk.Service.Upload;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Remoting.Messaging;
@@ -163,7 +165,6 @@ namespace Bynder.Sdk.Service.Asset
             return await _uploader.UploadFileAsync(fileStream, query).ConfigureAwait(false);
         }
 
-
         /// <summary>
         /// Check <see cref="IAssetService"/> for more information
         /// </summary>
@@ -308,6 +309,20 @@ namespace Bynder.Sdk.Service.Asset
             };
         }
 
+        public async Task<Media> GetAssetByMediaQuery(string mediaId)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest<Media>
+            {
+                Path = $"/api/v4/media/{mediaId}/",
+                HTTPMethod = HttpMethod.Get,
+                Query = new MediaInformationQuery()
+                {
+                    MediaId = mediaId,
+                    Versions = 1
+                },
+            }).ConfigureAwait(false);
+        }
+
         public async Task<Status> DeleteAssetAsync(string assetId)
         {
             return await _requestSender.SendRequestAsync(new ApiRequest<Status>
@@ -317,7 +332,36 @@ namespace Bynder.Sdk.Service.Asset
             }).ConfigureAwait(false);
         }
 
-        public async Task<MetapropertyOptionStatus> UpsertMetapropertyOption(string metapropertyId, MetapropertyOption metapropertyOption)
+        public async Task<MetapropertyStatus> UpsertMetapropertyAsync(Metaproperty metaproperty)
+        {
+            string path = $"/api/v4/metaproperties";
+            if (!string.IsNullOrWhiteSpace(metaproperty?.Id))
+            {
+                path += $"/{metaproperty.Id}";
+            }
+
+            PostRequestData data = new PostRequestData() { Data = metaproperty };
+
+            return await _requestSender.SendRequestAsync(new ApiRequest<MetapropertyStatus>
+            {
+                Path = path,
+                HTTPMethod = HttpMethod.Post,
+                Query = data
+            }).ConfigureAwait(false);
+        }
+
+        public async Task<Status> DeleteMetapropertyAsync(string metapropertyId)
+        {
+            string path = $"/api/v4/metaproperties/{metapropertyId}";
+
+            return await _requestSender.SendRequestAsync(new ApiRequest<Status>
+            {
+                Path = path,
+                HTTPMethod = HttpMethod.Delete,
+            }).ConfigureAwait(false);
+        }
+
+        public async Task<MetapropertyOptionStatus> UpsertMetapropertyOptionAsync(string metapropertyId, MetapropertyOption metapropertyOption)
         {
             string path = $"/api/v4/metaproperties/{metapropertyId}/options";
             if (!string.IsNullOrWhiteSpace(metapropertyOption?.Id))
@@ -325,7 +369,7 @@ namespace Bynder.Sdk.Service.Asset
                 path += $"/{metapropertyOption.Id}";
             }
 
-            RequestData data = new RequestData() { Data = metapropertyOption };
+            PostRequestData data = new PostRequestData() { Data = metapropertyOption };
 
             return await _requestSender.SendRequestAsync(new ApiRequest<MetapropertyOptionStatus>
             {
@@ -335,7 +379,7 @@ namespace Bynder.Sdk.Service.Asset
             }).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<MetapropertyOption>> GetMetapropertyOptions(string metapropertyId, MetapropertyOptionQuery query)
+        public async Task<IEnumerable<MetapropertyOption>> GetMetapropertyOptionsAsync(string metapropertyId, MetapropertyOptionQuery query)
         {
             return await _requestSender.SendRequestAsync(new ApiRequest<IEnumerable<MetapropertyOption>>
             {
@@ -345,12 +389,28 @@ namespace Bynder.Sdk.Service.Asset
             }).ConfigureAwait(false);
         }
 
-        public async Task<Status> DeleteMetapropertyOption(string metapropertyId, string optionId)
+        public async Task<Status> DeleteMetapropertyOptionAsync(string metapropertyId, string optionId)
         {
             return await _requestSender.SendRequestAsync(new ApiRequest
             {
                 Path = $"/api/v4/metaproperties/{metapropertyId}/options/{optionId}",
                 HTTPMethod = HttpMethod.Delete,
+            }).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<MetapropertyOption>> GetMetapropertyOptionsByIdAsync(IEnumerable<string> optionIds)
+        {
+            var qParams = new Dictionary<string, string>(1)
+            {
+                { "ids", string.Join(",", optionIds) }
+            };
+
+            string path = "/api/v4/metaproperties/options?" + Utils.Url.ConvertToQuery(qParams);
+
+            return await _requestSender.SendRequestAsync(new ApiRequest<IEnumerable<MetapropertyOption>>
+            {
+                Path = path,
+                HTTPMethod = HttpMethod.Get
             }).ConfigureAwait(false);
         }
     }

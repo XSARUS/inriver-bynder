@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System.Collections.Generic;
 using Bynder.Sdk.Api.Converters;
+using Bynder.Sdk.Enums;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System.Collections.Generic;
 
 namespace Bynder.Sdk.Model
 {
@@ -23,6 +25,9 @@ namespace Bynder.Sdk.Model
         /// </summary>
         [JsonProperty("name")]
         public string Name { get; set; }
+
+        [JsonProperty("type", ItemConverterType = typeof(StringEnumConverter))]
+        public MetapropertyType Type { get; set; }
 
         /// <summary>
         /// Label of metaproperty

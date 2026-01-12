@@ -1,18 +1,20 @@
 // Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
+using Bynder.Model;
 using Bynder.Sdk.Api.Requests;
 using Bynder.Sdk.Extensions;
 using Bynder.Sdk.Query.Decoder;
 using Bynder.Sdk.Service;
 using Bynder.Sdk.Settings;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bynder.Sdk.Api.RequestSender
 {
@@ -103,10 +105,11 @@ namespace Bynder.Sdk.Api.RequestSender
 
         private async Task<HttpResponseMessage> CreateHttpRequestAsync<T>(Request<T> request)
         {
+            var parameters = _queryDecoder.GetParameters(request.Query);
             var httpRequestMessage = HttpRequestMessageFactory.Create(
                 _configuration.BaseUrl.ToString(),
                 request.HTTPMethod,
-                _queryDecoder.GetParameters(request.Query),
+                parameters,
                 request.Path
             );
 
@@ -131,14 +134,16 @@ namespace Bynder.Sdk.Api.RequestSender
                     _credentials.AccessToken
                 );
             }
-
             return await _httpSender.SendHttpRequest(httpRequestMessage).ConfigureAwait(false);
         }
 
         private static class HttpRequestMessageFactory
         {
             internal static HttpRequestMessage Create(
-                string baseUrl, HttpMethod method, IDictionary<string, string> requestParams, string urlPath)
+                string baseUrl, 
+                HttpMethod method, 
+                IDictionary<string, string> requestParams, 
+                string urlPath)
             {
                 var builder = new UriBuilder(baseUrl).AppendPath(urlPath);
 
@@ -148,6 +153,7 @@ namespace Bynder.Sdk.Api.RequestSender
                 }
 
                 HttpRequestMessage requestMessage = new HttpRequestMessage(method, builder.ToString());
+                               
                 if (HttpMethod.Post == method)
                 {
                     requestMessage.Content = new FormUrlEncodedContent(requestParams);

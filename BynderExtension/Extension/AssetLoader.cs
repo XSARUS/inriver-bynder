@@ -3,7 +3,8 @@ using inRiver.Remoting.Log;
 
 namespace Bynder.Extension
 {
-    using Api;
+    using Bynder.Sdk;
+    using Bynder.Sdk.Service;
     using Enums;
     using Utils.Helpers;
     using Workers;
@@ -33,7 +34,10 @@ namespace Bynder.Extension
                 // note: this is a paged result set, call next page until reaching end.
                 var counter = 0;
                 string query = SettingHelper.GetInitialAssetLoadUrlQuery(DefaultSettings, Context.Logger);
-                var assetCollection = bynderClient.GetAssetCollection(query);
+                /// TODO PATRICK: volgens mij is dit niet echt een "Collection" zoals die in Bynder bestaat maar een eigen
+                /// interpretatie van een AssetCollection die gevuld wordt door te zoeken naar assets adhv een query??
+                /// Dit nog navragen bij Cornelis
+                /*var assetCollection = bynderClient.GetAssetCollection(query);
                 Context.Log(LogLevel.Information, $"Start processing {assetCollection.GetTotal()} assets.");
 
                 assetCollection.Media.ForEach(a => worker.Execute(a.Id, NotificationType.DataUpsert));
@@ -48,7 +52,7 @@ namespace Bynder.Extension
                     counter += assetCollection.Media.Count;
                     Context.Log(LogLevel.Information, $"Processed {counter} assets.");
                 }
-                Context.Log(LogLevel.Information, "Initial Import Successful!");
+                Context.Log(LogLevel.Information, "Initial Import Successful!");*/
             }
             catch (System.Exception ex)
             {

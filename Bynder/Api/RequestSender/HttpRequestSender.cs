@@ -37,7 +37,16 @@ namespace Bynder.Sdk.Api.RequestSender
             {
                 var content = response.Content.ReadAsStringAsync().Result;
             }
-            response.EnsureSuccessStatusCode();
+            
+            // response.EnsureSuccessStatusCode();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var content = await (response.Content?.ReadAsStringAsync() ?? Task.FromResult<string>(null))
+                    .ConfigureAwait(false);
+                throw new HttpRequestException($"HTTP {(int)response.StatusCode} {response.ReasonPhrase}. Body: {content}");
+            }
+
             return response;
         }
 

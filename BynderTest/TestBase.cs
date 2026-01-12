@@ -25,9 +25,9 @@ namespace BynderTest
         {
             // set your settings here
 
-            {SettingNames.CustomerBynderUrl, "https://dam.flamingo.be" /*"https://inriver.getbynder.com"*/ },
-            {SettingNames.ConsumerKey, "05ec26de-d647-4eca-ae00-a78dce17f476" /*"72d6fccf-a158-43ce-aca9-e8028ea9033e"*/ },
-            {SettingNames.ConsumerSecret, "37760144-5eeb-44b3-88d8-654a1d6659da" /*"be55367c-4d13-430c-8031-4c8471f1ede1"*/ },
+            {SettingNames.CustomerBynderUrl, "https://inriver.getbynder.com" /* "https://dam.flamingo.be" /*"https://inriver.getbynder.com"*/ },
+            {SettingNames.ConsumerKey, /*"76536959-1d6f-4eee-bc31-f717db112e25" FPP VIA inriver "05ec26de-d647-4eca-ae00-a78dce17f476" FPP: */"72d6fccf-a158-43ce-aca9-e8028ea9033e" },
+            {SettingNames.ConsumerSecret, /* "a8f17019-6ab7-465d-95e0-897318d191db" FPP VIA inriver "37760144-5eeb-44b3-88d8-654a1d6659da" FPP :*/ "be55367c-4d13-430c-8031-4c8471f1ede1"},
 
             {Bynder.Config.Settings.AddAssetIdPrefixToFilenameOfNewResource, false.ToString() },
             {Bynder.Config.Settings.AssetPropertyMap, "" },

@@ -26,7 +26,6 @@ namespace Bynder.Workers
 
         private readonly SdkIBynderClient _bynderClient;
         private readonly inRiverContext _inRiverContext;
-        private readonly BynderHelper _bynderHelper;
 
         #endregion Fields
 
@@ -36,7 +35,6 @@ namespace Bynder.Workers
         {
             _inRiverContext = inRiverContext;
             _bynderClient = bynderClient;
-            _bynderHelper = new BynderHelper(bynderClient);
         }
 
         #endregion Constructors
@@ -62,7 +60,7 @@ namespace Bynder.Workers
             if (string.IsNullOrWhiteSpace(bynderId)) return;
 
             // download asset information
-            Media media = _bynderHelper.GetAssetByMediaQuery(bynderId).GetAwaiter().GetResult();
+            Media media = _bynderClient.GetAssetService().GetAssetByMediaQuery(bynderId).GetAwaiter().GetResult();
 
             if (media == null)
             {

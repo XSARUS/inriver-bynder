@@ -161,9 +161,12 @@ namespace Bynder.Sdk.Service.Asset
         /// <returns>Task representing the operation</returns>
         /// <exception cref="HttpRequestException">Can be thrown when requests to server can't be completed or HTTP code returned by server is an error</exception>
         Task<Status> DeleteAssetAsync(string assetId);
-
-        Task<MetapropertyOptionStatus> UpsertMetapropertyOption(string metapropertyId, MetapropertyOption metapropertyOption);
-        Task<IEnumerable<MetapropertyOption>> GetMetapropertyOptions(string metapropertyId, MetapropertyOptionQuery query);
-        Task<Status> DeleteMetapropertyOption(string metapropertyId, string optionId);
+        Task<MetapropertyStatus> UpsertMetapropertyAsync(Metaproperty metaproperty);
+        Task<Status> DeleteMetapropertyAsync(string metapropertyId);
+        Task<MetapropertyOptionStatus> UpsertMetapropertyOptionAsync(string metapropertyId, MetapropertyOption metapropertyOption);
+        Task<IEnumerable<MetapropertyOption>> GetMetapropertyOptionsAsync(string metapropertyId, MetapropertyOptionQuery query);
+        Task<Status> DeleteMetapropertyOptionAsync(string metapropertyId, string optionId);
+        Task<Media> GetAssetByMediaQuery(string mediaId);
+        Task<IEnumerable<MetapropertyOption>> GetMetapropertyOptionsByIdAsync(IEnumerable<string> optionIds);
     }
 }
