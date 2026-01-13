@@ -1,5 +1,4 @@
 ﻿using Bynder.Api;
-using Bynder.Api.Model;
 using Bynder.Extension;
 using Bynder.Sdk.Enums;
 using Bynder.Sdk.Model;
@@ -18,7 +17,7 @@ using BynderClient = Bynder.Sdk.Service.BynderClient;
 
 namespace BynderTest
 {
-    [TestClass,Ignore("Only run manually/.1")]
+    [TestClass,Ignore("Only run manually")]
     public class ApiTest : TestBase
     {
         #region Fields

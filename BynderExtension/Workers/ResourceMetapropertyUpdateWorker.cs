@@ -9,6 +9,8 @@ using System.Linq;
 namespace Bynder.Workers
 {
     using Api;
+    using Bynder.Sdk.Query.Asset;
+    using Bynder.Sdk.Service;
     using Models;
     using Names;
     using Utils.Helpers;
@@ -18,14 +20,14 @@ namespace Bynder.Workers
     {
         #region Fields
 
-        private readonly IBynderClient _bynderClient;
+        private readonly BynderClient _bynderClient;
         private readonly inRiverContext _inRiverContext;
 
         #endregion Fields
 
         #region Constructors
 
-        public ResourceMetapropertyUpdateWorker(inRiverContext inRiverContext, IBynderClient bynderClient)
+        public ResourceMetapropertyUpdateWorker(inRiverContext inRiverContext, BynderClient bynderClient)
         {
             _inRiverContext = inRiverContext;
             _bynderClient = bynderClient;
@@ -86,7 +88,16 @@ namespace Bynder.Workers
             {
                 // inform bynder of the changes:
                 _inRiverContext.Log(LogLevel.Information, $"Update metaproperties {string.Join(";", newMetapropertyValues)}");
-                _bynderClient.SaveAssetMetaproperties(bynderId, newMetapropertyValues);
+                
+                var query = new ModifyMediaQuery(bynderId)
+                {
+                    MetapropertyOptions = newMetapropertyValues.ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => (IList<string>)kvp.Value
+                    )
+                };
+
+                _bynderClient.GetAssetService().ModifyMediaAsync(query).GetAwaiter().GetResult();
             }
             else
             {

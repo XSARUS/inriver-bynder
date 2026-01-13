@@ -3,7 +3,7 @@ using inRiver.Remoting.Objects;
 
 namespace Bynder.Utils.Helpers
 {
-    using Api.Model;
+    using Model;
     using Sdk.Model;
     using Enums;
     using Names;

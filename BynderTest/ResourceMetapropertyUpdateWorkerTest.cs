@@ -26,7 +26,7 @@ namespace BynderTest
         [TestInitialize]
         public void Init()
         {
-            _worker = new ResourceMetapropertyUpdateWorker(InRiverContext, new BynderClient(BynderSettings));
+            _worker = new ResourceMetapropertyUpdateWorker(InRiverContext, _bynderClient);
         }
 
         #endregion Methods

@@ -9,14 +9,15 @@ namespace Bynder.Sdk.Model
 {
     public class MediaFullResult
     {
-        [JsonProperty("total")]
-        public Total Total { get; set; }
+        [JsonProperty("count")]
+        public Count Count { get; set; }
 
         [JsonProperty("media")]
         public IList<Media> Media { get; set; }
     }
-    public class Total
+    public class Count
     {
-        public long Count { get; set; }
+        [JsonProperty("total")]
+        public long Total { get; set; }
     }
 }

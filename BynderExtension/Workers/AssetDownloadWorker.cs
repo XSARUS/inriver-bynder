@@ -2,21 +2,21 @@
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
+using System;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Bynder.Workers
 {
     using Api;
-    using Api.Model;
+    using Model;
     using Bynder.Models;
     using Bynder.Sdk.Model;
     using Bynder.Sdk.Query.Asset;
     using Names;
-    using Newtonsoft.Json.Linq;
-    using System;
-    using System.IO;
-    using System.Linq;
-    using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
     using Utils.Helpers;
     using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
 

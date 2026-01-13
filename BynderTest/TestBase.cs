@@ -50,6 +50,8 @@ namespace BynderTest
         };
 
         private const string _customerRemotingUrl = "https://remoting.productmarketingcloud.com";
+        // set your inriver user api key here
+        private const string _customerRemotingApiKey = "03c7473612598c53404eae545654d110";
 
         #endregion Fields
 
@@ -76,11 +78,10 @@ namespace BynderTest
             Logger = new Logger(TestContext);
             Logger.Log(LogLevel.Information, $"Initialize connection to inRiver Server");
 
-            // set your inRiver user api key here
-            // InRiverContext = new inRiverContext(RemoteManager.CreateInstance(_customerRemotingUrl, "***"), Logger);
+            InRiverContext = new inRiverContext(RemoteManager.CreateInstance(_customerRemotingUrl, _customerRemotingApiKey), Logger);
 
-            // Assert.IsNotNull(InRiverContext?.ExtensionManager, "Connection to inRiver failed. Please check the url and credentials within the test initialize method.");
-            // InRiverContext.Settings = TestSettings;
+            Assert.IsNotNull(InRiverContext?.ExtensionManager, "Connection to inRiver failed. Please check the url and credentials within the test initialize method.");
+            InRiverContext.Settings = TestSettings;
 
             _bynderClient = new BynderClient(new Configuration()
             {

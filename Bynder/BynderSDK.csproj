@@ -107,8 +107,10 @@
     <Compile Include="Query\Asset\AssetUsageQuery.cs" />
     <Compile Include="Query\Asset\DownloadMediaQuery.cs" />
     <Compile Include="Query\Asset\GetTagsQuery.cs" />
+    <Compile Include="Query\Asset\ICursorPaginatedRequest.cs" />
     <Compile Include="Query\Asset\MediaInformationQuery.cs" />
     <Compile Include="Query\Asset\MediaQuery.cs" />
+    <Compile Include="Query\Asset\MediaQuerySearch.cs" />
     <Compile Include="Query\Asset\MediaQueryFull.cs" />
     <Compile Include="Query\Asset\MetapropertyOptionQuery.cs" />
     <Compile Include="Query\Asset\MetapropertyQuery.cs" />

@@ -168,5 +168,6 @@ namespace Bynder.Sdk.Service.Asset
         Task<Status> DeleteMetapropertyOptionAsync(string metapropertyId, string optionId);
         Task<Media> GetAssetByMediaQuery(string mediaId);
         Task<IEnumerable<MetapropertyOption>> GetMetapropertyOptionsByIdAsync(IEnumerable<string> optionIds);
+        Task<IReadOnlyList<Media>> GetAllMediaFullResultAsync(MediaQuery query);
     }
 }

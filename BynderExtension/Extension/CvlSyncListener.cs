@@ -2,13 +2,13 @@
 using inRiver.Remoting.Log;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Bynder.Extension
 {
     using Api;
-    using Bynder.Utils.Helpers;
+    using Utils.Helpers;
     using Enums;
-    using System.Text;
     using Workers;
 
     /// <summary>

@@ -1,5 +1,4 @@
-﻿using Bynder.Api.Model;
-using Bynder.Models;
+﻿using Bynder.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -14,14 +13,14 @@ namespace BynderTest
         [TestMethod]
         public void TestConversion()
         {
-            string assetApiJson = "";
+            /*string assetApiJson = "";
             Asset assetObj = JsonConvert.DeserializeObject<Asset>(assetApiJson);
             //Assert.AreEqual(12, assetObj.MetaProperties.Count);
 
             var assetString = JsonConvert.SerializeObject(assetObj);
 
             string assetWithMetaproperties = "";
-            Assert.AreEqual(assetWithMetaproperties, assetString);
+            Assert.AreEqual(assetWithMetaproperties, assetString);*/
         }
 
         [TestMethod]

@@ -10,7 +10,6 @@ using System.Threading;
 namespace Bynder.Workers
 {
     using Api;
-    using Api.Model;
     using Bynder.Sdk.Model;
     using Exceptions;
     using Names;
@@ -188,31 +187,8 @@ namespace Bynder.Workers
                     BrandId = resourceUploadData.BrandId,
                     Name = resourceUploadData.Filename,
                     MediaId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId)?.Data,
-                    /// MOET HIER NOG IETS BIJ
-                    /// FILEPATH moet leegblijven volgens mij
                 }).GetAwaiter().GetResult();
                 
-
-                // IS DIT ALLEMAAL NOG WEL NODIG?!?
-
-                /*uint chunkNumber = UploadResourceAsChunksToS3Bucket(resourceUploadData.Filename, resourceUploadData.Bytes, resourceUploadData.S3Bucket, resourceUploadData.UploadRequest);
-                var finalizeResponse = _bynderClient.FinalizeUpload(resourceUploadData.UploadRequest, chunkNumber);
-                if (HasFinishedSuccessfully(finalizeResponse))
-                {
-                    var result = _bynderClient.SaveMedia(new SaveMediaQuery()
-                    {
-                        MediaId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId)?.Data,
-                        BrandId = resourceUploadData.BrandId,
-                        Filename = resourceUploadData.Filename,
-                        ImportId = finalizeResponse.ImportId
-                    });
-
-                    var bynderAssetIdField = resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId);
-                    bynderAssetIdField.Data = result.MediaId;
-                    fieldsToUpdate.Add(bynderAssetIdField);
-                }*/
-
-                /// VERVANGEN DOOR
                 if (uploadResult.IsSuccessful)
                 {
                     var bynderAssetIdField = resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId);
@@ -246,8 +222,6 @@ namespace Bynder.Workers
             public byte[] Bytes { get; set; }
             public int FileId { get; set; }
             public string Filename { get; set; }
-            public string S3Bucket { get; set; }
-            public Api.Model.UploadRequest UploadRequest { get; set; }
 
             #endregion Properties
         }

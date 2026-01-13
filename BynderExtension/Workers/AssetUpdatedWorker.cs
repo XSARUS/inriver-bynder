@@ -10,7 +10,6 @@ using System.Text;
 namespace Bynder.Workers
 {
     using Api;
-    using Api.Model;
     using Bynder.Sdk.Model;
     using Config;
     using Enums;

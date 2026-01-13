@@ -413,5 +413,23 @@ namespace Bynder.Sdk.Service.Asset
                 HTTPMethod = HttpMethod.Get
             }).ConfigureAwait(false);
         }
+
+        public async Task<IReadOnlyList<Media>> GetAllMediaFullResultAsync(MediaQuery query)
+        {
+            var mediaQueryFull = query is MediaQueryFull ? 
+                query as MediaQueryFull : 
+                CloneIntoFullMediaQuery(query);
+
+            mediaQueryFull.Total = false;
+
+            var request = new ApiRequest<List<Media>>
+            {
+                Path = "/api/v4/media/",
+                HTTPMethod = HttpMethod.Get,
+                Query = mediaQueryFull,
+            };
+
+            return await _requestSender.SendPagedRequestAsync(request, pageSize: 50).ConfigureAwait(false);
+        }
     }
 }

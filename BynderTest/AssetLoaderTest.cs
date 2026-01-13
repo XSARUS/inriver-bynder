@@ -2,7 +2,7 @@
 
 namespace BynderTest
 {
-    [TestClass]
+    [TestClass, Ignore("Only run manually")]
     public class AssetLoaderTest : TestBase
     {
         #region Methods

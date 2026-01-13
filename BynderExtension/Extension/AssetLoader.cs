@@ -3,9 +3,17 @@ using inRiver.Remoting.Log;
 
 namespace Bynder.Extension
 {
+    using Bynder.Api.Mappers;
     using Bynder.Sdk;
+    using Bynder.Sdk.Model;
+    using Bynder.Sdk.Query.Asset;
     using Bynder.Sdk.Service;
     using Enums;
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
     using Utils.Helpers;
     using Workers;
 
@@ -25,39 +33,57 @@ namespace Bynder.Extension
 
             try
             {
-                Context.Log(LogLevel.Information, "Start loading assets");
-
-                var worker = Container.GetInstance<AssetUpdatedWorker>();
-                var bynderClient = Container.GetInstance<BynderClient>();
+                Context.Log(LogLevel.Information, "Start loading assets");              
 
                 // get all assets ids
                 // note: this is a paged result set, call next page until reaching end.
                 var counter = 0;
-                string query = SettingHelper.GetInitialAssetLoadUrlQuery(DefaultSettings, Context.Logger);
-                /// TODO PATRICK: volgens mij is dit niet echt een "Collection" zoals die in Bynder bestaat maar een eigen
-                /// interpretatie van een AssetCollection die gevuld wordt door te zoeken naar assets adhv een query??
-                /// Dit nog navragen bij Cornelis
-                /*var assetCollection = bynderClient.GetAssetCollection(query);
-                Context.Log(LogLevel.Information, $"Start processing {assetCollection.GetTotal()} assets.");
+                string assetLoadUrlQuery = SettingHelper.GetInitialAssetLoadUrlQuery(DefaultSettings, Context.Logger);
 
-                assetCollection.Media.ForEach(a => worker.Execute(a.Id, NotificationType.DataUpsert));
-                counter += assetCollection.Media.Count;
-                while (!assetCollection.IsLastPage())
-                {
-                    // when not reached end get next group of assets
-                    assetCollection = bynderClient.GetAssetCollection(
-                        query,
-                        assetCollection.GetNextPage());
-                    assetCollection.Media.ForEach(a => worker.Execute(a.Id, NotificationType.DataUpsert));
-                    counter += assetCollection.Media.Count;
-                    Context.Log(LogLevel.Information, $"Processed {counter} assets.");
+                var dict = assetLoadUrlQuery
+                    .Split(',')
+                    .Select(p => p.Split(new[] { '=' }, 2))
+                    .ToDictionary(
+                        p => p[0],
+                        p => p.Length > 1 ? p[1] : null
+                    );
+
+                var query = ApiQueryMapper.FromDictionary<MediaQuerySearch>(dict);
+                query.Count = false;
+                query.Total = false;
+
+                IReadOnlyList<Media> media = RunSync(() => SearchAsync(query));
+                var worker = Container.GetInstance<AssetUpdatedWorker>();
+
+                Context.Log(LogLevel.Information, $"Start processing {media.Count} assets.");
+
+                foreach (Media medium in media) {
+                    worker.Execute(medium.Id, NotificationType.DataUpsert);
+                    counter++;
                 }
-                Context.Log(LogLevel.Information, "Initial Import Successful!");*/
+
+                Context.Log(LogLevel.Information, $"Processed {counter}/{media.Count} assets.");
+                Context.Log(LogLevel.Information, "Initial import successful!");
             }
             catch (System.Exception ex)
             {
                 Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
+        }
+
+        private static T RunSync<T>(Func<Task<T>> task)
+        {
+            return Task.Run(task).GetAwaiter().GetResult();
+        }
+
+        private async Task<IReadOnlyList<Media>> SearchAsync(MediaQuery mediaQuery)
+        {
+            var bynderClient = Container.GetInstance<BynderClient>();
+            return await bynderClient
+                .GetAssetService()
+                .GetAllMediaFullResultAsync(mediaQuery)
+                //.GetMediaFullResultAsync(mediaQuery)
+                .ConfigureAwait(false);
         }
 
         #endregion Methods

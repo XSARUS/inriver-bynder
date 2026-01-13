@@ -1,13 +1,12 @@
 ﻿using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Objects;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bynder.Extension
 {
-    using Bynder.Api.Model;
-    using Bynder.Sdk.Query.Asset;
+    using Sdk.Query.Asset;
     using Names;
-    using System.Threading.Tasks;
     using Utils.InRiver;
     using Workers;
 

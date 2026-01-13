@@ -2,14 +2,18 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using Bynder.Model;
+using Bynder.Query.Asset;
 using Bynder.Sdk.Api.Requests;
 using Bynder.Sdk.Extensions;
+using Bynder.Sdk.Model;
+using Bynder.Sdk.Query.Asset;
 using Bynder.Sdk.Query.Decoder;
 using Bynder.Sdk.Service;
 using Bynder.Sdk.Settings;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -80,7 +84,6 @@ namespace Bynder.Sdk.Api.RequestSender
         public async Task<T> SendRequestAsync<T>(Request<T> request)
         {
             var response = await CreateHttpRequestAsync(request).ConfigureAwait(false);
-
             var responseContent = response.Content;
             if (response.Content == null)
             {
@@ -134,7 +137,134 @@ namespace Bynder.Sdk.Api.RequestSender
                     _credentials.AccessToken
                 );
             }
+            
             return await _httpSender.SendHttpRequest(httpRequestMessage).ConfigureAwait(false);
+        }
+
+        /**
+         * Not implemented since this only can work if solr-cursor is activated on your account
+         */
+        public async Task<IReadOnlyList<Media>> SendCursorRequestAsync(
+            Request<List<Media>> request)
+        {
+            throw new NotImplementedException("This needs solr-cursor activated!");
+            var results = new List<Media>();
+
+            // Cursor moet expliciet leeg starten
+            if (request.Query is ICursorPaginatedRequest cprInit)
+            {
+                cprInit.SetCursor(null);
+            }
+
+            // Cursor-queries mogen NOOIT page / total hebben
+            if (request.Query is MediaQuerySearch mq)
+            {
+                mq.Page = null;
+                mq.Total = false;
+                if (mq.Limit == null)
+                {
+                    mq.Limit = 50;
+                }
+            }
+
+            string cursor;
+
+            do
+            {
+                var response = await CreateHttpRequestAsync(request)
+                    .ConfigureAwait(false);
+
+                var json = await response.Content.ReadAsStringAsync()
+                    .ConfigureAwait(false);
+
+                var wrapper = JsonConvert.DeserializeObject<MediaResponse>(json);
+
+                if (wrapper?.Media != null && wrapper.Media.Count > 0)
+                {
+                    results.AddRange(wrapper.Media);
+                }
+
+                cursor = GetNextCursor(response);
+
+                if (!string.IsNullOrEmpty(cursor) &&
+                    request.Query is ICursorPaginatedRequest cpr)
+                {
+                    cpr.SetCursor(cursor);
+                }
+
+            } while (!string.IsNullOrEmpty(cursor));
+
+            return results;
+        }
+
+
+        private static string GetNextCursor(HttpResponseMessage response)
+        {
+            return response.Headers.TryGetValues("X-Bynder-NextCursor", out var values)
+                ? values.FirstOrDefault()
+                : null;
+        }
+
+        public async Task<IReadOnlyList<TItem>> SendPagedRequestAsync<TItem>(
+            Request<List<TItem>> request,
+            int pageSize = 50,
+            int maxPages = int.MaxValue)
+        {
+            if (request.HTTPMethod != HttpMethod.Get)
+                throw new InvalidOperationException("Paged requests only support GET.");
+
+            var results = new List<TItem>();
+            int page = 1;
+
+            // Zorg dat we met een schone query starten
+            if (request.Query is MediaQuery mq)
+            {
+                mq.Page = null;
+                mq.Limit = pageSize;
+            }
+
+            while (page <= maxPages)
+            {
+                if (request.Query is MediaQuery q)
+                {
+                    q.Page = page;
+                    q.Limit = pageSize;
+                }
+
+                var response = await CreateHttpRequestAsync(request)
+                    .ConfigureAwait(false);
+
+                var json = await response.Content.ReadAsStringAsync()
+                    .ConfigureAwait(false);
+
+                var batch = JsonConvert.DeserializeObject<List<TItem>>(json);
+
+                if (batch == null || batch.Count == 0)
+                    break;
+
+                results.AddRange(batch);
+
+                // Stopconditie: laatste pagina
+                if (batch.Count < pageSize)
+                    break;
+
+                page++;
+            }
+
+            return results;
+        }
+
+
+        public class MediaResponse
+        {
+            [JsonProperty("media")]
+            public List<Media> Media { get; set; }
+
+            [JsonProperty("count")]
+            public int Count { get; set; }
+
+            [JsonProperty("limited")]
+            public bool Limited { get; set; }
         }
 
         private static class HttpRequestMessageFactory
