@@ -136,7 +136,9 @@ namespace Bynder.Workers
             }
 
             var labelLocale = SettingHelper.GetBynderLocaleForMetapropertyOptionLabel(_inRiverContext.Settings, _inRiverContext.Logger);
-            if (!string.IsNullOrEmpty(labelLocale) && obj.Labels.ContainsKey(labelLocale) && !string.IsNullOrWhiteSpace(obj.Labels[labelLocale]))
+            if (!string.IsNullOrEmpty(labelLocale) && 
+                obj.Labels.ContainsKey(labelLocale) && 
+                !string.IsNullOrWhiteSpace(obj.Labels[labelLocale]))
             {
                 obj.Label = obj.Labels[labelLocale];
             }

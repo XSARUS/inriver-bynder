@@ -1,5 +1,9 @@
 ﻿using Bynder.Config;
 using Bynder.Extension;
+using inRiver.Remoting;
+using inRiver.Remoting.Log;
+using inRiver.Remoting.Objects;
+using inRiver.Remoting.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BynderTest
@@ -7,43 +11,110 @@ namespace BynderTest
     [TestClass, Ignore("Use for debugging")]
     public class CvlSyncListenerTest : TestBase
     {
-        private string _cvlId = "BynderTest";
+        private readonly string _stringCvlId = "InriverCvlOne"; // string CVL
+        private readonly string _localestringCvlId = "BynderTestCVL"; // localestring CVL
+        
         private CvlSyncListener _extension;
+        private IModelService _modelService;
+        private IUtilityService _utilityService;
 
         [TestInitialize]
         public void Init()
         {
-            _extension = new CvlSyncListener();
-            _extension.Context = InRiverContext;
-            TestSettings[Settings.LocaleMappingInriverToBynder] = "{\"nl\":\"nl_NL\", \"de\": \"de_DE\", \"fr\": \"fr_FR\", \"it\":\"it_IT\" }";
+            _extension = new CvlSyncListener
+            {
+                Context = InRiverContext
+            };
+            // inriver locale > bynder locale
+            TestSettings[Settings.LocaleMappingInriverToBynder] = "{\"nl-NL\":\"nl_NL\", \"en-GB\": \"en_GB\", \"it-IT\":\"it_IT\" }";
+            // Bynder locale
             TestSettings[Settings.BynderLocaleForMetapropertyOptionLabel] = "nl_NL";
-            TestSettings[Settings.CvlMetapropertyMapping] = "{\"InriverCvlOne\":[\"5A9H4A32-1F0B-582A-94KF9243CD178926\"], \"BynderTest\":[\"1U5EA4D7-53E1-4E0F-RB28E61BE3904F58\"]}";
+            TestSettings[Settings.CvlMetapropertyMapping] = "{\"InriverCvlOne\":[\"1BE89552-0A02-44A3-BEF806C1E15B39A2\"], \"BynderTestCVL\":[\"FC3C52EB-A700-4964-9C3142A8C999DB0D\"]}";
 
             _extension.Context.Settings = TestSettings;
+
+            _modelService = _extension.Context.ExtensionManager.ModelService;
+            _utilityService = _extension.Context.ExtensionManager.UtilityService;
+        }
+
+        [TestMethod, Ignore("Missing scope: current.user:read")]
+        public void Test()
+        {
+            var result = _extension.Test();
+            Assert.DoesNotContain("error", result);
+            Assert.DoesNotContain("exception", result);
+        }
+
+        public void CVLValueCreatedTest()
+        {
+            _extension.CVLValueCreated(_localestringCvlId, "test");
+        }
+
+        public void CVLValueUpdatedTest()
+        {
+            _extension.CVLValueUpdated(_localestringCvlId, "test");
+        }
+
+        public void CVLValueDeletedTest()
+        {
+            _extension.CVLValueDeleted(_localestringCvlId, "test");
+        }
+
+        public void CVLValueDeletedAllTest()
+        {
+            _extension.CVLValueDeletedAll(_localestringCvlId);
+        }
+
+        internal CVLValue CreateLocaleStringCVLValue()
+        {
+            var value = new LocaleString(_utilityService.GetAllLanguages());
+            foreach (var language in value.Languages)
+            {
+                value[language] = "testvalue_" + language.ThreeLetterISOLanguageName;
+            }
+            var testCvlValue = new CVLValue
+            {
+                Key = "test",
+                CVLId = _localestringCvlId,
+                Value = value
+            };
+
+            testCvlValue = _modelService.AddCVLValue(testCvlValue);
+            Logger.Log(LogLevel.Information, $"CVLValue created with id {testCvlValue.Id} for CVL {_localestringCvlId}");
+
+            return testCvlValue;
+        }
+
+        internal void UpdateLocaleStringCVLValue(CVLValue testCvlValue)
+        {
+            var value = testCvlValue.Value as LocaleString;
+            foreach (var language in value.Languages)
+            {
+                value[language] = "updated__testvalue_" + language.ThreeLetterISOLanguageName;
+            }
+            testCvlValue.Value = value;
+            
+            testCvlValue = _modelService.UpdateCVLValue(testCvlValue);
+            Logger.Log(LogLevel.Information, $"CVLValue with id {testCvlValue.Id} updated for CVL {_stringCvlId}");
+        }
+
+        internal void DeleteLocaleStringCVLValue(int cvlValueId)
+        {
+            var status = _modelService.DeleteCVLValue(cvlValueId);
+            Assert.IsTrue(status);
+            Logger.Log(LogLevel.Information, $"CVLValue with id {cvlValueId} deleted for CVL {_stringCvlId}");
         }
 
         [TestMethod]
-        public void Create()
+        public void CVLValueLifeCycleFlowTest()
         {
-            _extension.CVLValueCreated(_cvlId, "TestOne");
-        }
-
-        [TestMethod]
-        public void Update()
-        {
-            _extension.CVLValueUpdated(_cvlId, "TestOne");
-        }
-
-        [TestMethod]
-        public void Delete()
-        {
-            _extension.CVLValueDeleted(_cvlId, "TestOne");
-        }
-
-        [TestMethod]
-        public void DeleteAll()
-        {
-            _extension.CVLValueDeletedAll(_cvlId);
+            var CVLValue = CreateLocaleStringCVLValue();
+            Assert.IsGreaterThan(0, CVLValue.Id);
+            CVLValueCreatedTest();
+            UpdateLocaleStringCVLValue(CVLValue);
+            CVLValueUpdatedTest();
+            DeleteLocaleStringCVLValue(CVLValue.Id);
+            CVLValueDeletedTest();
         }
     }
 }

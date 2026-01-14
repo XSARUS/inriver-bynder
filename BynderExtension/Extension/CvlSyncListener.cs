@@ -23,9 +23,9 @@ namespace Bynder.Extension
             get
             {
                 var settings = SettingNames.GetDefaultBynderApiSettings();
-                settings.Add(Config.Settings.LocaleMappingInriverToBynder, "");
-                settings.Add(Config.Settings.BynderLocaleForMetapropertyOptionLabel, "");
-                settings.Add(Config.Settings.CvlMetapropertyMapping, "");
+                settings.Add(Config.Settings.LocaleMappingInriverToBynder, string.Empty);
+                settings.Add(Config.Settings.BynderLocaleForMetapropertyOptionLabel, string.Empty);
+                settings.Add(Config.Settings.CvlMetapropertyMapping, string.Empty);
                 return settings;
             }
         }
@@ -33,7 +33,6 @@ namespace Bynder.Extension
         #endregion Properties
 
         #region Methods
-
         public void CVLValueCreated(string cvlId, string cvlValueKey)
         {
             try
@@ -42,6 +41,10 @@ namespace Bynder.Extension
                 if (result.Messages.Count > 0)
                 {
                     Context.Log(LogLevel.Verbose, $"Result for {nameof(CVLValueCreated)} event with CVL id '{cvlId}' and CVL Key '{cvlValueKey}': {string.Join(Environment.NewLine, result.Messages)}");
+                }
+                else
+                {
+                    Context.Log(LogLevel.Verbose, $"Finished {nameof(CVLValueCreated)} event with CVL id '{cvlId}' and CVL Key '{cvlValueKey}'; no further information!");
                 }
             }
             catch (Exception ex)
