@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BynderTest
 {
-    [TestClass]
+    [TestClass,Ignore("Only for debugging!")]
     public class ResourceMetapropertyUpdateWorkerTest : TestBase
     {
         #region Fields
