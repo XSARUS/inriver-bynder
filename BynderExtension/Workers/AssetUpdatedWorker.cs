@@ -15,6 +15,7 @@ namespace Bynder.Workers
     using Enums;
     using Models;
     using Names;
+    using Newtonsoft.Json.Linq;
     using Utils;
     using Utils.Extensions;
     using Utils.Helpers;
@@ -356,12 +357,11 @@ namespace Bynder.Workers
 
         private static bool GetConditionResult(Media asset, ImportCondition condition)
         {
-            if (asset.PropertyOptionsDictionary.ContainsKey(condition.PropertyName))
+            if (!asset.PropertyOptionsDictionary.ContainsKey(condition.PropertyName))
             {
                 return false;
             }
 
-            // metapropertyValue = JToken
             var metapropertyValue = asset.PropertyOptionsDictionary[condition.PropertyName];
 
             // metaproperty is not included in asset, when the value is null
