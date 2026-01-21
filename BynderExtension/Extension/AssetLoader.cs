@@ -13,6 +13,7 @@ namespace Bynder.Extension
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
     using System.Threading.Tasks;
     using Utils.Helpers;
     using Workers;
@@ -38,21 +39,9 @@ namespace Bynder.Extension
                 // get all assets ids
                 // note: this is a paged result set, call next page until reaching end.
                 var counter = 0;
-                string assetLoadUrlQuery = SettingHelper.GetInitialAssetLoadUrlQuery(DefaultSettings, Context.Logger);
+                var query = GetQuery();
 
-                var dict = assetLoadUrlQuery
-                    .Split(',')
-                    .Select(p => p.Split(new[] { '=' }, 2))
-                    .ToDictionary(
-                        p => p[0],
-                        p => p.Length > 1 ? p[1] : null
-                    );
-
-                var query = ApiQueryMapper.FromDictionary<MediaQuerySearch>(dict);
-                query.Count = false;
-                query.Total = false;
-
-                IReadOnlyList<Media> media = RunSync(() => SearchAsync(query));
+                IReadOnlyList<Media> media = RunSync(() => SearchAndFetchResultAsync(query));
                 var worker = Container.GetInstance<AssetUpdatedWorker>();
 
                 Context.Log(LogLevel.Information, $"Start processing {media.Count} assets.");
@@ -71,19 +60,66 @@ namespace Bynder.Extension
             }
         }
 
+        internal MediaQuerySearch GetQuery(bool includeCount = false, bool includeTotal = false)
+        {
+            string assetLoadUrlQuery = SettingHelper.GetInitialAssetLoadUrlQuery(DefaultSettings, Context.Logger);
+
+            var dict = assetLoadUrlQuery
+                .Split(',')
+                .Select(p => p.Split(new[] { '=' }, 2))
+                .ToDictionary(
+                    p => p[0],
+                    p => p.Length > 1 ? p[1] : null
+                );
+
+            var query = ApiQueryMapper.FromDictionary<MediaQuerySearch>(dict);
+            query.Count = includeCount;
+            query.Total = includeTotal;
+
+            return query;
+        }
+
         private static T RunSync<T>(Func<Task<T>> task)
         {
             return Task.Run(task).GetAwaiter().GetResult();
         }
 
-        private async Task<IReadOnlyList<Media>> SearchAsync(MediaQuery mediaQuery)
+        private async Task<IReadOnlyList<Media>> SearchAndFetchResultAsync(MediaQuery mediaQuery)
         {
             var bynderClient = Container.GetInstance<BynderClient>();
             return await bynderClient
                 .GetAssetService()
                 .GetAllMediaFullResultAsync(mediaQuery)
-                //.GetMediaFullResultAsync(mediaQuery)
                 .ConfigureAwait(false);
+        }
+
+        private async Task<MediaFullResult> SearchAsync(MediaQuery mediaQuery)
+        {
+            var bynderClient = Container.GetInstance<BynderClient>();
+            return await bynderClient
+                .GetAssetService()
+                .GetMediaFullResultAsync(mediaQuery)
+                .ConfigureAwait(false);
+        }
+
+        public override string Test()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(base.Test());
+
+            try
+            {
+                var query = GetQuery(true, true);
+                MediaFullResult result = RunSync(() => SearchAsync(query));
+
+                sb.AppendLine($"Search resulted in {result.Count.Total}");
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine(ex.ToString());
+            }
+
+            return sb.ToString();
         }
 
         #endregion Methods

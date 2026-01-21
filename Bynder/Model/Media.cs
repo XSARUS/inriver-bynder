@@ -31,7 +31,9 @@ namespace Bynder.Sdk.Model
         {
             get
             {
-                return PropertyOptionsDictionary?["property_assettype"].Values().Select(v => v.ToString()).ToList() ?? null;
+                if (PropertyOptionsDictionary == null || !PropertyOptionsDictionary.ContainsKey("property_assettype")) { return null; }
+
+                return PropertyOptionsDictionary["property_assettype"].Values().Select(v => v.ToString()).ToList();
             }
         }
 
