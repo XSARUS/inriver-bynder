@@ -10,7 +10,7 @@ namespace Bynder.Utils.Helpers
     using Config;
     using Enums;
     using Models;
-    using Utils.Extensions;
+    using Extensions;
 
     public static class SettingHelper
     {

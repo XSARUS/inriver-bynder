@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Bynder.Config;
+using Bynder.Extension;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,17 +9,24 @@ namespace BynderTest
     [TestClass, Ignore("Only run manually")]
     public class AssetLoaderTest : TestBase
     {
-        #region Methods
+        private AssetLoader _extension;
 
-        [TestMethod]
-        public void TestAssetLoader()
+        #region Methods
+        [TestInitialize]
+        public void Init()
         {
-            var initialLoader = new Bynder.Extension.AssetLoader
+            _extension = new AssetLoader
             {
                 Context = InRiverContext
             };
-            initialLoader.Context.Settings = TestSettings;
-            string testResult = initialLoader.Test();
+            
+            _extension.Context.Settings = TestSettings;
+        }
+
+        [TestMethod]
+        public void TestAssetLoaderTestMethod()
+        {
+            string testResult = _extension.Test();
 
             var forbidden = new[] { "error", "false" };
 
@@ -25,8 +34,12 @@ namespace BynderTest
                 forbidden.Any(testResult.Contains),
                 $"Result contains one of the forbidden values: {string.Join(", ", forbidden)}"
             );
+        }
 
-            initialLoader.Execute(true);
+        [TestMethod, Ignore("Only use for debugging!")]
+        public void TestAssetLoaderExecution()
+        {
+            _extension.Execute(true);
         }
 
         #endregion Methods

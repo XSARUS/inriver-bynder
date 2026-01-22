@@ -62,7 +62,7 @@ namespace Bynder.Extension
 
         internal MediaQuerySearch GetQuery(bool includeCount = false, bool includeTotal = false)
         {
-            string assetLoadUrlQuery = SettingHelper.GetInitialAssetLoadUrlQuery(DefaultSettings, Context.Logger);
+            string assetLoadUrlQuery = SettingHelper.GetInitialAssetLoadUrlQuery(Context.Settings, Context.Logger);
 
             var dict = assetLoadUrlQuery
                 .Split(',')
