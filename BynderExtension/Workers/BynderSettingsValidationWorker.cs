@@ -33,10 +33,10 @@ namespace Bynder.Workers
             // create result object
             _workerResult = new WorkerResult();
 
-            AssumeSettingIsSet(SettingNames.ConsumerSecret);
-            AssumeSettingIsSet(SettingNames.ConsumerKey);
-            AssumeSettingIsSet(SettingNames.CustomerBynderUrl);
-            AssumeSettingIsValidUrl(SettingNames.CustomerBynderUrl);
+            AssumeSettingIsSet(SettingNames.BynderSecretId);
+            AssumeSettingIsSet(SettingNames.BynderClientId);
+            AssumeSettingIsSet(SettingNames.BynderClientUrl);
+            AssumeSettingIsValidUrl(SettingNames.BynderClientUrl);
 
             return _workerResult;
         }

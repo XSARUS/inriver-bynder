@@ -21,18 +21,22 @@ The URL should look something like this: https://inbound.productmarketingcloud.c
 - [EXTENSIONID] = we wil use 'BynderAssetNotify' later on in the inRiver documentation. 
   So that one we will use. But you're free to use your own extension Id.
 
-## Create a consumer
-To create a consumer you have to login in to your Bynder account.
+## Oauth 2
+Thise major release we moved to Oauth2.
+This requires an Oauth app from your Bynder environment instead of a consumer key + secret in combination with a token.
 
-- Go to https://[YOURBYNDERACCOUNT].getbynder.com/pysettings
-- Add new consumer
-- Store the 'consumerkey' and 'consumersecret' someware safe. We're going to use this later.
-
-## Create a token
- In the same Settings menu as the previous step,
-- Add a new Token
-- Select the previous created consumer
-- Store the 'username', 'token', 'secret' someware safe. We need this later.
+### Create an Oauth app
+- Login to your Bynder account and go to https://[YOURBYNDERACCOUNT].getbynder.com/pysettings/ or
+- At the top-right corner click on "gear"-icon next to your name
+- Go to "advanced settings" and click on "portal-settings"
+- At the left click on "Oauth apps" and at the right click on "Add new app".
+- Select grant type > "Client Credentials"
+- Set HTTP access control (CORS) > add at least "inriver.com"
+- Set HTTP access control (CORS) > also add "productmarketingcloud.com"
+- Select scopes: at least select all "Assets", "Collections", "Metaproperties" and "User"
+- Select scopes: at least select "admin.profile:read" and "admin.user:read" for "Admin"
+- Next click on "Register application".
+- Store the client_id and client_secret someware safe. We need this later!
 
 ## Add metaproperties
 If you want to update a Bynder asset with information from inRiver,

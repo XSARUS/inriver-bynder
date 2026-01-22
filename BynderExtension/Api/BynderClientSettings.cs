@@ -21,9 +21,9 @@ namespace Bynder.Api
             {
                 var clientsettings = new BynderClientSettings()
                 {
-                    ConsumerKey = connectorSettings[SettingNames.ConsumerKey],
-                    ConsumerSecret = connectorSettings[SettingNames.ConsumerSecret],
-                    CustomerBynderUrl = connectorSettings[SettingNames.CustomerBynderUrl]
+                    ConsumerKey = connectorSettings[SettingNames.BynderClientId],
+                    ConsumerSecret = connectorSettings[SettingNames.BynderSecretId],
+                    CustomerBynderUrl = connectorSettings[SettingNames.BynderClientUrl]
                 };
                 return clientsettings;
             }
