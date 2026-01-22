@@ -36,7 +36,7 @@ namespace BynderTest
             {Bynder.Config.Settings.DeleteResourceOnDeleteEvent, true.ToString() },
             {Bynder.Config.Settings.DownloadMediaType, "webimage" },
             {Bynder.Config.Settings.FieldValuesToSetOnArchiveEvent, "[{\"fieldTypeId\":\"ResourceBynderArchived\",\"value\": true},{\"fieldTypeId\":\"ResourceBynderArchiveDate\",\"setTimestamp\": true}]" },
-            {Bynder.Config.Settings.ImportConditions, "[{ \"propertyName\": \"synctoinriver\", \"values\": [\"True\"], \"matchType\":\"Equal\"}]" },
+            {Bynder.Config.Settings.ImportConditions, "[{ \"propertyName\": \"synctoinriver\", \"values\": [\"true\"], \"matchType\":\"Equal\"}]" },
             {Bynder.Config.Settings.ExportConditions, "[{ \"inRiverFieldTypeId\":\"ResourceSyncToBynder\",\"values\":[\"True\"], \"matchType\":\"Equal\"}]" },
             {Bynder.Config.Settings.InitialAssetLoadUrlQuery, @"type=image,SyncToInriver=true" },
             {Bynder.Config.Settings.InRiverEntityUrl, "https://inriver.productmarketingcloud.com/app/enrich#entity/{entityId}/" },

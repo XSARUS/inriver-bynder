@@ -34,6 +34,8 @@ namespace BynderTest
                 forbidden.Any(testResult.Contains),
                 $"Result contains one of the forbidden values: {string.Join(", ", forbidden)}"
             );
+
+            Logger.Log($"Test result: {testResult}");
         }
 
         [TestMethod, Ignore("Only use for debugging!")]
