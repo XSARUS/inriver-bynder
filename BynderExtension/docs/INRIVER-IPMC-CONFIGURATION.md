@@ -38,6 +38,7 @@ After adding and saving a connector press 'Get Default Settings' to get the defa
 | BynderAssetNotify | Bynder.zip | Bynder.dll | Bynder.Extension.NotificationListener | InboundDataExtension |
 | BynderAssetLoader | Bynder.zip | Bynder.dll | Bynder.Extension.AssetLoader | ScheduledExtension |
 | BynderAssetWorkerEntities | Bynder.zip | Bynder.dll | Bynder.Extension.Worker | EntityListener |
+| BynderUploader | Bynder.zip | Bynder.dll | Bynder.Extension.Uploader | EntityListener |
 | BynderAssetWorkerLinks | Bynder.zip | Bynder.dll | Bynder.Extension.Worker | LinkListener |
 | ScheduledNotificationHandler| Bynder.zip | Bynder.dll | Bynder.Extension.ScheduledNotificationHandler | ScheduledExtension |
 | CvlSyncListener | Bynder.zip | Bynder.dll | Bynder.Extension.CvlSyncListener | CvlListener |
