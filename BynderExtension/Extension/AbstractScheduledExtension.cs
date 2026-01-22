@@ -123,7 +123,7 @@ namespace Bynder.Extension
 
         private void ExecuteForceCommand()
         {
-            var cronExpression = SettingHelper.GetCronExpression(DefaultSettings, Context.Logger);
+            var cronExpression = SettingHelper.GetCronExpression(Context.Settings, Context.Logger);
             if (Equals(_cronExpression, cronExpression))
             {
                 Context.Log(LogLevel.Information, $"{_instanceId}: Force run is executed. The process will be started.");
@@ -155,7 +155,7 @@ namespace Bynder.Extension
 
         private void InitializeScheduler()
         {
-            _cronExpression = SettingHelper.GetCronExpression(DefaultSettings, Context.Logger); 
+            _cronExpression = SettingHelper.GetCronExpression(Context.Settings, Context.Logger); 
             _crontabScheduler = CrontabSchedule.Parse(_cronExpression);
             InitializeScheduledTimer();
 

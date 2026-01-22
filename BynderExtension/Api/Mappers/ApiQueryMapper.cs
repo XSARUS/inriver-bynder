@@ -14,10 +14,11 @@ namespace Bynder.Api.Mappers
 {
     public static class ApiQueryMapper
     {
-        public static T FromDictionary<T>(IDictionary<string, string> values)
-            where T : new()
+        public static T FromDictionary<T>(IDictionary<string, string> values) where T : new()
         {
             var instance = new T();
+            var usedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             var properties = typeof(T)
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
@@ -33,13 +34,37 @@ namespace Bynder.Api.Mappers
                 if (string.IsNullOrWhiteSpace(rawValue))
                     continue;
 
-                // Converter bewust negeren
                 var converted = ConvertValue(prop.PropertyType, rawValue);
                 prop.SetValue(instance, converted);
+
+                usedKeys.Add(apiField.ApiName);
+            }
+
+            // 🔑 Unknow keys → MetaProperties
+            if (instance is MediaQuery mq)
+            {
+                foreach (var kvp in values)
+                {
+                    if (usedKeys.Contains(kvp.Key))
+                        continue;
+
+                    // waarde kan CSV zijn
+                    var valuesList = kvp.Value
+                        .Split(',')
+                        .Select(v => v.Trim())
+                        .Where(v => v.Length > 0)
+                        .ToList();
+
+                    if (valuesList.Count == 0)
+                        continue;
+
+                    mq.MetaProperties[kvp.Key] = valuesList;
+                }
             }
 
             return instance;
         }
+
 
         private static object ConvertUsingConverter(Type converterType, string rawValue)
         {

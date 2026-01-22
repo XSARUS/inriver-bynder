@@ -1,10 +1,11 @@
 // Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System.Collections.Generic;
-using Bynder.Sdk.Model;
 using Bynder.Sdk.Api.Converters;
+using Bynder.Sdk.Model;
 using Bynder.Sdk.Query.Decoder;
+using System;
+using System.Collections.Generic;
 
 namespace Bynder.Sdk.Query.Asset
 {
@@ -85,7 +86,6 @@ namespace Bynder.Sdk.Query.Asset
         /// </remarks>
         /// 
         [ApiField("property_", Converter = typeof(MetapropertyOptionsConverter), OmitSeparator = true)]
-        public IDictionary<string, IList<string>> MetaProperties { get; set; }
-
+        public IDictionary<string, IList<string>> MetaProperties { get; set; } = new Dictionary<string, IList<string>>(StringComparer.OrdinalIgnoreCase);    
     }
 }

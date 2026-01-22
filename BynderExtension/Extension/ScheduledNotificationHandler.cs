@@ -49,7 +49,7 @@ namespace Bynder.Extension
                 int retried = 0;
                 int failed = 0;
                 int succesful = 0;
-                int maxRetryAttempts = SettingHelper.GetMaxRetryAttempts(DefaultSettings, Context.Logger);
+                int maxRetryAttempts = SettingHelper.GetMaxRetryAttempts(Context.Settings, Context.Logger);
 
                 foreach (ConnectorState state in states.OrderBy(s => s.Created))
                 {

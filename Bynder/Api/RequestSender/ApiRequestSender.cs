@@ -109,6 +109,7 @@ namespace Bynder.Sdk.Api.RequestSender
         private async Task<HttpResponseMessage> CreateHttpRequestAsync<T>(Request<T> request)
         {
             var parameters = _queryDecoder.GetParameters(request.Query);
+
             var httpRequestMessage = HttpRequestMessageFactory.Create(
                 _configuration.BaseUrl.ToString(),
                 request.HTTPMethod,
