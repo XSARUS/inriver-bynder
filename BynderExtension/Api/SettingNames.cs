@@ -6,9 +6,9 @@ namespace Bynder.Api
     {
         #region Fields
 
-        public const string ConsumerKey = "CONSUMER_KEY";
-        public const string ConsumerSecret = "CONSUMER_SECRET";
-        public const string CustomerBynderUrl = "CUSTOMER_BYNDER_URL";
+        public const string BynderClientId = "BYNDER_CLIENT_ID";
+        public const string BynderSecretId = "BYNDER_CLIENT_SECRET";
+        public const string BynderClientUrl = "BYNDER_CLIENT_URL";
 
         #endregion Fields
 
@@ -21,9 +21,9 @@ namespace Bynder.Api
         public static Dictionary<string, string> GetDefaultBynderApiSettings()
             => new Dictionary<string, string>
             {
-                {CustomerBynderUrl, "https://[CUSTOMER].getbynder.com"},
-                {ConsumerKey, "YOUR-CONSUMER-KEY"}, // CLIENT_ID OF BYNDER OAUTH_APP
-                {ConsumerSecret, "YOUR-CONSUMER-SECRET"},  // CLIENT_SECRET OF BYNDER OAUTH_APP
+                {BynderClientUrl, "https://[CLIENT].getbynder.com"},
+                {BynderClientId, "<YOUR BYNDER CLIENT_ID>"}, // CLIENT_ID OF BYNDER OAUTH_APP
+                {BynderSecretId, "<YOUR BYNDER CLIENT_SECRET>"},  // CLIENT_SECRET OF BYNDER OAUTH_APP
             };
 
         #endregion Methods

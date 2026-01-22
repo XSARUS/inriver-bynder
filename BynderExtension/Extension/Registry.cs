@@ -27,9 +27,9 @@ namespace Bynder.Extension
 
             // Bynder API Client configuration
             For<Configuration>().Use(new Configuration { 
-                BaseUrl = new Uri(inRiverContext.Settings[SettingNames.CustomerBynderUrl]),
-                ClientId = inRiverContext.Settings[SettingNames.ConsumerKey],
-                ClientSecret = inRiverContext.Settings[SettingNames.ConsumerSecret]
+                BaseUrl = new Uri(inRiverContext.Settings[SettingNames.BynderClientUrl]),
+                ClientId = inRiverContext.Settings[SettingNames.BynderClientId],
+                ClientSecret = inRiverContext.Settings[SettingNames.BynderSecretId]
             });
 
             // file name evaluator
