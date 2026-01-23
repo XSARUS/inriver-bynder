@@ -77,9 +77,13 @@ namespace Bynder.Extension
             query.Total = includeTotal;
 
             int limit = SettingHelper.GetInitialAssetLoadLimit(Context.Settings, Context.Logger);
+
+            Context.Log(LogLevel.Debug, $"Initial Asset Loader limit: limit to {limit} assets");
+
             if (limit > 0)
             {
                 query.Limit = limit;
+                Context.Log(LogLevel.Debug, $"Initial Asset Loader limit: set query limit to {limit} assets");
             }
 
             return query;
