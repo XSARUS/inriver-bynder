@@ -64,7 +64,7 @@ namespace Bynder.Workers
             // evaluate filename
             string originalFileName = media.GetOriginalFileName();
             var evaluatorResult = _fileNameEvaluator.Evaluate(originalFileName);
-            if (!evaluatorResult.IsMatch())
+            if (!evaluatorResult.Match.Success)
             {
                 result.Messages.Add($"Not processing '{originalFileName}'; does not match regex.");
                 return result;
