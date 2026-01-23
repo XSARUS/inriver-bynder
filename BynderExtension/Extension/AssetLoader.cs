@@ -122,7 +122,8 @@ namespace Bynder.Extension
                 var query = GetQuery(true, true);
                 MediaFullResult result = RunSync(() => SearchAsync(query));
 
-                sb.AppendLine($"Search resulted in {result.Count.Total}");
+                sb.AppendLine($"Search resulted in {result.Count.Total} assets in total, without the limit applied.");
+                sb.AppendLine($"Search resulted in {result.Media.Count} assets.");
             }
             catch (Exception ex)
             {
