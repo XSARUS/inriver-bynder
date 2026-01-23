@@ -9,6 +9,7 @@ namespace Bynder.Utils
 {
     using Helpers;
     using Names;
+    using System.Runtime.Remoting.Contexts;
 
     public class FilenameEvaluator
     {
@@ -40,8 +41,13 @@ namespace Bynder.Utils
             var regex = new Regex(regularExpressionPattern, RegexOptions.None);
 
             result.Match = regex.Match(fileName);
-            _inRiverContext.Log(LogLevel.Debug, $"Matching file '{fileName}', found: '{result.Match.Value}'");
 
+            if (!result.Match.Success)
+            {
+                _inRiverContext.Log(LogLevel.Warning, $"Filename 'filename' did not match the configured reg. expr.!");
+                return result;
+            }
+            
             for (int i = 1; i < result.Match.Groups.Count; i++)
             {
                 // check if matchgroup name indicates a non resource field, if so, add to output collection

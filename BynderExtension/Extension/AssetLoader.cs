@@ -47,17 +47,22 @@ namespace Bynder.Extension
                 Context.Log(LogLevel.Information, $"Start processing {media.Count} assets.");
 
                 foreach (Media medium in media) {
-                    worker.Execute(medium.Id, NotificationType.DataUpsert);
+                    var result = worker.Execute(medium.Id, NotificationType.DataUpsert);
+                    if (result != null && result.Messages.Any())
+                    {
+                        result.Messages.ForEach(m => Context.Log(LogLevel.Information, m));
+                    }
                     counter++;
                 }
 
                 Context.Log(LogLevel.Information, $"Processed {counter}/{media.Count} assets.");
-                Context.Log(LogLevel.Information, "Initial import successful!");
             }
             catch (System.Exception ex)
             {
                 Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
+
+            Context.Log(LogLevel.Information, "Initial import finished!");
         }
 
         internal MediaQuerySearch GetQuery(bool includeCount = false, bool includeTotal = false)
