@@ -233,12 +233,9 @@ namespace Bynder.Utils.Helpers
 
         public static int GetInitialAssetLoadLimit(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.ContainsKey(Settings.InitialAssetLoadLimit))
+            if (settings.ContainsKey(Settings.InitialAssetLoadLimit) && int.TryParse(settings[Settings.InitialAssetLoadLimit], out int limit))
             {
-                if (int.TryParse(settings[Settings.InitialAssetLoadLimit], out int limit))
-                {
-                    return limit;    
-                }
+                return limit;
             }
 
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.InitialAssetLoadLimit}'");
