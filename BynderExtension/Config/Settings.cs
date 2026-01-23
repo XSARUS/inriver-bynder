@@ -19,6 +19,7 @@
         public const string FilenameExtensionMediaTypeMapping = "FILENAME_EXTENSION_MEDIA_TYPE_MAPPING";
         public const string ImportConditions = "IMPORT_CONDITIONS";
         public const string InitialAssetLoadUrlQuery = "INITIAL_ASSET_LOAD_URL_QUERY";
+        public const string InitialAssetLoadLimit = "INITIAL_ASSET_LOAD_LIMIT";
         public const string InRiverEntityUrl = "INRIVER_RESOURCE_URL";
         public const string InRiverIntegrationId = "INRIVER_INTEGRATION_ID";
         public const string LocaleMappingInriverToBynder = "LOCALE_MAPPING_INRIVER_TO_BYNDER";

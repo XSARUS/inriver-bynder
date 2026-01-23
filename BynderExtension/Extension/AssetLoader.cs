@@ -76,6 +76,12 @@ namespace Bynder.Extension
             query.Count = includeCount;
             query.Total = includeTotal;
 
+            int limit = SettingHelper.GetInitialAssetLoadLimit(Context.Settings, Context.Logger);
+            if (limit > 0)
+            {
+                query.Limit = limit;
+            }
+
             return query;
         }
 
