@@ -77,9 +77,13 @@ namespace Bynder.Extension
             query.Total = includeTotal;
 
             int limit = SettingHelper.GetInitialAssetLoadLimit(Context.Settings, Context.Logger);
+
+            Context.Log(LogLevel.Debug, $"Initial Asset Loader limit: limit to {limit} assets");
+
             if (limit > 0)
             {
                 query.Limit = limit;
+                Context.Log(LogLevel.Debug, $"Initial Asset Loader limit: set query limit to {limit} assets");
             }
 
             return query;
@@ -118,7 +122,8 @@ namespace Bynder.Extension
                 var query = GetQuery(true, true);
                 MediaFullResult result = RunSync(() => SearchAsync(query));
 
-                sb.AppendLine($"Search resulted in {result.Count.Total}");
+                sb.AppendLine($"Search resulted in {result.Count.Total} assets in total, without the limit applied.");
+                sb.AppendLine($"Search resulted in {result.Media.Count} assets.");
             }
             catch (Exception ex)
             {
