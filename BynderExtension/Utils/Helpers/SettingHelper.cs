@@ -231,6 +231,20 @@ namespace Bynder.Utils.Helpers
             return string.Empty;
         }
 
+        public static int GetInitialAssetLoadLimit(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.InitialAssetLoadLimit))
+            {
+                if (int.TryParse(settings[Settings.InitialAssetLoadLimit], out int limit))
+                {
+                    return limit;    
+                }
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.InitialAssetLoadLimit}'");
+            return 0;
+        }
+
         public static string GetInRiverEntityUrl(Dictionary<string, string> settings, IExtensionLog logger)
         {
             if (settings.ContainsKey(Settings.InRiverEntityUrl))
