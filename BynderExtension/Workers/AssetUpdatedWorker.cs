@@ -68,7 +68,7 @@ namespace Bynder.Workers
             {
                 result.Messages.Add($"Not processing '{originalFileName}'; does not match regex.");
                 return result;
-            }`
+            }
 
             // evaluate conditions
             if (!AssetAppliesToConditions(media))
