@@ -44,7 +44,7 @@ namespace Bynder.Utils
 
             if (!result.Match.Success)
             {
-                _inRiverContext.Log(LogLevel.Warning, $"Filename 'filename' did not match the configured reg. expr.!");
+                _inRiverContext.Log(LogLevel.Warning, $"Filename '{fileName}' did not match the configured reg. expr.!");
                 return result;
             }
             

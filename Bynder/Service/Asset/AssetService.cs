@@ -323,22 +323,6 @@ namespace Bynder.Sdk.Service.Asset
             }).ConfigureAwait(false);
         }
 
-        public Media GetAssetByMediaId(string mediaId)
-        {
-            var media = GetAssetByMediaQuery(mediaId).GetAwaiter().GetResult();
-
-            if (media != null)
-            {
-                var metaproperties = GetMetapropertiesAsync().GetAwaiter().GetResult();
-                foreach (var assetMetaproperty in media.MetaProperties)
-                {
-                    assetMetaproperty.Id = metaproperties[assetMetaproperty.Name].Id;
-                }
-            }
-
-            return media;
-        }
-
         public async Task<Status> DeleteAssetAsync(string assetId)
         {
             return await _requestSender.SendRequestAsync(new ApiRequest<Status>

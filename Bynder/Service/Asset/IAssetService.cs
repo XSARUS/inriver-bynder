@@ -169,6 +169,5 @@ namespace Bynder.Sdk.Service.Asset
         Task<Media> GetAssetByMediaQuery(string mediaId);
         Task<IEnumerable<MetapropertyOption>> GetMetapropertyOptionsByIdAsync(IEnumerable<string> optionIds);
         Task<IReadOnlyList<Media>> GetAllMediaFullResultAsync(MediaQuery query);
-        Media GetAssetByMediaId(string mediaId);
     }
 }

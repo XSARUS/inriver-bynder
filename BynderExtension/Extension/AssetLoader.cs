@@ -117,6 +117,11 @@ namespace Bynder.Extension
                 .ConfigureAwait(false);
         }
 
+        public AssetUpdatedWorker GetWorker()
+        {
+            return Container.GetInstance<AssetUpdatedWorker>();
+        }
+
         public override string Test()
         {
             var sb = new StringBuilder();
