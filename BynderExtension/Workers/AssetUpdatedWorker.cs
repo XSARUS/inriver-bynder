@@ -47,6 +47,17 @@ namespace Bynder.Workers
         #endregion Constructors
 
         #region Methods
+        public Media GetMedia(string bynderAssetId)
+        {
+            var media = _bynderClient.GetAssetService().GetAssetByMediaQuery(bynderAssetId).GetAwaiter().GetResult();
+            var metaProperties = _bynderClient.GetAssetService().GetMetapropertiesAsync().GetAwaiter().GetResult();
+            foreach (var mp in media.MetaProperties)
+            {
+                mp.Id = metaProperties[mp.Name].Id;
+            }
+
+            return media;
+        }
 
         /// <summary>
         /// Main method of the worker
@@ -59,7 +70,7 @@ namespace Bynder.Workers
             var result = new WorkerResult();
 
             // get original filename, as we need to evaluate this for further processing
-            Media media = _bynderClient.GetAssetService().GetAssetByMediaId(bynderAssetId);
+            Media media = GetMedia(bynderAssetId);
             if (media == null)
             {
                 result.Messages.Add($"Not processing '{bynderAssetId}'; asset not found.");
@@ -524,14 +535,7 @@ namespace Bynder.Workers
             }
 
             _inRiverContext.Log(LogLevel.Verbose, $"Setting metaproperties on entity {resourceEntity.Id}");
-
-            var allMetaProperties = _bynderClient.GetAssetService().GetMetapropertiesAsync().GetAwaiter().GetResult();
-            /*foreach (var mp in asset.MetaProperties)
-            {
-                if (allMetaProperties.TryGetValue(mp.Id)
-                _inRiverContext.Log(LogLevel.Debug, $"{mp.Name} ({mp.Id} - {allMetaProperties.TryGetValue()})");
-            }*/
-            
+           
             var matchedProperties = asset.MetaProperties
             .Join(
                 metaPropertyMapping,
