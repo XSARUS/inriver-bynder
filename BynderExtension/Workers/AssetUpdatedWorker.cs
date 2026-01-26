@@ -16,6 +16,7 @@ namespace Bynder.Workers
     using Models;
     using Names;
     using Newtonsoft.Json.Linq;
+    using System.Text.RegularExpressions;
     using Utils;
     using Utils.Extensions;
     using Utils.Helpers;
@@ -28,6 +29,9 @@ namespace Bynder.Workers
         private readonly FilenameEvaluator _fileNameEvaluator;
         private readonly SdkIBynderClient _bynderClient;
         private EntityType ResourceEntityType => _inRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
+        private const string FieldTypeSettingsRegExKey = "RegExp";
+
+        private Regex ResourceFilenameRegEx;
 
         #endregion Fields
 
@@ -264,11 +268,25 @@ namespace Bynder.Workers
             if (string.IsNullOrEmpty(filename))
             {
                 _inRiverContext.Log(LogLevel.Debug, $"Filename for asset {asset.Id} is empty");
+                filename = asset.Id;
             }
-
-            if (SettingHelper.ShouldAddAssetIdPrefixToFilename(_inRiverContext.Settings, _inRiverContext.Logger))
+            else if (SettingHelper.ShouldAddAssetIdPrefixToFilename(_inRiverContext.Settings, _inRiverContext.Logger))
             {
                 filename = $"{asset.Id}_{filename}";
+            }
+
+            var fieldTypeSettings = resourceEntity.GetField(FieldTypeIds.ResourceFilename).FieldType.Settings;
+            if (ResourceFilenameRegEx is null)
+            {
+                if (fieldTypeSettings != null && fieldTypeSettings.ContainsKey(FieldTypeSettingsRegExKey) && !string.IsNullOrEmpty(fieldTypeSettings[FieldTypeSettingsRegExKey]))
+                {
+                    ResourceFilenameRegEx = new Regex(fieldTypeSettings[FieldTypeSettingsRegExKey]);
+                }
+            }
+            else if (!ResourceFilenameRegEx.Match(filename).Success)
+            {
+                    // This validation has been added because the native exception of inriver does not include enough details
+                    throw new FormatException($"Value '{filename}' for Field '{FieldTypeIds.ResourceFilename}' doesn't match the required RegExp format '{fieldTypeSettings[FieldTypeSettingsRegExKey]}'");
             }
 
             resourceEntity.GetField(FieldTypeIds.ResourceFilename).Data = filename;
