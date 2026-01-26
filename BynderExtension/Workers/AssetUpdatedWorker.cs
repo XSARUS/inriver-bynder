@@ -533,6 +533,11 @@ namespace Bynder.Workers
                 (property, map) => new { property, map }
             );
 
+            foreach (var matchedProperty in matchedProperties)
+            {
+                _inRiverContext.Log(LogLevel.Debug, $"{matchedProperty.property.Name} ({matchedProperty.property.Id}) -> {matchedProperty.map.InriverFieldTypeId}");
+            }
+
             foreach (var match in matchedProperties)
             {
                 var fieldTypeId = match.map.InriverFieldTypeId;
