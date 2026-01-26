@@ -10,8 +10,10 @@ namespace Bynder.Extension
     using Amazon.SimpleNotificationService.Util;
     using Bynder.Config;
     using Bynder.Models;
+    using Bynder.Sdk.Model;
     using Bynder.Utils.Helpers;
     using Enums;
+    using System.Text;
     using Workers;
 
     public class ScheduledNotificationHandler : AbstractScheduledExtension
@@ -113,12 +115,30 @@ namespace Bynder.Extension
                     }
                 }
 
-                Context.Log(LogLevel.Information, $"Finished handling of {states.Count} Bynder Notifications [{succesful} successfull | {failed} failed | {retried} retried]");
+                Context.Log(LogLevel.Information, $"Finished handling of {states.Count} Bynder Notifications [{succesful} created | {failed} failed | {retried} retried]");
             }
             catch (Exception ex)
             {
                 Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
+        }
+
+        public override string Test()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(base.Test());
+
+            try
+            {
+                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
+                sb.AppendLine($"Number of connectorstates found: {states.Count}");
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine(ex.ToString());
+            }
+
+            return sb.ToString();
         }
 
         #endregion Methods
