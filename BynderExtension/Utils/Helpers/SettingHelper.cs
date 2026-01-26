@@ -28,7 +28,6 @@ namespace Bynder.Utils.Helpers
             return string.Empty;
         }
 
-
         public static string GetBynderLocaleForMetapropertyOptionLabel(Dictionary<string, string> settings, IExtensionLog logger)
         {
             if (settings.ContainsKey(Settings.BynderLocaleForMetapropertyOptionLabel))
@@ -51,7 +50,7 @@ namespace Bynder.Utils.Helpers
                 return settings[Settings.AssetPropertyMap].ToDictionary<string, string>(',', '=');
             }
 
-            logger.Log(LogLevel.Verbose, "Could not find configured asset property Map");
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.AssetPropertyMap}'");
             return new Dictionary<string, string>();
         }
 
@@ -118,23 +117,23 @@ namespace Bynder.Utils.Helpers
 
         public static Dictionary<string, List<string>> GetCvlMetapropertyMapping(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.ContainsKey(Settings.CvlMetapropertyMapping))
+            if (settings.ContainsKey(Settings.CvlMetapropertyMapping) && !string.IsNullOrWhiteSpace(settings[Settings.CvlMetapropertyMapping]))
             {
                 return JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(settings[Settings.CvlMetapropertyMapping]);
             }
 
-            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.CvlMetapropertyMapping}");
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.CvlMetapropertyMapping}'");
             return new Dictionary<string, List<string>>();
         }
 
         public static DateTimeSettings GetDateTimeSettings(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.ContainsKey(Settings.TimestampSettings))
+            if (settings.ContainsKey(Settings.TimestampSettings) && !string.IsNullOrWhiteSpace(settings[Settings.TimestampSettings]))
             {
                 return JsonConvert.DeserializeObject<DateTimeSettings>(settings[Settings.TimestampSettings]);
             }
 
-            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.TimestampSettings}");
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.TimestampSettings}'");
             return null;
         }
 
@@ -166,12 +165,12 @@ namespace Bynder.Utils.Helpers
 
         public static Dictionary<string, List<MediaTypeTransformConfig>> GetFilenameExtensionMediaTypeMapping(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.ContainsKey(Settings.FilenameExtensionMediaTypeMapping))
+            if (settings.ContainsKey(Settings.FilenameExtensionMediaTypeMapping) && !string.IsNullOrWhiteSpace(settings[Settings.FilenameExtensionMediaTypeMapping]))
             {
                 return JsonConvert.DeserializeObject<Dictionary<string, List<MediaTypeTransformConfig>>>(settings[Settings.FilenameExtensionMediaTypeMapping]);
             }
 
-            logger.Log(LogLevel.Verbose, $"Could not find configuration for {Settings.FilenameExtensionMediaTypeMapping}");
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.FilenameExtensionMediaTypeMapping}'");
             return new Dictionary<string, List<MediaTypeTransformConfig>>();
         }
 
@@ -181,12 +180,12 @@ namespace Bynder.Utils.Helpers
         /// <returns></returns>
         public static List<ExportCondition> GetExportConditions(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.ContainsKey(Settings.ExportConditions))
+            if (settings.ContainsKey(Settings.ExportConditions) && !string.IsNullOrWhiteSpace(settings[Settings.ExportConditions]))
             {
                 return JsonConvert.DeserializeObject<List<ExportCondition>>(settings[Settings.ExportConditions]);
             }
 
-            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ExportConditions}");
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.ExportConditions}'");
             return new List<ExportCondition>();
         }
 
@@ -196,12 +195,12 @@ namespace Bynder.Utils.Helpers
         /// <returns></returns>
         public static List<FieldValueCombination> GetFieldValueCombinations(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.ContainsKey(Settings.FieldValuesToSetOnArchiveEvent))
+            if (settings.ContainsKey(Settings.FieldValuesToSetOnArchiveEvent) && !string.IsNullOrWhiteSpace(settings[Settings.FieldValuesToSetOnArchiveEvent]))
             {
                 return JsonConvert.DeserializeObject<List<FieldValueCombination>>(settings[Settings.FieldValuesToSetOnArchiveEvent]);
             }
 
-            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.FieldValuesToSetOnArchiveEvent}");
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.FieldValuesToSetOnArchiveEvent}'");
             return new List<FieldValueCombination>();
         }
 
@@ -211,12 +210,12 @@ namespace Bynder.Utils.Helpers
         /// <returns></returns>
         public static List<ImportCondition> GetImportConditions(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.ContainsKey(Settings.ImportConditions))
+            if (settings.ContainsKey(Settings.ImportConditions) && !string.IsNullOrWhiteSpace(settings[Settings.ImportConditions]))
             {
                 return JsonConvert.DeserializeObject<List<ImportCondition>>(settings[Settings.ImportConditions]);
             }
 
-            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.ImportConditions}");
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.ImportConditions}'");
             return new List<ImportCondition>();
         }
 
@@ -238,7 +237,7 @@ namespace Bynder.Utils.Helpers
                 return limit;
             }
 
-            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.InitialAssetLoadLimit}'");
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.InitialAssetLoadLimit}'. Defaults to '0' (unlimited)");
             return 0;
         }
 
@@ -270,23 +269,23 @@ namespace Bynder.Utils.Helpers
         /// <returns></returns>
         public static IEnumerable<string> GetLanguagesToSet(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.ContainsKey(Settings.LocaleStringLanguagesToSet))
+            if (settings.ContainsKey(Settings.LocaleStringLanguagesToSet) && !string.IsNullOrWhiteSpace(settings[Settings.LocaleStringLanguagesToSet]))
             {
                 return settings[Settings.LocaleStringLanguagesToSet].ConvertTo<IEnumerable<string>>() ?? new List<string>();
             }
 
-            logger.Log(LogLevel.Verbose, "Could not find configured multivalue separator");
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.LocaleStringLanguagesToSet}'");
             return new List<string>();
         }
 
         public static Dictionary<string, string> GetLocaleMapping(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.ContainsKey(Settings.LocaleMappingInriverToBynder))
+            if (settings.ContainsKey(Settings.LocaleMappingInriverToBynder) && !string.IsNullOrWhiteSpace(settings[Settings.LocaleMappingInriverToBynder]))
             {
                 return JsonConvert.DeserializeObject<Dictionary<string, string>>(settings[Settings.LocaleMappingInriverToBynder]);
             }
 
-            logger.Log(LogLevel.Verbose, $"Could not find configured {Settings.LocaleMappingInriverToBynder}");
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.LocaleMappingInriverToBynder}'");
             return new Dictionary<string, string>();
         }
 
@@ -313,7 +312,7 @@ namespace Bynder.Utils.Helpers
                 return settings[Settings.MultivalueSeparator];
             }
 
-            logger.Log(LogLevel.Verbose, "Could not find configured multivalue separator");
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.MultivalueSeparator}'");
             return string.Empty;
         }
 
@@ -330,7 +329,7 @@ namespace Bynder.Utils.Helpers
 
         public static ResourceSearchType GetResourceSearchType(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.TryGetValue(Settings.ResourceSearchType, out string setting))
+            if (settings.ContainsKey(Settings.ResourceSearchType) && settings.TryGetValue(Settings.ResourceSearchType, out string setting))
             {
                 return setting.ToEnum<ResourceSearchType>();
             }
@@ -343,7 +342,7 @@ namespace Bynder.Utils.Helpers
 
         public static bool ShouldAddAssetIdPrefixToFilename(Dictionary<string, string> settings, IExtensionLog logger)
         {
-            if (settings.TryGetValue(Settings.AddAssetIdPrefixToFilenameOfNewResource, out string setting))
+            if (settings.ContainsKey(Settings.AddAssetIdPrefixToFilenameOfNewResource) && settings.TryGetValue(Settings.AddAssetIdPrefixToFilenameOfNewResource, out string setting))
             {
                 return string.Equals(setting, true.ToString(), StringComparison.InvariantCultureIgnoreCase);
             }

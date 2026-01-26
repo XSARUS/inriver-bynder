@@ -68,7 +68,7 @@ namespace Bynder.Workers
             {
                 result.Messages.Add($"Not processing '{originalFileName}'; does not match regex.");
                 return result;
-            }
+            }`
 
             // evaluate conditions
             if (!AssetAppliesToConditions(media))
@@ -180,11 +180,18 @@ namespace Bynder.Workers
             var conditions = SettingHelper.GetImportConditions(_inRiverContext.Settings, _inRiverContext.Logger);
 
             // return true if no conditions found. Conditions are optional.
-            if (conditions.Count == 0) return true;
+            if (conditions == null || conditions.Count == 0) 
+            {
+                _inRiverContext.Log(LogLevel.Debug, $"Import conditions are empty > {asset.Id} applies to conditions immediately!");
+                return true; 
+            }
 
             foreach (var condition in conditions)
             {
-                if (!GetConditionResult(asset, condition)) return false;
+                if (!GetConditionResult(asset, condition))
+                {
+                    return false;
+                }
             }
 
             return true;
