@@ -276,17 +276,15 @@ namespace Bynder.Workers
             }
 
             var fieldTypeSettings = resourceEntity.GetField(FieldTypeIds.ResourceFilename).FieldType.Settings;
-            if (ResourceFilenameRegEx is null)
+            if (ResourceFilenameRegEx is null && fieldTypeSettings != null && fieldTypeSettings.ContainsKey(FieldTypeSettingsRegExKey) && !string.IsNullOrEmpty(fieldTypeSettings[FieldTypeSettingsRegExKey]))
             {
-                if (fieldTypeSettings != null && fieldTypeSettings.ContainsKey(FieldTypeSettingsRegExKey) && !string.IsNullOrEmpty(fieldTypeSettings[FieldTypeSettingsRegExKey]))
-                {
-                    ResourceFilenameRegEx = new Regex(fieldTypeSettings[FieldTypeSettingsRegExKey]);
-                }
+                ResourceFilenameRegEx = new Regex(fieldTypeSettings[FieldTypeSettingsRegExKey]);
             }
-            else if (!ResourceFilenameRegEx.Match(filename).Success)
+
+            if (ResourceFilenameRegEx != null && !ResourceFilenameRegEx.Match(filename).Success)
             {
-                    // This validation has been added because the native exception of inriver does not include enough details
-                    throw new FormatException($"Value '{filename}' for Field '{FieldTypeIds.ResourceFilename}' doesn't match the required RegExp format '{fieldTypeSettings[FieldTypeSettingsRegExKey]}'");
+                // This validation has been added because the native exception of inriver does not include enough details
+                throw new FormatException($"Value '{filename}' for Field '{FieldTypeIds.ResourceFilename}' doesn't match the required RegExp format '{fieldTypeSettings[FieldTypeSettingsRegExKey]}'");
             }
 
             resourceEntity.GetField(FieldTypeIds.ResourceFilename).Data = filename;
