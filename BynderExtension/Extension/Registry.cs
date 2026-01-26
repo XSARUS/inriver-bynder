@@ -4,11 +4,11 @@ using System;
 namespace Bynder.Extension
 {
     using Api;
-    using Bynder.Sdk.Settings;
+    using Sdk.Settings;
     using Utils;
     using Workers;
-    using SdkBynderClient = Bynder.Sdk.Service.BynderClient;
-    using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
+    using SdkBynderClient = Sdk.Service.BynderClient;
+    using SdkIBynderClient = Sdk.Service.IBynderClient;
 
     internal class Registry : StructureMap.Registry
     {
