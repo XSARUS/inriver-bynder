@@ -27,6 +27,7 @@ namespace Bynder.Workers
         private readonly inRiverContext _inRiverContext;
         private readonly FilenameEvaluator _fileNameEvaluator;
         private readonly SdkIBynderClient _bynderClient;
+        private EntityType ResourceEntityType => _inRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
 
         #endregion Fields
 
@@ -199,7 +200,8 @@ namespace Bynder.Workers
 
         private WorkerResult CreateOrUpdateEntityAndRelations(WorkerResult result, Media asset, FilenameEvaluator.Result evaluatorResult, Entity resourceEntity)
         {
-            _inRiverContext.Log(LogLevel.Verbose, $"Create or update entity, metadata and relations for bynder asset {asset.Id}");
+            string action = resourceEntity == null ? "Create Entity" : $"Update Entity {resourceEntity.Id}";
+            _inRiverContext.Log(LogLevel.Verbose, $"{action}, metadata and relations for Bynder asset {asset.Id}");
 
             if (resourceEntity == null)
             {
@@ -255,9 +257,7 @@ namespace Bynder.Workers
 
         private Entity CreateResourceEntity(Media asset)
         {
-            Entity resourceEntity;
-            EntityType resourceType = _inRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
-            resourceEntity = Entity.CreateEntity(resourceType);
+            Entity resourceEntity = Entity.CreateEntity(ResourceEntityType);
 
             // set filename (only for *new* resource)
             string filename = asset.GetOriginalFileName();
@@ -272,6 +272,7 @@ namespace Bynder.Workers
             }
 
             resourceEntity.GetField(FieldTypeIds.ResourceFilename).Data = filename;
+            
             return resourceEntity;
         }
 
