@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace BynderTest
 {
-    [TestClass/*, Ignore("Only run manually")*/]
+    [TestClass, Ignore("Only run manually")]
     public class AssetLoaderTest : TestBase
     {
         private AssetLoader _extension;
@@ -38,10 +38,15 @@ namespace BynderTest
             Logger.Log($"Test result: {testResult}");
         }
 
-        [TestMethod/*, Ignore("Only use for debugging!")*/]
+        [TestMethod, Ignore("Only use for debugging!")]
         public void TestAssetLoaderExecution()
         {
-            // _extension.Execute(true);
+            _extension.Execute(true);
+        }
+
+        [TestMethod, Ignore("Only use for debugging!")]
+        public void GetMediaTest()
+        {
             var worker = _extension.GetWorker();
             var media = worker.GetMedia("B8ED3B94-21A3-42C3-B10D254DE248795F");
             Logger.Log($"Media found: {media.Id}");

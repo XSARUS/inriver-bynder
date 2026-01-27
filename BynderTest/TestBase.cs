@@ -14,7 +14,7 @@ namespace BynderTest
     /// Fill this class with your extension settings and inriver remoting connection details
     /// </summary>
     [TestClass]
-    public abstract class TestBaseORG
+    public abstract class TestBase
     {
         #region Fields
 
