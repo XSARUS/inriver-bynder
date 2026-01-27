@@ -1,19 +1,19 @@
-﻿using inRiver.Remoting.Log;
+﻿using Amazon.SimpleNotificationService.Util;
+using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Bynder.Extension
 {
-    using Amazon.SimpleNotificationService.Util;
     using Bynder.Config;
     using Bynder.Models;
     using Bynder.Sdk.Model;
     using Bynder.Utils.Helpers;
     using Enums;
-    using System.Text;
     using Workers;
 
     public class ScheduledNotificationHandler : AbstractScheduledExtension
@@ -26,6 +26,25 @@ namespace Bynder.Extension
             {
                 var settings = base.DefaultSettings;
                 settings.Add(Settings.MaxRetryAttempts, Settings.DefaultMaxRetryAttempts.ToString());
+
+                // Remove settings that are not used in this extension:
+                var settingsToRemove = new List<string>(12)
+                {
+                    Settings.BynderBrandName,
+                    Settings.BynderLocaleForMetapropertyOptionLabel,
+                    Settings.CvlMetapropertyMapping,
+                    Settings.DownloadMediaType,
+                    Settings.FilenameExtensionMediaTypeMapping,
+                    Settings.ExportConditions,
+                    Settings.InitialAssetLoadUrlQuery,
+                    Settings.InitialAssetLoadLimit,
+                    Settings.InRiverEntityUrl,
+                    Settings.InRiverIntegrationId,
+                    Settings.LocaleMappingInriverToBynder
+                };
+
+                settingsToRemove.ForEach(s => settings.Remove(s));
+
                 return settings;
             }
         }
