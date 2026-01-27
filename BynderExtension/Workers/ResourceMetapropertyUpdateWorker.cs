@@ -1,18 +1,16 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
-using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Bynder.Workers
 {
-    using Api;
     using Bynder.Sdk.Query.Asset;
     using Bynder.Sdk.Service;
     using Models;
     using Names;
+    using Utils.Extensions;
     using Utils.Helpers;
     using Utils.InRiver;
 
@@ -130,7 +128,7 @@ namespace Bynder.Workers
 
             if (field.FieldType.DataType.Equals(DataType.CVL) && field.FieldType.Multivalue)
             {
-                string[] keys = field.Data.ToString().Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                var keys = field.Data.ToString().ToIEnumerable<string>(';');
                 if (keys.Any())
                 {
                     values.AddRange(keys);

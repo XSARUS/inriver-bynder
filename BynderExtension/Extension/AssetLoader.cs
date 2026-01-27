@@ -1,20 +1,19 @@
 ﻿using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Log;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Bynder.Extension
 {
     using Bynder.Api.Mappers;
-    using Bynder.Sdk;
     using Bynder.Sdk.Model;
     using Bynder.Sdk.Query.Asset;
     using Bynder.Sdk.Service;
     using Enums;
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
+    using Utils.Extensions;
     using Utils.Helpers;
     using Workers;
 
@@ -69,13 +68,7 @@ namespace Bynder.Extension
         {
             string assetLoadUrlQuery = SettingHelper.GetInitialAssetLoadUrlQuery(Context.Settings, Context.Logger);
 
-            var dict = assetLoadUrlQuery
-                .Split(',')
-                .Select(p => p.Split(new[] { '=' }, 2))
-                .ToDictionary(
-                    p => p[0],
-                    p => p.Length > 1 ? p[1] : null
-                );
+            var dict = assetLoadUrlQuery.ToDictionary<string, string>(',', '=');
 
             var query = ApiQueryMapper.FromDictionary<MediaQuerySearch>(dict);
             query.Count = includeCount;
