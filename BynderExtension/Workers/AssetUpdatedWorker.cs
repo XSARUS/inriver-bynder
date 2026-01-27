@@ -51,6 +51,7 @@ namespace Bynder.Workers
         {
             var media = _bynderClient.GetAssetService().GetAssetByMediaQuery(bynderAssetId).GetAwaiter().GetResult();
             var metaProperties = _bynderClient.GetAssetService().GetMetapropertiesAsync().GetAwaiter().GetResult();
+            
             foreach (var mp in media.MetaProperties)
             {
                 mp.Id = metaProperties[mp.Name].Id;
