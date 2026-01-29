@@ -3,15 +3,29 @@ using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 
 namespace Bynder.Extension
 {
+    using Bynder.Api;
+    using Bynder.Sdk.Model;
     using Models;
     using Names;
-    using System;
+    using System.Text;
 
     public class NotificationListener : Extension, IInboundDataExtension
     {
+        public override Dictionary<string, string> DefaultSettings
+        {
+            get
+            {
+                var settings = new Dictionary<string, string>();
+                
+                return settings;
+            }
+        }
+
         #region Methods
 
         /// <summary>
@@ -60,6 +74,23 @@ namespace Bynder.Extension
             Context.Log(LogLevel.Verbose, responseMessage);
 
             return responseMessage;
+        }
+
+        public override string Test()
+        {
+            var sb = new StringBuilder();
+
+            try
+            {
+                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
+                sb.AppendLine($"Number of connectorstates currently: {states.Count}");
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine(ex.ToString());
+            }
+
+            return sb.ToString();
         }
 
         #endregion Methods

@@ -1,17 +1,55 @@
 ﻿using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Objects;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Bynder.Extension
 {
-    using Sdk.Query.Asset;
+    using Bynder.Config;
     using Names;
+    using Sdk.Query.Asset;
     using Utils.InRiver;
     using Workers;
 
     public class Worker : Extension, IEntityListener, ILinkListener
     {
+        public override Dictionary<string, string> DefaultSettings
+        {
+            get
+            {
+                var settings = base.DefaultSettings;
+
+                // Remove settings that are not used in this extension:
+                var settingsToRemove = new List<string>(12)
+                {
+                    Settings.AddAssetIdPrefixToFilenameOfNewResource,
+                    Settings.AssetPropertyMap,
+                    Settings.BynderBrandName,
+                    Settings.BynderLocaleForMetapropertyOptionLabel,
+                    Settings.CreateMissingCvlKeys,
+                    Settings.CronExpression,
+                    Settings.CvlMetapropertyMapping,
+                    Settings.DeleteResourceOnDeleteEvent,
+                    Settings.FieldValuesToSetOnArchiveEvent,
+                    Settings.ImportConditions,
+                    Settings.InitialAssetLoadUrlQuery,
+                    Settings.InitialAssetLoadLimit,
+                    Settings.LocaleMappingInriverToBynder,
+                    Settings.LocaleStringLanguagesToSet,
+                    Settings.MaxRetryAttempts,
+                    Settings.MultivalueSeparator,
+                    Settings.RegularExpressionForFileName,
+                    Settings.ResourceSearchType,
+                    Settings.TimestampSettings,
+                };
+
+                settingsToRemove.ForEach(s => settings.Remove(s));
+
+                return settings;
+            }
+        }
+
         #region Methods
 
         public void EntityCommentAdded(int entityId, int commentId)

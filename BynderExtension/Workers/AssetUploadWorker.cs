@@ -21,10 +21,6 @@ namespace Bynder.Workers
     {
         #region Fields
 
-        /*private const int CHUNK_SIZE = 1024 * 1024 * 5;
-        private const int MAX_POLLING_ITERATIONS = 60;
-        private const int POLLING_IDDLE_TIME = 2000;*/
-
         private readonly SdkIBynderClient _bynderClient;
         private readonly inRiverContext _inRiverContext;
 
@@ -95,18 +91,6 @@ namespace Bynder.Workers
             {
                 throw new MissingDataException($"Upload resource entity {resourceEntity.Id} failed, because there is no resource avaiable!");
             }
-
-            /*var s3Bucket = _bynderClient.GetAssetService().UploadFileAsync  // .GetClosestS3Endpoint();
-            if (s3Bucket == null)
-            {
-                throw new MissingDataException($"Upload resource entity {resourceEntity.Id} failed, because the amazon s3 bucket endpoint cannot be defined!");
-            }
-
-            var uploadRequest = _bynderClient.RequestUploadInformation(new RequestUploadQuery { Filename = filename });
-            if (uploadRequest == null)
-            {
-                throw new MissingDataException($"Upload resource entity {resourceEntity.Id} failed, because we could not get upload information from Bynder!");
-            }*/
 
             return new ResourceUploadData
             {

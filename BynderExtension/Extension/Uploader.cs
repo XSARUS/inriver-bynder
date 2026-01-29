@@ -1,14 +1,55 @@
 ﻿using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Objects;
+using System.Collections.Generic;
 
 namespace Bynder.Extension
 {
+    using Bynder.Config;
     using Names;
     using Utils.InRiver;
     using Workers;
 
     public class Uploader : Extension, IEntityListener
     {
+        public override Dictionary<string, string> DefaultSettings
+        {
+            get
+            {
+                var settings = base.DefaultSettings;
+
+                // Remove settings that are not used in this extension:
+                var settingsToRemove = new List<string>(12)
+                {
+                    Settings.AddAssetIdPrefixToFilenameOfNewResource,
+                    Settings.AssetPropertyMap,
+                    Settings.BynderLocaleForMetapropertyOptionLabel,
+                    Settings.CreateMissingCvlKeys,
+                    Settings.CronExpression,
+                    Settings.CvlMetapropertyMapping,
+                    Settings.DeleteResourceOnDeleteEvent,
+                    Settings.DownloadMediaType,
+                    Settings.FilenameExtensionMediaTypeMapping,
+                    Settings.FieldValuesToSetOnArchiveEvent,
+                    Settings.ImportConditions,
+                    Settings.InitialAssetLoadUrlQuery,
+                    Settings.InitialAssetLoadLimit,
+                    Settings.InRiverEntityUrl,
+                    Settings.InRiverIntegrationId,
+                    Settings.LocaleMappingInriverToBynder,
+                    Settings.LocaleStringLanguagesToSet,
+                    Settings.MaxRetryAttempts,
+                    Settings.MultivalueSeparator,
+                    Settings.RegularExpressionForFileName,
+                    Settings.ResourceSearchType,
+                    Settings.TimestampSettings,
+                };
+
+                settingsToRemove.ForEach(s => settings.Remove(s));
+
+                return settings;
+            }
+        }
+
         #region Methods
 
         public void EntityCommentAdded(int entityId, int commentId)
