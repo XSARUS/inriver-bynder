@@ -26,6 +26,7 @@ namespace Bynder.Extension
                 settings.Add(Config.Settings.LocaleMappingInriverToBynder, string.Empty);
                 settings.Add(Config.Settings.BynderLocaleForMetapropertyOptionLabel, string.Empty);
                 settings.Add(Config.Settings.CvlMetapropertyMapping, string.Empty);
+
                 return settings;
             }
         }

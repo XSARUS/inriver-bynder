@@ -1,26 +1,56 @@
 ﻿using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Log;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Bynder.Extension
 {
     using Bynder.Api.Mappers;
+    using Bynder.Config;
     using Bynder.Sdk;
     using Bynder.Sdk.Model;
     using Bynder.Sdk.Query.Asset;
     using Bynder.Sdk.Service;
     using Enums;
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using Utils.Helpers;
     using Workers;
 
     public class AssetLoader : Extension, IScheduledExtension
     {
         #region Methods
+
+        public override Dictionary<string, string> DefaultSettings
+        {
+            get
+            {
+                var settings = base.DefaultSettings;
+
+                // Remove settings that are not used in this extension:
+                var settingsToRemove = new List<string>(12)
+                {
+                    Settings.BynderBrandName,
+                    Settings.BynderLocaleForMetapropertyOptionLabel,
+                    Settings.CronExpression,
+                    Settings.CvlMetapropertyMapping,
+                    Settings.DeleteResourceOnDeleteEvent,
+                    Settings.DownloadMediaType,
+                    Settings.FilenameExtensionMediaTypeMapping,
+                    Settings.ExportConditions,
+                    Settings.InRiverEntityUrl,
+                    Settings.InRiverIntegrationId,
+                    Settings.LocaleMappingInriverToBynder,
+                    Settings.MaxRetryAttempts
+                };
+
+                settingsToRemove.ForEach(s => settings.Remove(s));
+
+                return settings;
+            }
+        }
 
         /// <summary>
         /// Get a list of all assetIds from Bynder using the configured filter Query
