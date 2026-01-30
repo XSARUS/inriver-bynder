@@ -9,13 +9,11 @@ using System.Text;
 
 namespace Bynder.Workers
 {
-    using Api;
     using Bynder.Sdk.Model;
     using Config;
     using Enums;
     using Models;
     using Names;
-    using Newtonsoft.Json.Linq;
     using System.Text.RegularExpressions;
     using Utils;
     using Utils.Extensions;
