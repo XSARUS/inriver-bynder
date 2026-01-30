@@ -391,15 +391,17 @@ namespace Bynder.Workers
 
         private static bool GetConditionResult(Media asset, ImportCondition condition)
         {
-            if (!asset.PropertyOptionsDictionary.ContainsKey(condition.PropertyName))
+            var metaproperty = asset.MetaProperties.FirstOrDefault(mp => mp.Name.Equals(condition.PropertyName)) ?? null;
+            
+            if (metaproperty == null)
             {
                 return false;
             }
 
-            var metapropertyValue = asset.PropertyOptionsDictionary[condition.PropertyName];
+            var metapropertyValues = metaproperty.Values;
 
             // metaproperty is not included in asset, when the value is null
-            if (metapropertyValue == null)
+            if (metapropertyValues == null)
             {
                 // check if there are conditions or if the only condition value is null
                 if (condition.Values.Count == 0 || (condition.Values.Count == 1 && string.IsNullOrEmpty(condition.Values[0]))) return true;
@@ -408,7 +410,7 @@ namespace Bynder.Workers
                 return false;
             }
 
-            return ConditionHelper.ValuesApplyToCondition(JsonHelper.GetValueAsStringList(metapropertyValue), condition);
+            return ConditionHelper.ValuesApplyToCondition(metapropertyValues, condition);
         }
 
 
