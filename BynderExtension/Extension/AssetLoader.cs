@@ -99,13 +99,7 @@ namespace Bynder.Extension
         {
             string assetLoadUrlQuery = SettingHelper.GetInitialAssetLoadUrlQuery(Context.Settings, Context.Logger);
 
-            var dict = assetLoadUrlQuery
-                .Split(',')
-                .Select(p => p.Split(new[] { '=' }, 2))
-                .ToDictionary(
-                    p => p[0],
-                    p => p.Length > 1 ? p[1] : null
-                );
+            var dict = assetLoadUrlQuery.ToDictionary<string, string>(',', '=');
 
             var query = ApiQueryMapper.FromDictionary<MediaQuerySearch>(dict);
             query.Count = includeCount;

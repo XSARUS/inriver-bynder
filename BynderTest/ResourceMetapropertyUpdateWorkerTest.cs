@@ -15,7 +15,7 @@ namespace BynderTest
 
         #region Methods
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(60333)]
         public void Debug(int resourceEntityId)
         {

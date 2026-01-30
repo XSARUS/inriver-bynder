@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Bynder.Sdk.Api.Converters;
-using Bynder.Sdk.Query.Asset;
-using Bynder.Sdk.Query.Decoder;
-using System.Collections;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 
 namespace Bynder.Api.Mappers
 {
+    using Bynder.Sdk.Query.Asset;
+    using Bynder.Sdk.Query.Decoder;
+    using Utils.Extensions;
+
     public static class ApiQueryMapper
     {
         public static T FromDictionary<T>(IDictionary<string, string> values) where T : new()
@@ -49,12 +47,7 @@ namespace Bynder.Api.Mappers
                         continue;
 
                     // waarde kan CSV zijn
-                    var valuesList = kvp.Value
-                        .Split(',')
-                        .Select(v => v.Trim())
-                        .Where(v => v.Length > 0)
-                        .ToList();
-
+                    var valuesList = kvp.Value.ToList<string>(',');
                     if (valuesList.Count == 0)
                         continue;
 
@@ -96,7 +89,7 @@ namespace Bynder.Api.Mappers
                 return Enum.Parse(targetType, value, ignoreCase: true);
 
             if (typeof(IEnumerable<string>).IsAssignableFrom(targetType))
-                return value.Split(';').ToList();
+                return value.ToList<string>(';');
 
             throw new NotSupportedException(
                 $"Type '{targetType.FullName}' is not supported");
