@@ -30,7 +30,7 @@ namespace BynderTest
             {SettingNames.BynderSecretId, "***" },
 
             {Bynder.Config.Settings.AddAssetIdPrefixToFilenameOfNewResource, false.ToString() },
-            {Bynder.Config.Settings.AssetPropertyMap, "" },
+            {Bynder.Config.Settings.AssetPropertyMap, "description=ResourceDescription" },
             {Bynder.Config.Settings.BynderBrandName, "" },
             {Bynder.Config.Settings.CreateMissingCvlKeys, true.ToString() },
             {Bynder.Config.Settings.DeleteResourceOnDeleteEvent, true.ToString() },
@@ -42,7 +42,7 @@ namespace BynderTest
             {Bynder.Config.Settings.InRiverEntityUrl, "https://inriver.productmarketingcloud.com/app/enrich#entity/{entityId}/" },
             {Bynder.Config.Settings.InRiverIntegrationId, "" },
             {Bynder.Config.Settings.LocaleStringLanguagesToSet, "en-GB, nl-NL" },
-            {Bynder.Config.Settings.MetapropertyMap, @"C7BC01E1-670D-4410-A7B81E9032FE261A=ResourcePosition,C284234B-29B6-4CA8-B907B728455F30EA=ProductNumber" },
+            {Bynder.Config.Settings.MetapropertyMap, "[{\"bynderMetaProperty\":\"7915B585-07BC-481C-87F0AEBBA424F3F2\",\"inRiverFieldTypeId\":\"ResourceSeoText\",\"isMultiValue\":false}]" },
             {Bynder.Config.Settings.MultivalueSeparator, ", " },
             {Bynder.Config.Settings.RegularExpressionForFileName, @"^(?<ProductNumber>[0-9a-zA-Z]+)_(?<ResourceType>image|document)_(?<ResourcePosition>[0-9]+)" },
             {Bynder.Config.Settings.ResourceSearchType, ResourceSearchType.AssetId.ToString() },

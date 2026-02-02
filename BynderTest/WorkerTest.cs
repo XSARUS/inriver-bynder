@@ -8,7 +8,8 @@ using SdkIBynderClient = Bynder.Sdk.Service.BynderClient;
 
 namespace BynderTest
 {
-    [TestClass, Ignore("Only use for debugging!")]
+    [Ignore("Only use for debugging!")]
+    [TestClass]
     public class WorkerTest : TestBase
     {
         #region Methods
