@@ -51,7 +51,8 @@ namespace Bynder.Extension
                 settings.Add(Config.Settings.ResourceSearchType, ResourceSearchType.AssetId.ToString());
                 settings.Add(Config.Settings.LocaleMappingInriverToBynder, "");
                 settings.Add(Config.Settings.CvlMetapropertyMapping, "{\"cvl1\":[\"metapropertyguid1\", \"metapropertyguid2\"], \"cvl2\":[\"metapropertyguid3\", \"metapropertyguid4\"]}");
-                settings.Add(Config.Settings.FilenameExtensionMediaTypeMapping, "[]");
+                settings.Add(Config.Settings.FilenameExtensionMediaTypeMapping, "");
+                settings.Add(Config.Settings.ExecuteBaseTestMethod, true.ToString());
 
                 return settings;
             }
