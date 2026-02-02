@@ -536,14 +536,15 @@ namespace Bynder.Workers
             }
 
             _inRiverContext.Log(LogLevel.Verbose, $"Setting metaproperties on entity {resourceEntity.Id}");
-           
-            var matchedProperties = asset.MetaProperties
-            .Join(
-                metaPropertyMapping,
-                property => property.Name,
-                map => map.BynderMetaProperty,
-                (property, map) => new { property, map }
-            );
+
+            var matchedProperties =
+                asset.MetaProperties.Join(
+                    metaPropertyMapping,
+                    property => property.Id,
+                    map => map.BynderMetaProperty,
+                    (property, map) => new { property, map },
+                    StringComparer.OrdinalIgnoreCase
+                );
 
             foreach (var matchedProperty in matchedProperties)
             {
