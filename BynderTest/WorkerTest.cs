@@ -14,8 +14,8 @@ namespace BynderTest
     {
         #region Methods
 
-        [Ignore("Test create/update for asset")]
-        [TestMethod, DataRow("B8ED3B94-21A3-42C3-B10D254DE248795F")]
+        //[Ignore("Test create/update for asset")]
+        //[TestMethod, DataRow("928353AB-D2FE-4878-83C77D54A6C3EEBA")]
         public void TestAssetUpdatedWorker(string bynderAssetId)
         {
             InRiverContext.Settings = TestSettings;
