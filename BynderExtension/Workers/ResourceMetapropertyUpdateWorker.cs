@@ -85,7 +85,7 @@ namespace Bynder.Workers
             if (newMetapropertyValues.Count > 0)
             {
                 // inform bynder of the changes:
-                _inRiverContext.Log(LogLevel.Information, $"Update metaproperties {string.Join(";", newMetapropertyValues)}");
+                _inRiverContext.Log(LogLevel.Information, $"Update metaproperties {string.Join(";", newMetapropertyValues.Keys)}");
                 
                 var query = new ModifyMediaQuery(bynderId)
                 {
