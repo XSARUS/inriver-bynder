@@ -148,6 +148,7 @@ namespace Bynder.Extension
         public override string Test()
         {
             var sb = new StringBuilder();
+            sb.AppendLine(base.Test() ?? string.Empty);
 
             try
             {
