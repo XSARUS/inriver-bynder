@@ -88,7 +88,10 @@ namespace Bynder.Extension
 
             try
             {
-                sb.AppendLine(base.Test());
+                if (SettingHelper.ExecuteBaseTestMethod(Context.Settings, Context.Logger))
+                {
+                    sb.AppendLine(base.Test());
+                }
 
                 sb.AppendLine($"Status is {_status}");
                 switch (_status)

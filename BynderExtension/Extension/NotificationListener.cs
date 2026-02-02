@@ -10,6 +10,7 @@ namespace Bynder.Extension
 {
     using Bynder.Api;
     using Bynder.Sdk.Model;
+    using Bynder.Utils.Helpers;
     using Models;
     using Names;
     using System.Text;
@@ -79,6 +80,11 @@ namespace Bynder.Extension
         public override string Test()
         {
             var sb = new StringBuilder();
+
+            if (SettingHelper.ExecuteBaseTestMethod(Context.Settings, Context.Logger))
+            {
+                sb.AppendLine(base.Test());
+            }
 
             try
             {

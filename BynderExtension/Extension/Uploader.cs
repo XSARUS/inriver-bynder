@@ -5,7 +5,10 @@ using System.Collections.Generic;
 namespace Bynder.Extension
 {
     using Bynder.Config;
+    using Bynder.Utils.Helpers;
     using Names;
+    using System;
+    using System.Text;
     using Utils.InRiver;
     using Workers;
 
@@ -117,6 +120,26 @@ namespace Bynder.Extension
             {
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
             }
+        }
+
+        public override string Test()
+        {
+            var sb = new StringBuilder();
+            if (SettingHelper.ExecuteBaseTestMethod(Context.Settings, Context.Logger))
+            {
+                sb.AppendLine(base.Test());
+            }
+
+            try
+            {
+                // Not implemented yet, depends on worker's test-methods
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine(ex.ToString());
+            }
+
+            return sb.ToString();
         }
 
         #endregion Methods

@@ -148,7 +148,6 @@ namespace Bynder.Extension
         public override string Test()
         {
             var sb = new StringBuilder();
-            sb.AppendLine(base.Test());
 
             try
             {
@@ -162,7 +161,6 @@ namespace Bynder.Extension
 
             return sb.ToString();
         }
-
 
         #endregion Methods
     }
