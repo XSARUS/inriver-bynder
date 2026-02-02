@@ -106,7 +106,10 @@ namespace Bynder.Workers
             if (existingFileId > 0)
             {
                 _inRiverContext.Log(LogLevel.Verbose, $"existing fileId found {existingFileId}");
-                _inRiverContext.ExtensionManager.UtilityService.DeleteFile(existingFileId);
+                if (!_inRiverContext.ExtensionManager.UtilityService.DeleteFile(existingFileId))
+                {
+                    _inRiverContext.Log(LogLevel.Warning, $"Could not delete existing file with fileId {existingFileId} for resource entity {resourceEntity.Id}");
+                }
             }
 
             // set fieldtypes for resource entity
@@ -119,14 +122,22 @@ namespace Bynder.Workers
             bynderDownloadStateField.Data = BynderStates.Done;
             resourceFilenameField.Data = fileHandlingDetails.Item2;
 
-            resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> {
-                resourceFilenameField,
-                bynderDownloadStateField, 
-                resourceFileIdField, 
-                resourceMimeTypeField
-            });
+            var fieldList = new List<Field> {
+                    resourceFilenameField,
+                    bynderDownloadStateField,
+                    resourceFileIdField,
+                    resourceMimeTypeField
+                };
 
-            _inRiverContext.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
+            try
+            {
+                resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
+                _inRiverContext.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
+            }
+            catch (Exception ex)
+            {
+                _inRiverContext.Log(LogLevel.Error, "Could not update fields (" + string.Join(",", fieldList.Select(f => f.FieldType.Id))  + $") for  resource entity {resourceEntity.Id}: {ex.Message}", ex);
+            }
         }
 
         /// <summary>

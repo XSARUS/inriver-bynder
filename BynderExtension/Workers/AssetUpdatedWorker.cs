@@ -96,10 +96,11 @@ namespace Bynder.Workers
                 return result;
             }
 
-            _inRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} applies to conditions.");
+            _inRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} applies to conditions; handling notification-type: {notificationType}");
 
             var resourceSearchType = SettingHelper.GetResourceSearchType(_inRiverContext.Settings, _inRiverContext.Logger);
             Entity resourceEntity = EntityHelper.GetResourceByAsset(media, resourceSearchType, _inRiverContext.ExtensionManager.DataService, LoadLevel.DataAndLinks);
+
 
             // handle notification logic
             switch (notificationType)
@@ -149,6 +150,7 @@ namespace Bynder.Workers
         {
             if (relatedEntityData.Count == 0)
             {
+                resultString.Append($"; Empty relatedEntityData for ResourceEntity {resourceEntity.Id}");
                 return;
             }
 
@@ -163,15 +165,27 @@ namespace Bynder.Workers
 
                 // find sourcentity (e.g. Product)
                 var sourceEntity = _inRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(fieldTypeId, value, LoadLevel.Shallow);
-                if (sourceEntity == null) continue;
+                if (sourceEntity == null)
+                {
+                    resultString.Append($"; Nothing found for FieldTypeID {fieldTypeId} found for {value}");
+                    continue;
+                }
+                else
+                {
+                    resultString.Append($"; Found SourceEntity-id {sourceEntity.Id} for FieldTypeID {fieldTypeId} found for {value}");
+                }
 
                 // find linktype in our previously found list
-                var linkType =
-                    inboundResourceLinkTypes.FirstOrDefault(lt => lt.SourceEntityTypeId == sourceEntity.EntityType.Id);
-                if (linkType == null) continue;
+                var linkType = inboundResourceLinkTypes.FirstOrDefault(lt => lt.SourceEntityTypeId == sourceEntity.EntityType.Id);
+                if (linkType == null)
+                {
+                    resultString.Append($"; No LinkType found for SourceEntity-id {sourceEntity.Id} [{sourceEntity.EntityType.Id}]");
+                    continue;
+                }
 
                 if (!_inRiverContext.ExtensionManager.DataService.LinkAlreadyExists(sourceEntity.Id, resourceEntity.Id, null, linkType.Id))
                 {
+                    resultString.Append($"; Adding link!");
                     _inRiverContext.ExtensionManager.DataService.AddLink(new Link()
                     {
                         Source = sourceEntity,
