@@ -70,6 +70,7 @@ namespace Bynder.Extension
                 int retried = 0;
                 int failed = 0;
                 int succesful = 0;
+                int deleted = 0;
                 int maxRetryAttempts = SettingHelper.GetMaxRetryAttempts(Context.Settings, Context.Logger);
 
                 foreach (ConnectorState state in states.OrderBy(s => s.Created))
@@ -94,11 +95,13 @@ namespace Bynder.Extension
                             {
                                 var assetDeletedWorker = Container.GetInstance<AssetDeletedWorker>();
                                 workerResult = assetDeletedWorker.Execute(notificationResult.MediaId);
+                                deleted++;
                             }
                             else
                             {
                                 var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
                                 workerResult = assetWorker.Execute(notificationResult.MediaId, notificationResult.NotificationType);
+                                succesful++;
                             }
 
                             resultMessages.AddRange(workerResult.Messages);
@@ -108,7 +111,7 @@ namespace Bynder.Extension
 
                         Context.Log(LogLevel.Verbose, $"Result for ConnectorState {state.Id}: {result}");
                         Context.Log(LogLevel.Debug, $"Handled Bynder Notifications of ConnectorState {state.Id} created at {state.Created}");
-                        succesful++;
+                        
 
                         Context.ExtensionManager.UtilityService.DeleteConnectorState(state.Id);
                     }
@@ -134,7 +137,7 @@ namespace Bynder.Extension
                     }
                 }
 
-                Context.Log(LogLevel.Information, $"Finished handling of {states.Count} Bynder Notifications [{succesful} created | {failed} failed | {retried} retried]");
+                Context.Log(LogLevel.Information, $"Finished handling of {states.Count} Bynder Notifications [{succesful} created/updated | {deleted} deleted | {failed} failed | {retried} retried]");
             }
             catch (Exception ex)
             {
