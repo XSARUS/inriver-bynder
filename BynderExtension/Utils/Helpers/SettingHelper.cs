@@ -167,7 +167,11 @@ namespace Bynder.Utils.Helpers
         {
             if (settings.ContainsKey(Settings.FilenameExtensionMediaTypeMapping) && !string.IsNullOrWhiteSpace(settings[Settings.FilenameExtensionMediaTypeMapping]))
             {
-                return JsonConvert.DeserializeObject<Dictionary<string, List<MediaTypeTransformConfig>>>(settings[Settings.FilenameExtensionMediaTypeMapping]);
+                var femTypeMappingSetting = settings[Settings.FilenameExtensionMediaTypeMapping];
+                if (femTypeMappingSetting != "[]" && femTypeMappingSetting != "{}" && femTypeMappingSetting != "[{}]")
+                {
+                    return JsonConvert.DeserializeObject<Dictionary<string, List<MediaTypeTransformConfig>>>(settings[Settings.FilenameExtensionMediaTypeMapping]);
+                }
             }
 
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.FilenameExtensionMediaTypeMapping}'");

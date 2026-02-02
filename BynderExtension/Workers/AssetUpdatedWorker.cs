@@ -255,7 +255,7 @@ namespace Bynder.Workers
                 var updatedFields = resourceEntity.Fields.Where(x => oldFieldValues.First(y => Equals(y.FieldType.Id, x.FieldType.Id)).ValueHasBeenModified(x.Data)).ToList();
                 if (updatedFields.Count > 0)
                 {
-                    resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(updatedFields);
+                    //resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(updatedFields);
                     resultString.Append($"Resource {resourceEntity.Id} updated");
                 }
                 else
