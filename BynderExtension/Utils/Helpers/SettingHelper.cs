@@ -7,10 +7,12 @@ using System.Linq;
 
 namespace Bynder.Utils.Helpers
 {
+    using Amazon.Runtime.Internal.Util;
     using Config;
     using Enums;
-    using Models;
     using Extensions;
+    using Models;
+    using System.Runtime;
 
     public static class SettingHelper
     {
@@ -351,6 +353,19 @@ namespace Bynder.Utils.Helpers
                 return string.Equals(setting, true.ToString(), StringComparison.InvariantCultureIgnoreCase);
             }
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.AddAssetIdPrefixToFilenameOfNewResource}'. Using default value '{true}'");
+
+            // default true for backwards compatiblity
+            return true;
+        }
+
+        public static bool ExecuteBaseTestMethod(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.ExecuteBaseTestMethod) && settings.TryGetValue(Settings.ExecuteBaseTestMethod, out string setting))
+            {
+                return string.Equals(setting, true.ToString(), StringComparison.InvariantCultureIgnoreCase);
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.ExecuteBaseTestMethod}'. Using default value '{true}'");
 
             // default true for backwards compatiblity
             return true;

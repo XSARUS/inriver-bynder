@@ -107,7 +107,10 @@ namespace Bynder.Extension
             var sb = new StringBuilder();
             try
             {
-                sb.AppendLine(base.Test());
+                if (SettingHelper.ExecuteBaseTestMethod(Context.Settings, Context.Logger))
+                {
+                    sb.AppendLine(base.Test());
+                }
 
                 var cvlMetapropertyMapping = SettingHelper.GetCvlMetapropertyMapping(Context.Settings, Context.Logger);
                 sb.AppendLine($"CVLs configured: {string.Join(", ", cvlMetapropertyMapping.Keys)}");

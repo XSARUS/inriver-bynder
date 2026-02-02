@@ -155,10 +155,14 @@ namespace Bynder.Extension
         public override string Test()
         {
             var sb = new StringBuilder();
-            sb.AppendLine(base.Test());
 
             try
             {
+                if (SettingHelper.ExecuteBaseTestMethod(Context.Settings, Context.Logger))
+                {
+                    sb.AppendLine(base.Test());
+                }
+
                 var query = GetQuery(true, true);
                 MediaFullResult result = RunSync(() => SearchAsync(query));
 
