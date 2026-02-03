@@ -23,7 +23,7 @@ namespace Bynder.Extension
             {
                 var settings = new Dictionary<string, string>()
                 {
-                    { Config.Settings.ExecuteBaseTestMethod, true.ToString() }
+                    // No settings for this extension
                 };
                 
                 return settings;
@@ -83,11 +83,6 @@ namespace Bynder.Extension
         public override string Test()
         {
             var sb = new StringBuilder();
-
-            if (SettingHelper.ExecuteBaseTestMethod(Context.Settings, Context.Logger))
-            {
-                sb.AppendLine(base.Test());
-            }
 
             try
             {
