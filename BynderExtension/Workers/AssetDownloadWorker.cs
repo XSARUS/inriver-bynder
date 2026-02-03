@@ -131,7 +131,7 @@ namespace Bynder.Workers
 
             try
             {
-                resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateEntity(resourceEntity);
+                resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldList);
                 _inRiverContext.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
             }
             catch (Exception ex)
