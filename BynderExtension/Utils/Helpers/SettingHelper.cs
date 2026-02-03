@@ -21,13 +21,22 @@ namespace Bynder.Utils.Helpers
 
         public static string GetBynderBrandName(Dictionary<string, string> settings, IExtensionLog logger)
         {
+            string brandNameBySetting = string.Empty;
+
             if (settings.ContainsKey(Settings.BynderBrandName))
             {
-                return settings[Settings.BynderBrandName];
+                brandNameBySetting = settings[Settings.BynderBrandName];
+                if (string.IsNullOrWhiteSpace(brandNameBySetting?.Trim()))
+                {
+                    logger.Log(LogLevel.Verbose, $"Configuration for '{Settings.BynderBrandName}' is empty!");
+                }
+            }
+            else
+            {
+                logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.BynderBrandName}'");
             }
 
-            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.BynderBrandName}'");
-            return string.Empty;
+            return brandNameBySetting;
         }
 
         public static string GetBynderLocaleForMetapropertyOptionLabel(Dictionary<string, string> settings, IExtensionLog logger)
