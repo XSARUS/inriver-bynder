@@ -5,6 +5,7 @@ using inRiver.Remoting.Objects;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Bynder.Extension
 {
@@ -13,15 +14,17 @@ namespace Bynder.Extension
     using Bynder.Utils.Helpers;
     using Models;
     using Names;
-    using System.Text;
-
+    
     public class NotificationListener : Extension, IInboundDataExtension
     {
         public override Dictionary<string, string> DefaultSettings
         {
             get
             {
-                var settings = new Dictionary<string, string>();
+                var settings = new Dictionary<string, string>()
+                {
+                    { Config.Settings.ExecuteBaseTestMethod, true.ToString() }
+                };
                 
                 return settings;
             }
