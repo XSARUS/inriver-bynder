@@ -56,13 +56,20 @@ namespace Bynder.Workers
         private string GetBrandIdBasedOnSettingKey()
         {
             var brandName = SettingHelper.GetBynderBrandName(_inRiverContext.Settings, _inRiverContext.Logger);
-            if (string.IsNullOrEmpty(brandName)) return null;
+            if (string.IsNullOrEmpty(brandName))
+            {
+                return null;
+            }
 
             var brands = _bynderClient.GetAssetService().GetBrandsAsync().GetAwaiter().GetResult();
-            
-            return brands
-                .FirstOrDefault(b => b.Name.Equals(brandName, StringComparison.InvariantCultureIgnoreCase))
-                ?.Id;
+            var brand = brands.FirstOrDefault(b => b.Name.Equals(brandName, StringComparison.InvariantCultureIgnoreCase))?.Id;
+
+            if (brand == null)
+            {
+                _inRiverContext.Log(LogLevel.Warning, $"Could not get brand from Bynder for setting value: {brandName}!");
+            }
+
+            return brand;
         }
 
         private static string GetBynderUploadStateFromEntity(Entity resourceEntity)
@@ -117,50 +124,11 @@ namespace Bynder.Workers
             return _inRiverContext.ExtensionManager.UtilityService.GetFile(fileId, "Original");
         }
 
-        /*private bool HasFinishedSuccessfully(FinalizeResponse finalizeResponse)
-        {
-            for (int iterations = MAX_POLLING_ITERATIONS; iterations > 0; --iterations)
-            {
-                var pollStatus = _bynderClient.PollStatus(new string[] { finalizeResponse.ImportId });
-                if (pollStatus != null)
-                {
-                    if (pollStatus.ItemsDone.Contains(finalizeResponse.ImportId))
-                        return true;
-
-                    if (pollStatus.ItemsFailed.Contains(finalizeResponse.ImportId))
-                        return false;
-                }
-
-                Thread.Sleep(POLLING_IDDLE_TIME);
-            }
-
-            return false;
-        }*/
-
-        /*private uint UploadResourceAsChunksToS3Bucket(string fileName, byte[] bytes, string s3Bucket, UploadRequest uploadRequest)
-        {
-            uint chunkNumber = 0;
-
-            using (MemoryStream stream = new MemoryStream(bytes))
-            {
-                int bytesRead = 0;
-                var buffer = new byte[CHUNK_SIZE];
-                long numberOfChunks = (stream.Length + CHUNK_SIZE - 1) / CHUNK_SIZE;
-
-                while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    ++chunkNumber;
-                    _bynderClient.UploadPart(s3Bucket, fileName, buffer, bytesRead, chunkNumber, uploadRequest, (uint)numberOfChunks);
-                }
-            }
-
-            return chunkNumber;
-        }*/
-
         private void UploadResourceForEntity(Entity resourceEntity)
         {
             var fieldsToUpdate = new List<Field>();
             Field bynderUploadStateField = resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState);
+
             try
             {
                 var resourceUploadData = GetDataForUpload(resourceEntity);
