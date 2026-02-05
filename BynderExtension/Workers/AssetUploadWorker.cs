@@ -138,11 +138,14 @@ namespace Bynder.Workers
                     Position = 0
                 };
 
+                var mediaId = resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId)?.Data?.ToString();
+                _inRiverContext.Log(LogLevel.Debug, $"MediaID to upload '{mediaId}'");
+
                 SaveMediaResponse uploadResult = _bynderClient.GetAssetService().UploadFileAsync(fileStream, new SdkUploadQuery()
                 {
                     BrandId = resourceUploadData.BrandId,
                     Name = resourceUploadData.Filename,
-                    MediaId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId)?.Data,
+                    MediaId = mediaId,
                     OriginalFileName = resourceUploadData.Filename,
                     Filepath = resourceUploadData.Filename,
                 }).GetAwaiter().GetResult();
