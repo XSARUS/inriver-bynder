@@ -178,7 +178,7 @@ namespace Bynder.Sdk.Service.Upload
             query.Filename = Path.GetFileName(query.Filename);
 
             string path = null;
-            if (query.MediaId == null)
+            if (string.IsNullOrWhiteSpace(query.MediaId))
             {
                 path = $"/api/v4/media/save/{query.ImportId}/";
             }

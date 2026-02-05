@@ -34,9 +34,14 @@ namespace Bynder.Workers
         public WorkerResult Execute(string bynderAssetId)
         {
             var result = new WorkerResult();
+            var process = SettingHelper.GetDeleteResourceOnDeletedEvents(_inRiverContext.Settings, _inRiverContext.Logger);
 
             // only process if we are allowed to delete entities
-            if (!SettingHelper.GetDeleteResourceOnDeletedEvents(_inRiverContext.Settings, _inRiverContext.Logger)) return result;
+            if (!process)
+            {
+                _inRiverContext.Log(LogLevel.Debug, $"Value for 'AssetDeletedWorker' process-var: {process.ToString()}");
+                return result;
+            }
 
             // find resourceEntity based on bynderAssetId. We can't retreive the filename anymore so we have to match on bynder id. That is no problem, because it is always set also on update.
             Entity resourceEntity =

@@ -58,7 +58,7 @@ namespace Bynder.Workers
                 if (!string.IsNullOrEmpty(innerMessage?.media_id?.ToString()))
                 {
                     var mediaId = innerMessage.media_id.ToString();
-                    result.Messages.Add($"AWS SNS - Media update for media_id '{mediaId}'");
+                    result.Messages.Add($"AWS SNS - Notification type '{result.NotificationType}' for media_id '{mediaId}'");
                     result.MediaId = mediaId;
                     return result;
                 }
