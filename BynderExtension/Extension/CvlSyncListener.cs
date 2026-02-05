@@ -7,14 +7,16 @@ using System.Text;
 namespace Bynder.Extension
 {
     using Api;
-    using Utils.Helpers;
+    using Config;
+    using SettingProviders;
     using Enums;
+    using Utils.Helpers;
     using Workers;
 
     /// <summary>
     /// Used to sync CVL values to Bynder
     /// </summary>
-    public class CvlSyncListener : Extension, ICVLListener
+    public class CvlSyncListener : AbstractBynderExtension, ICVLListener
     {
         #region Properties
 
@@ -22,10 +24,12 @@ namespace Bynder.Extension
         {
             get
             {
-                var settings = SettingNames.GetDefaultBynderApiSettings();
-                settings.Add(Config.Settings.LocaleMappingInriverToBynder, string.Empty);
-                settings.Add(Config.Settings.BynderLocaleForMetapropertyOptionLabel, string.Empty);
-                settings.Add(Config.Settings.CvlMetapropertyMapping, string.Empty);
+                var settings = base.DefaultSettings;
+
+                foreach (var setting in CvlSyncWorkerSettingsProvider.Create())
+                {
+                    settings[setting.Key] = setting.Value;
+                }
 
                 return settings;
             }

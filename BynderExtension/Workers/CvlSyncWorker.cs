@@ -1,5 +1,6 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Objects;
+using inRiver.Remoting.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,35 +8,26 @@ using System.Linq;
 namespace Bynder.Workers
 {
     using Api;
-    using Bynder.Sdk.Model;
-    using Bynder.Sdk.Query.Asset;
+    using Models;
+    using SettingProviders;
     using Enums;
-    using inRiver.Remoting.Query;
+    using Sdk.Model;
+    using Sdk.Query.Asset;
     using Utils.Extensions;
     using Utils.Helpers;
-    using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
+    using SdkIBynderClient = Sdk.Service.IBynderClient;
 
     /// <summary>
     /// Used to sync CVL values to Bynder
     /// </summary>
-    public class CvlSyncWorker : IWorker
+    public class CvlSyncWorker : AbstractBynderWorker, IWorker
     {
-
-        #region Fields
-
-        private readonly SdkIBynderClient _bynderClient;
-        private readonly inRiverContext _inRiverContext;
-
-        #endregion Fields
+        public override Dictionary<string, string> DefaultSettings => CvlSyncWorkerSettingsProvider.Create();
 
         #region Constructors
-
-        public CvlSyncWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient)
+        public CvlSyncWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null) : base(inRiverContext, bynderClient)
         {
-            _inRiverContext = inRiverContext;
-            _bynderClient = bynderClient;
         }
-
         #endregion Constructors
 
         #region Methods
@@ -53,7 +45,7 @@ namespace Bynder.Workers
             try
             {
                 // no need to process if not mapped
-                var cvlMetapropertyMapping = SettingHelper.GetCvlMetapropertyMapping(_inRiverContext.Settings, _inRiverContext.Logger);
+                var cvlMetapropertyMapping = SettingHelper.GetCvlMetapropertyMapping(InRiverContext.Settings, InRiverContext.Logger);
                 if (!cvlMetapropertyMapping.ContainsKey(cvlId)) return result;
 
                 var metaproperties = cvlMetapropertyMapping[cvlId];
@@ -64,7 +56,7 @@ namespace Bynder.Workers
                 }
 
                 // if no locales, then don't export
-                var localeMapping = SettingHelper.GetLocaleMapping(_inRiverContext.Settings, _inRiverContext.Logger);
+                var localeMapping = SettingHelper.GetLocaleMapping(InRiverContext.Settings, InRiverContext.Logger);
                 if (localeMapping.Count == 0)
                 {
                     result.Messages.Add($"No locale mapping configured!");
@@ -115,8 +107,7 @@ namespace Bynder.Workers
                 Labels = new Dictionary<string, string>()
             };
 
-            var ls = cvlValue.Value as LocaleString;
-            if (ls != null)
+            if (cvlValue.Value is LocaleString ls)
             {
                 foreach (var language in ls.Languages)
                 {
@@ -135,7 +126,7 @@ namespace Bynder.Workers
                 }
             }
 
-            var labelLocale = SettingHelper.GetBynderLocaleForMetapropertyOptionLabel(_inRiverContext.Settings, _inRiverContext.Logger);
+            var labelLocale = SettingHelper.GetBynderLocaleForMetapropertyOptionLabel(InRiverContext.Settings, InRiverContext.Logger);
             if (!string.IsNullOrEmpty(labelLocale) && 
                 obj.Labels.ContainsKey(labelLocale) && 
                 !string.IsNullOrWhiteSpace(obj.Labels[labelLocale]))
@@ -169,7 +160,7 @@ namespace Bynder.Workers
                 }
 
                 // check if still exists just to be sure
-                var cvlValue = _inRiverContext.ExtensionManager.ModelService.GetCVLValueByKey(cvlKey, cvlId);
+                var cvlValue = InRiverContext.ExtensionManager.ModelService.GetCVLValueByKey(cvlKey, cvlId);
                 if (cvlValue == null)
                 {
                     result.Messages.Add($"CVL Value with key '{cvlKey}' of CVL '{cvlId}' does not exist anymore.");
@@ -281,7 +272,7 @@ namespace Bynder.Workers
                 }
 
                 // check if still exists just to be sure
-                var cvlValue = _inRiverContext.ExtensionManager.ModelService.GetCVLValueByKey(cvlKey, cvlId);
+                var cvlValue = InRiverContext.ExtensionManager.ModelService.GetCVLValueByKey(cvlKey, cvlId);
                 if (cvlValue == null)
                 {
                     result.Messages.Add($"CVL Value with key '{cvlKey}' of CVL '{cvlId}' does not exist anymore.");

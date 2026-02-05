@@ -1,18 +1,20 @@
 ﻿using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Objects;
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Bynder.Extension
 {
-    using Bynder.Config;
-    using Bynder.Utils.Helpers;
+    using Api;
+    using SettingProviders;
+    using Config;
     using Names;
-    using System;
-    using System.Text;
+    using Utils.Helpers;
     using Utils.InRiver;
     using Workers;
 
-    public class Uploader : Extension, IEntityListener
+    public class Uploader : AbstractBynderExtension, IEntityListener
     {
         public override Dictionary<string, string> DefaultSettings
         {
@@ -20,34 +22,15 @@ namespace Bynder.Extension
             {
                 var settings = base.DefaultSettings;
 
-                // Remove settings that are not used in this extension:
-                var settingsToRemove = new List<string>(12)
+                foreach (var setting in AssetUploadWorkerSettingsProvider.Create())
                 {
-                    Settings.AddAssetIdPrefixToFilenameOfNewResource,
-                    Settings.AssetPropertyMap,
-                    Settings.BynderLocaleForMetapropertyOptionLabel,
-                    Settings.CreateMissingCvlKeys,
-                    Settings.CronExpression,
-                    Settings.CvlMetapropertyMapping,
-                    Settings.DeleteResourceOnDeleteEvent,
-                    Settings.DownloadMediaType,
-                    Settings.FilenameExtensionMediaTypeMapping,
-                    Settings.FieldValuesToSetOnArchiveEvent,
-                    Settings.ImportConditions,
-                    Settings.InitialAssetLoadUrlQuery,
-                    Settings.InitialAssetLoadLimit,
-                    Settings.InRiverEntityUrl,
-                    Settings.InRiverIntegrationId,
-                    Settings.LocaleMappingInriverToBynder,
-                    Settings.LocaleStringLanguagesToSet,
-                    Settings.MaxRetryAttempts,
-                    Settings.MultivalueSeparator,
-                    Settings.RegularExpressionForFileName,
-                    Settings.ResourceSearchType,
-                    Settings.TimestampSettings,
-                };
+                    settings[setting.Key] = setting.Value;
+                }
 
-                settingsToRemove.ForEach(s => settings.Remove(s));
+                foreach (var setting in ResourceMetapropertyUpdateWorkerSettingsProvider.Create())
+                {
+                    settings[setting.Key] = setting.Value;
+                }
 
                 return settings;
             }

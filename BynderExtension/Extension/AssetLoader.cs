@@ -9,17 +9,18 @@ using System.Threading.Tasks;
 
 namespace Bynder.Extension
 {
-    using Bynder.Api.Mappers;
-    using Bynder.Config;
-    using Bynder.Sdk;
-    using Bynder.Sdk.Model;
-    using Bynder.Sdk.Query.Asset;
-    using Bynder.Sdk.Service;
+    using Api.Mappers;
+    using Config;
     using Enums;
+    using Sdk;
+    using Sdk.Model;
+    using Sdk.Query.Asset;
+    using Sdk.Service;
     using Utils.Helpers;
     using Workers;
+    using SettingProviders;
 
-    public class AssetLoader : Extension, IScheduledExtension
+    public class AssetLoader : AbstractBynderExtension, IScheduledExtension
     {
         #region Methods
 
@@ -28,25 +29,11 @@ namespace Bynder.Extension
             get
             {
                 var settings = base.DefaultSettings;
-
-                // Remove settings that are not used in this extension:
-                var settingsToRemove = new List<string>(12)
+                settings.Add(Settings.InitialAssetLoadUrlQuery, "type=image");
+                foreach (var setting in AssetUpdatedWorkerSettingsProvider.Create())
                 {
-                    Settings.BynderBrandName,
-                    Settings.BynderLocaleForMetapropertyOptionLabel,
-                    Settings.CronExpression,
-                    Settings.CvlMetapropertyMapping,
-                    Settings.DeleteResourceOnDeleteEvent,
-                    Settings.DownloadMediaType,
-                    Settings.FilenameExtensionMediaTypeMapping,
-                    Settings.ExportConditions,
-                    Settings.InRiverEntityUrl,
-                    Settings.InRiverIntegrationId,
-                    Settings.LocaleMappingInriverToBynder,
-                    Settings.MaxRetryAttempts
-                };
-
-                settingsToRemove.ForEach(s => settings.Remove(s));
+                    settings[setting.Key] = setting.Value;
+                }
 
                 return settings;
             }

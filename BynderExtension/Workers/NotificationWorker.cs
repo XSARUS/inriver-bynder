@@ -6,10 +6,13 @@ using System.Collections.Generic;
 namespace Bynder.Workers
 {
     using Enums;
+    using Models;
+    using SettingProviders;
 
     public class NotificationWorker : IWorker
     {
         #region Fields
+        public Dictionary<string, string> DefaultSettings => NotificationWorkerSettingsProvider.Create();
 
         private readonly Dictionary<string, NotificationType> _notificationMapping = new Dictionary<string, NotificationType>
         {
@@ -27,9 +30,9 @@ namespace Bynder.Workers
 
         #region Methods
 
-        public Result Execute(string requestBody)
+        public NotificationWorkerResult Execute(string requestBody)
         {
-            var result = new Result();
+            var result = new NotificationWorkerResult();
 
             var snsMessage = Message.ParseMessage(requestBody);
             if (snsMessage == null) throw new ArgumentException("Cannot parse Request Body as AWS SNS message");
@@ -68,19 +71,5 @@ namespace Bynder.Workers
         }
 
         #endregion Methods
-
-        #region Classes
-
-        public class Result : WorkerResult
-        {
-            #region Properties
-
-            public string MediaId { get; set; }
-            public NotificationType NotificationType { get; set; }
-
-            #endregion Properties
-        }
-
-        #endregion Classes
     }
 }

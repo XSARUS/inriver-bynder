@@ -1,21 +1,22 @@
 ﻿using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Objects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Bynder.Extension
 {
-    using Bynder.Config;
-    using Bynder.Utils.Helpers;
+    using SettingProviders;
+    using Config;
     using Names;
     using Sdk.Query.Asset;
-    using System;
-    using System.Text;
+    using Utils.Helpers;
     using Utils.InRiver;
     using Workers;
 
-    public class Worker : Extension, IEntityListener, ILinkListener
+    public class Worker : AbstractBynderExtension, IEntityListener, ILinkListener
     {
         public override Dictionary<string, string> DefaultSettings
         {
@@ -23,31 +24,25 @@ namespace Bynder.Extension
             {
                 var settings = base.DefaultSettings;
 
-                // Remove settings that are not used in this extension:
-                var settingsToRemove = new List<string>(12)
+                foreach (var setting in AssetDownloadWorkerSettingsProvider.Create())
                 {
-                    Settings.AddAssetIdPrefixToFilenameOfNewResource,
-                    Settings.AssetPropertyMap,
-                    Settings.BynderBrandName,
-                    Settings.BynderLocaleForMetapropertyOptionLabel,
-                    Settings.CreateMissingCvlKeys,
-                    Settings.CronExpression,
-                    Settings.CvlMetapropertyMapping,
-                    Settings.DeleteResourceOnDeleteEvent,
-                    Settings.FieldValuesToSetOnArchiveEvent,
-                    Settings.ImportConditions,
-                    Settings.InitialAssetLoadUrlQuery,
-                    Settings.InitialAssetLoadLimit,
-                    Settings.LocaleMappingInriverToBynder,
-                    Settings.LocaleStringLanguagesToSet,
-                    Settings.MaxRetryAttempts,
-                    Settings.MultivalueSeparator,
-                    Settings.RegularExpressionForFileName,
-                    Settings.ResourceSearchType,
-                    Settings.TimestampSettings,
-                };
+                    settings[setting.Key] = setting.Value;
+                }
 
-                settingsToRemove.ForEach(s => settings.Remove(s));
+                foreach (var setting in ResourceMetapropertyUpdateWorkerSettingsProvider.Create())
+                {
+                    settings[setting.Key] = setting.Value;
+                }
+
+                foreach (var setting in AssetUsageUpdateWorkerSettingsProvider.Create())
+                {
+                    settings[setting.Key] = setting.Value;
+                }
+
+                foreach (var setting in NonResourceMetapropertyWorkerSettingsProvider.Create())
+                {
+                    settings[setting.Key] = setting.Value;
+                }
 
                 return settings;
             }
@@ -75,7 +70,7 @@ namespace Bynder.Extension
                 Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
                 Container.GetInstance<AssetUsageUpdateWorker>().Execute(entity);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
             }
@@ -95,7 +90,7 @@ namespace Bynder.Extension
                     Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
             }
@@ -148,7 +143,7 @@ namespace Bynder.Extension
                     Container.GetInstance<NonResourceMetapropertyWorker>().Execute(entity, fields);
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
             }
@@ -176,7 +171,7 @@ namespace Bynder.Extension
 
                 Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
             }
@@ -188,7 +183,7 @@ namespace Bynder.Extension
             {
                 LinkCreated(linkId, sourceId, targetId, linkTypeId, linkEntityId);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
             }
@@ -205,7 +200,7 @@ namespace Bynder.Extension
             {
                 LinkCreated(linkId, sourceId, targetId, linkTypeId, linkEntityId);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
             }

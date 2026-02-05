@@ -7,12 +7,14 @@ using System.Text.RegularExpressions;
 
 namespace Bynder.Utils
 {
+    using SettingProviders;
     using Helpers;
     using Names;
-    using System.Runtime.Remoting.Contexts;
 
     public class FilenameEvaluator
     {
+        public Dictionary<string, string> DefaultSettings => FilenameEvaluatorSettingsProvider.Create();
+
         #region Fields
 
         private readonly inRiverContext _inRiverContext;

@@ -1,29 +1,27 @@
 ﻿namespace Bynder.Workers
 {
     using Api;
-    using Bynder.Sdk.Model;
-    using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
+    using inRiver.Remoting.Extension;
+    using Models;
+    using Sdk.Model;
+    using SdkIBynderClient = Sdk.Service.IBynderClient;
 
-    internal class CombinedValidationWorker : IWorker
+    internal class CombinedValidationWorker : AbstractBynderWorker, IWorker
     {
         #region Fields
-
-        private readonly SdkIBynderClient _bynderClient;
         private readonly BynderSettingsValidationWorker _bynderSettingsValidationWorker;
         private readonly ModelValidationWorker _modelValidationWorker;
-
         #endregion Fields
 
         #region Constructors
-
         public CombinedValidationWorker(
+            inRiverContext inRiverContext, 
+            SdkIBynderClient bynderClient, 
             ModelValidationWorker modelValidationWorker,
-            BynderSettingsValidationWorker bynderSettingsValidationWorker,
-            SdkIBynderClient bynderClient)
+            BynderSettingsValidationWorker bynderSettingsValidationWorker) : base(inRiverContext, bynderClient)
         {
             _modelValidationWorker = modelValidationWorker;
             _bynderSettingsValidationWorker = bynderSettingsValidationWorker;
-            _bynderClient = bynderClient;
         }
 
         #endregion Constructors

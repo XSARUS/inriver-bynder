@@ -15,7 +15,7 @@ namespace Bynder.Extension
     using Models;
     using Names;
     
-    public class NotificationListener : Extension, IInboundDataExtension
+    public class NotificationListener : AbstractExtension, IInboundDataExtension
     {
         public override Dictionary<string, string> DefaultSettings
         {

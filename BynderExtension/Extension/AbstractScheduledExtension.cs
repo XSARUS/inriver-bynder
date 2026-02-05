@@ -12,7 +12,7 @@ namespace Bynder.Extension
     using Enums;
     using Utils.Helpers;
 
-    public abstract class AbstractScheduledExtension : Extension, IScheduledExtension
+    public abstract class AbstractScheduledExtension : AbstractExtension, IScheduledExtension
     {
         #region Fields
 

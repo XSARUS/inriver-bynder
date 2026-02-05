@@ -149,10 +149,10 @@ namespace Bynder.Sdk.Service.Asset
         /// </summary>
         /// <param name="query">Check <see cref="IAssetService"/> for more information</param>
         /// <returns>Check <see cref="IAssetService"/> for more information</returns>
-        public async Task<SaveMediaResponse> UploadFileAsync(UploadQuery query)
+        /*public async Task<SaveMediaResponse> UploadFileAsync(UploadQuery query)
         {
             return await _uploader.UploadFileAsync(query).ConfigureAwait(false);
-        }
+        }*/
 
         /// <summary>
         /// Check <see cref="IAssetService"/> for more information
@@ -430,6 +430,11 @@ namespace Bynder.Sdk.Service.Asset
             };
 
             return await _requestSender.SendPagedRequestAsync(request, pageSize: 50).ConfigureAwait(false);
+        }
+
+        public Task<SaveMediaResponse> UploadFileAsync(UploadQuery query)
+        {
+            throw new NotImplementedException();
         }
     }
 }

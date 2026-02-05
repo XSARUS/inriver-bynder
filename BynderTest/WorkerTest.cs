@@ -28,9 +28,9 @@ namespace BynderTest
                 ClientSecret = bynderClientSettings.ConsumerSecret
             };
             var worker = new Bynder.Workers.AssetUpdatedWorker(
-                InRiverContext, 
-                new SdkIBynderClient(configuration), 
-                new Bynder.Utils.FilenameEvaluator(InRiverContext)
+                InRiverContext,  
+                new Bynder.Utils.FilenameEvaluator(InRiverContext),
+                new SdkIBynderClient(configuration)
             );
             var updaterResult = worker.Execute(bynderAssetId, Bynder.Enums.NotificationType.DataUpsert);
         }

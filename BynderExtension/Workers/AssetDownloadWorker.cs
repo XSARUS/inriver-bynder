@@ -1,9 +1,9 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
-using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -12,41 +12,32 @@ using System.Threading.Tasks;
 namespace Bynder.Workers
 {
     using Api;
+    using Models;
+    using Sdk.Model;
+    using Sdk.Query.Asset;
+    using SettingProviders;
     using Model;
-    using Bynder.Models;
-    using Bynder.Sdk.Model;
-    using Bynder.Sdk.Query.Asset;
     using Names;
     using Utils.Helpers;
-    using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
+    using SdkIBynderClient = Sdk.Service.IBynderClient;
 
-    public class AssetDownloadWorker : IWorker
+    public class AssetDownloadWorker : AbstractBynderWorker, IWorker
     {
-        #region Fields
-
-        private readonly SdkIBynderClient _bynderClient;
-        private readonly inRiverContext _inRiverContext;
-
-        #endregion Fields
-
-        #region Constructors
-
-        public AssetDownloadWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null)
-        {
-            _inRiverContext = inRiverContext;
-            _bynderClient = bynderClient;
-        }
-
-        #endregion Constructors
+        public override Dictionary<string, string> DefaultSettings => AssetDownloadWorkerSettingsProvider.Create();
 
         #region Methods
+        public AssetDownloadWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null) : 
+            base(inRiverContext, bynderClient)
+        {
+        }
 
         public void Execute(Entity resourceEntity)
         {
             if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
+            
             if (resourceEntity.LoadLevel < LoadLevel.DataOnly)
             {
-                resourceEntity = _inRiverContext.ExtensionManager.DataService.GetEntity(resourceEntity.Id, LoadLevel.DataOnly);
+                resourceEntity = InRiverContext.ExtensionManager.DataService.GetEntity(resourceEntity.Id, LoadLevel.DataOnly);
             }
 
             // get the state field
@@ -64,11 +55,11 @@ namespace Bynder.Workers
 
             if (media == null)
             {
-                _inRiverContext.Log(LogLevel.Error, "Asset information is empty");
+                InRiverContext.Log(LogLevel.Error, "Asset information is empty");
 
                 // set error state when the asset could not be found
                 bynderDownloadStateField.Data = BynderStates.Error;
-                _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderDownloadStateField });
+                InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderDownloadStateField });
                 return;
             }
 
@@ -80,11 +71,11 @@ namespace Bynder.Workers
             string resourceFilename = (string)resourceFilenameField?.Data;
             if (string.IsNullOrWhiteSpace(resourceFilename))
             {
-                _inRiverContext.Log(LogLevel.Error, $"Field '{FieldTypeIds.ResourceFilename}' is empty or does not exist");
+                InRiverContext.Log(LogLevel.Error, $"Field '{FieldTypeIds.ResourceFilename}' is empty or does not exist");
 
                 // set error state when the asset could not be found
                 bynderDownloadStateField.Data = BynderStates.Error;
-                _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderDownloadStateField });
+                InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderDownloadStateField });
                 return;
             }
 
@@ -92,23 +83,23 @@ namespace Bynder.Workers
             Tuple<string, string> fileHandlingDetails = GetDownloadUrlAndFilename(media).GetAwaiter().GetResult();
             if (string.IsNullOrWhiteSpace(fileHandlingDetails.Item1))
             {
-                _inRiverContext.Log(LogLevel.Error, "File url is empty");
+                InRiverContext.Log(LogLevel.Error, "File url is empty");
 
                 // set error state when the asset could not be found
                 bynderDownloadStateField.Data = BynderStates.Error;
-                _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderDownloadStateField });
+                InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderDownloadStateField });
                 return;
             }
 
-            int newFileId = _inRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(fileHandlingDetails.Item2, fileHandlingDetails.Item1);
+            int newFileId = InRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(fileHandlingDetails.Item2, fileHandlingDetails.Item1);
 
             // delete older asset file
             if (existingFileId > 0)
             {
-                _inRiverContext.Log(LogLevel.Verbose, $"existing fileId found {existingFileId}");
-                if (!_inRiverContext.ExtensionManager.UtilityService.DeleteFile(existingFileId))
+                InRiverContext.Log(LogLevel.Verbose, $"existing fileId found {existingFileId}");
+                if (!InRiverContext.ExtensionManager.UtilityService.DeleteFile(existingFileId))
                 {
-                    _inRiverContext.Log(LogLevel.Warning, $"Could not delete existing file with fileId {existingFileId} for resource entity {resourceEntity.Id}");
+                    InRiverContext.Log(LogLevel.Warning, $"Could not delete existing file with fileId {existingFileId} for resource entity {resourceEntity.Id}");
                 }
             }
 
@@ -131,12 +122,12 @@ namespace Bynder.Workers
 
             try
             {
-                resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldList);
-                _inRiverContext.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
+                resourceEntity = InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldList);
+                InRiverContext.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
             }
             catch (Exception ex)
             {
-                _inRiverContext.Log(LogLevel.Error, "Could not update fields (" + string.Join(",", fieldList.Select(f => f.FieldType.Id))  + $") for  resource entity {resourceEntity.Id}: {ex.Message}", ex);
+                InRiverContext.Log(LogLevel.Error, "Could not update fields (" + string.Join(",", fieldList.Select(f => f.FieldType.Id))  + $") for  resource entity {resourceEntity.Id}: {ex.Message}", ex);
             }
         }
 
@@ -148,7 +139,7 @@ namespace Bynder.Workers
         public async Task<Tuple<string, string>> GetDownloadUrlAndFilename(Media asset)
         {
             var originalFileExtension = Path.GetExtension(asset.GetOriginalFileName()).Replace(".", "").ToLower();
-            var mappings = SettingHelper.GetFilenameExtensionMediaTypeMapping(_inRiverContext.Settings, _inRiverContext.Logger);
+            var mappings = SettingHelper.GetFilenameExtensionMediaTypeMapping(InRiverContext.Settings, InRiverContext.Logger);
 
             // Loop through all mappings if the file-extension has any mappings configured.
             // Use the first mapping which applies and skip the rest 
@@ -178,7 +169,7 @@ namespace Bynder.Workers
             }
 
             // Default to original when no mapping is found
-            string downloadMediaType = SettingHelper.GetDownloadMediaType(_inRiverContext.Settings, _inRiverContext.Logger);
+            string downloadMediaType = SettingHelper.GetDownloadMediaType(InRiverContext.Settings, InRiverContext.Logger);
 
             if (downloadMediaType.Equals("original"))
             {
@@ -194,7 +185,7 @@ namespace Bynder.Workers
                 );
             }
 
-            _inRiverContext.Log(LogLevel.Warning, $"Download media type (original or a derivative/thumbnail) '{downloadMediaType}' not found!");
+            InRiverContext.Log(LogLevel.Warning, $"Download media type (original or a derivative/thumbnail) '{downloadMediaType}' not found!");
             return null;
         }
 
