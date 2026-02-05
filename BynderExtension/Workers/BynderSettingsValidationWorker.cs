@@ -4,21 +4,17 @@ using System;
 namespace Bynder.Workers
 {
     using Api;
+    using Models;
 
-    internal class BynderSettingsValidationWorker : IWorker
+    internal class BynderSettingsValidationWorker : AbstractWorker, IWorker
     {
         #region Fields
-
-        private readonly inRiverContext _inRiverContext;
         private WorkerResult _workerResult;
-
         #endregion Fields
 
         #region Constructors
-
-        public BynderSettingsValidationWorker(inRiverContext inRiverContext)
+        public BynderSettingsValidationWorker(inRiverContext inRiverContext) : base(inRiverContext)
         {
-            _inRiverContext = inRiverContext;
         }
 
         #endregion Constructors
@@ -26,7 +22,7 @@ namespace Bynder.Workers
         #region Methods
 
         /// <summary>
-        /// check the necesaary prereqs for the bynder-inriver integration
+        /// check the neccessary prereqs for the bynder-inriver integration
         /// </summary>
         public WorkerResult Execute()
         {
@@ -48,8 +44,8 @@ namespace Bynder.Workers
 
         private void AssumeSettingIsSet(string settingKey)
         {
-            AddResultLine(_inRiverContext.Settings.ContainsKey(settingKey) &&
-                          !string.IsNullOrEmpty(_inRiverContext.Settings[settingKey])
+            AddResultLine(InRiverContext.Settings.ContainsKey(settingKey) &&
+                          !string.IsNullOrEmpty(InRiverContext.Settings[settingKey])
                 ? $"OK: Setting '{settingKey}' is configured"
                 : $"ERROR: Setting '{settingKey}' is not configured"
             );
@@ -59,9 +55,9 @@ namespace Bynder.Workers
         {
             bool validUrl = false;
             string url = "";
-            if (_inRiverContext.Settings.ContainsKey(settingKey))
+            if (InRiverContext.Settings.ContainsKey(settingKey))
             {
-                url = _inRiverContext.Settings[settingKey];
+                url = InRiverContext.Settings[settingKey];
                 validUrl = Uri.TryCreate(url, UriKind.Absolute, out var uriResult)
                                 && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
             }

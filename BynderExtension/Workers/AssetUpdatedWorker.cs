@@ -1,47 +1,44 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Bynder.Workers
 {
-    using Bynder.Sdk.Model;
+    using Api;
+    using Sdk.Model;
+    using SettingProviders;
     using Config;
     using Enums;
     using Models;
     using Names;
-    using System.Text.RegularExpressions;
     using Utils;
     using Utils.Extensions;
     using Utils.Helpers;
     using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
 
-    public class AssetUpdatedWorker : IWorker
-    {
+    public class AssetUpdatedWorker : AbstractBynderWorker, IWorker
+    {      
+        public override Dictionary<string, string> DefaultSettings => AssetUpdatedWorkerSettingsProvider.Create();
+
         #region Fields
-        private readonly inRiverContext _inRiverContext;
-        private readonly FilenameEvaluator _fileNameEvaluator;
-        private readonly SdkIBynderClient _bynderClient;
-        private EntityType ResourceEntityType => _inRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
+        private readonly FilenameEvaluator _fileNameEvaluator;       
+        private EntityType ResourceEntityType => InRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
         private const string FieldTypeSettingsRegExKey = "RegExp";
-
         private Regex ResourceFilenameRegEx;
-
         #endregion Fields
 
         #region Constructors
-
-        public AssetUpdatedWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient, FilenameEvaluator fileNameEvaluator)
+        public AssetUpdatedWorker(inRiverContext inRiverContext, FilenameEvaluator fileNameEvaluator, SdkIBynderClient bynderClient = null) : base(inRiverContext, bynderClient)
         {
-            _inRiverContext = inRiverContext;
-            _bynderClient = bynderClient;
             _fileNameEvaluator = fileNameEvaluator;
         }
-
         #endregion Constructors
 
         #region Methods
@@ -88,16 +85,16 @@ namespace Bynder.Workers
             // evaluate conditions
             if (!AssetAppliesToConditions(media))
             {
-                _inRiverContext.Log(LogLevel.Debug, $"Asset {bynderAssetId} does not apply to the conditions");
+                InRiverContext.Log(LogLevel.Debug, $"Asset {bynderAssetId} does not apply to the conditions");
 
                 result.Messages.Add($"Not processing '{originalFileName}'; does not apply to import conditions.");
                 return result;
             }
 
-            _inRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} applies to conditions; handling notification-type: {notificationType}");
+            InRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} applies to conditions; handling notification-type: {notificationType}");
 
-            var resourceSearchType = SettingHelper.GetResourceSearchType(_inRiverContext.Settings, _inRiverContext.Logger);
-            Entity resourceEntity = EntityHelper.GetResourceByAsset(media, resourceSearchType, _inRiverContext.ExtensionManager.DataService, LoadLevel.DataAndLinks);
+            var resourceSearchType = SettingHelper.GetResourceSearchType(InRiverContext.Settings, InRiverContext.Logger);
+            Entity resourceEntity = EntityHelper.GetResourceByAsset(media, resourceSearchType, InRiverContext.ExtensionManager.DataService, LoadLevel.DataAndLinks);
 
 
             // handle notification logic
@@ -123,14 +120,14 @@ namespace Bynder.Workers
                     }
                     else
                     {
-                        _inRiverContext.Log(LogLevel.Debug, $"Archived asset {bynderAssetId}, does not exist in inRiver as Resource.");
+                        InRiverContext.Log(LogLevel.Debug, $"Archived asset {bynderAssetId}, does not exist in inRiver as Resource.");
                         result.Messages.Add($"Archived asset {bynderAssetId}, does not exist in inRiver as Resource.");
 
                         return result;
                     }
 
                 default:
-                    _inRiverContext.Log(LogLevel.Warning, $"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
+                    InRiverContext.Log(LogLevel.Warning, $"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
                     result.Messages.Add($"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
 
                     return result;
@@ -153,7 +150,7 @@ namespace Bynder.Workers
             }
 
             // get all *inbound* linktypes towards the Resource entitytype in the model(e.g.ProductResource, ItemResource NOT ResourceOtherEntity)
-            var inboundResourceLinkTypes = _inRiverContext.ExtensionManager.ModelService.GetLinkTypesForEntityType(EntityTypeIds.Resource)
+            var inboundResourceLinkTypes = InRiverContext.ExtensionManager.ModelService.GetLinkTypesForEntityType(EntityTypeIds.Resource)
                 .Where(lt => lt.TargetEntityTypeId == EntityTypeIds.Resource).OrderBy(lt => lt.Index).ToList();
 
             foreach (var keyValuePair in relatedEntityData)
@@ -162,7 +159,7 @@ namespace Bynder.Workers
                 var value = keyValuePair.Value;
 
                 // find sourcentity (e.g. Product)
-                var sourceEntity = _inRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(fieldTypeId, value, LoadLevel.Shallow);
+                var sourceEntity = InRiverContext.ExtensionManager.DataService.GetEntityByUniqueValue(fieldTypeId, value, LoadLevel.Shallow);
                 if (sourceEntity == null)
                 {
                     resultString.Append($"; Nothing found for FieldTypeID {fieldTypeId} found for {value}");
@@ -181,10 +178,10 @@ namespace Bynder.Workers
                     continue;
                 }
 
-                if (!_inRiverContext.ExtensionManager.DataService.LinkAlreadyExists(sourceEntity.Id, resourceEntity.Id, null, linkType.Id))
+                if (!InRiverContext.ExtensionManager.DataService.LinkAlreadyExists(sourceEntity.Id, resourceEntity.Id, null, linkType.Id))
                 {
                     resultString.Append($"; Adding link!");
-                    _inRiverContext.ExtensionManager.DataService.AddLink(new Link()
+                    InRiverContext.ExtensionManager.DataService.AddLink(new Link()
                     {
                         Source = sourceEntity,
                         Target = resourceEntity,
@@ -206,12 +203,12 @@ namespace Bynder.Workers
         /// <returns></returns>
         private bool AssetAppliesToConditions(Media asset)
         {
-            var conditions = SettingHelper.GetImportConditions(_inRiverContext.Settings, _inRiverContext.Logger);
+            var conditions = SettingHelper.GetImportConditions(InRiverContext.Settings, InRiverContext.Logger);
 
             // return true if no conditions found. Conditions are optional.
             if (conditions == null || conditions.Count == 0) 
             {
-                _inRiverContext.Log(LogLevel.Debug, $"Import conditions are empty > {asset.Id} applies to conditions immediately!");
+                InRiverContext.Log(LogLevel.Debug, $"Import conditions are empty > {asset.Id} applies to conditions immediately!");
                 return true; 
             }
 
@@ -229,7 +226,7 @@ namespace Bynder.Workers
         private WorkerResult CreateOrUpdateEntityAndRelations(WorkerResult result, Media asset, FilenameEvaluator.Result evaluatorResult, Entity resourceEntity)
         {
             string action = resourceEntity == null ? "Create Entity" : $"Update Entity {resourceEntity.Id}";
-            _inRiverContext.Log(LogLevel.Verbose, $"{action}, metadata and relations for Bynder asset {asset.Id}");
+            InRiverContext.Log(LogLevel.Verbose, $"{action}, metadata and relations for Bynder asset {asset.Id}");
 
             if (resourceEntity == null)
             {
@@ -258,7 +255,7 @@ namespace Bynder.Workers
 
             if (resourceEntity.Id == 0)
             {
-                resourceEntity = _inRiverContext.ExtensionManager.DataService.AddEntity(resourceEntity);
+                resourceEntity = InRiverContext.ExtensionManager.DataService.AddEntity(resourceEntity);
                 resultString.Append($"Resource {resourceEntity.Id} added");
             }
             else
@@ -267,12 +264,12 @@ namespace Bynder.Workers
                 var updatedFields = resourceEntity.Fields.Where(x => oldFieldValues.First(y => Equals(y.FieldType.Id, x.FieldType.Id)).ValueHasBeenModified(x.Data)).ToList();
                 if (updatedFields.Count > 0)
                 {
-                    resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(updatedFields);
+                    resourceEntity = InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(updatedFields);
                     resultString.Append($"Resource {resourceEntity.Id} updated");
                 }
                 else
                 {
-                    _inRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for asset {asset.Id}");
+                    InRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for asset {asset.Id}");
                 }
             }
 
@@ -291,10 +288,10 @@ namespace Bynder.Workers
             string filename = asset.GetOriginalFileName();
             if (string.IsNullOrEmpty(filename))
             {
-                _inRiverContext.Log(LogLevel.Debug, $"Filename for asset {asset.Id} is empty");
+                InRiverContext.Log(LogLevel.Debug, $"Filename for asset {asset.Id} is empty");
                 filename = asset.Id;
             }
-            else if (SettingHelper.ShouldAddAssetIdPrefixToFilename(_inRiverContext.Settings, _inRiverContext.Logger))
+            else if (SettingHelper.ShouldAddAssetIdPrefixToFilename(InRiverContext.Settings, InRiverContext.Logger))
             {
                 filename = $"{asset.Id}_{filename}";
             }
@@ -336,7 +333,7 @@ namespace Bynder.Workers
             }
 
             List<string> validatedCvlKeys = new List<string>(values.Count);
-            List<CVLValue> cvlValues = _inRiverContext.ExtensionManager.ModelService.GetCVLValuesForCVL(field.FieldType.CVLId, true);
+            List<CVLValue> cvlValues = InRiverContext.ExtensionManager.ModelService.GetCVLValuesForCVL(field.FieldType.CVLId, true);
 
             foreach (string cvlKey in values)
             {
@@ -359,7 +356,7 @@ namespace Bynder.Workers
                 }
 
                 // create new CVL value when the setting CREATE_MISSING_CVL_KEYS is true
-                if (SettingHelper.GetConfiguredCreateMissingCvlKeys(_inRiverContext.Settings, _inRiverContext.Logger))
+                if (SettingHelper.GetConfiguredCreateMissingCvlKeys(InRiverContext.Settings, InRiverContext.Logger))
                 {
                     CVLValue newCvlValue = new CVLValue()
                     {
@@ -370,14 +367,14 @@ namespace Bynder.Workers
 
                     try
                     {
-                        newCvlValue = _inRiverContext.ExtensionManager.ModelService.AddCVLValue(newCvlValue);
+                        newCvlValue = InRiverContext.ExtensionManager.ModelService.AddCVLValue(newCvlValue);
                         cvlValues.Add(newCvlValue);
                         validatedCvlKeys.Add(newCvlValue.Key);
                     }
                     catch (Exception e)
                     {
                         result.Messages.Add($"Could not add CVLKey '{cleanCvlKey}' ({cvlKey}).");
-                        _inRiverContext.Log(LogLevel.Error, $"Could not add CVLKey '{cleanCvlKey}' ({cvlKey}).", e);
+                        InRiverContext.Log(LogLevel.Error, $"Could not add CVLKey '{cleanCvlKey}' ({cvlKey}).", e);
                     }
                 }
                 else
@@ -430,17 +427,17 @@ namespace Bynder.Workers
 
         private object GetParsedValueForField(WorkerResult result, string propertyName, List<string> values, Field field)
         {
-            var mergedVal = values == null ? null : string.Join(SettingHelper.GetMultivalueSeparator(_inRiverContext.Settings, _inRiverContext.Logger), values);
+            var mergedVal = values == null ? null : string.Join(SettingHelper.GetMultivalueSeparator(InRiverContext.Settings, InRiverContext.Logger), values);
             var singleVal = values?.FirstOrDefault();
 
             switch (field.FieldType.DataType.ToLower())
             {
                 case "localestring":
-                    var languagesToSet = SettingHelper.GetLanguagesToSet(_inRiverContext.Settings, _inRiverContext.Logger);
+                    var languagesToSet = SettingHelper.GetLanguagesToSet(InRiverContext.Settings, InRiverContext.Logger);
                     var ls = (LocaleString)field.Data;
                     if (ls == null)
                     {
-                        ls = new LocaleString(_inRiverContext.ExtensionManager.UtilityService.GetAllLanguages());
+                        ls = new LocaleString(InRiverContext.ExtensionManager.UtilityService.GetAllLanguages());
                     }
 
                     foreach (var lang in languagesToSet)
@@ -497,9 +494,9 @@ namespace Bynder.Workers
 
         private void SetAssetProperties(Entity resourceEntity, Media asset, WorkerResult result)
         {
-            _inRiverContext.Log(LogLevel.Verbose, $"Setting asset properties on entity {resourceEntity.Id}");
+            InRiverContext.Log(LogLevel.Verbose, $"Setting asset properties on entity {resourceEntity.Id}");
 
-            var propertyMap = SettingHelper.GetConfiguredAssetPropertyMap(_inRiverContext.Settings, _inRiverContext.Logger);
+            var propertyMap = SettingHelper.GetConfiguredAssetPropertyMap(InRiverContext.Settings, InRiverContext.Logger);
             var assetProperties = asset.GetType().GetProperties();
 
             foreach (var kvp in propertyMap)
@@ -509,7 +506,7 @@ namespace Bynder.Workers
                 {
                     var message = $"Property '{kvp.Key}' does not exist on an Asset!";
                     result.Messages.Add(message);
-                    _inRiverContext.Log(LogLevel.Warning, message);
+                    InRiverContext.Log(LogLevel.Warning, message);
                     continue;
                 }
 
@@ -518,7 +515,7 @@ namespace Bynder.Workers
                 {
                     var message = $"Field '{kvp.Value}' does not exist on a Resource!";
                     result.Messages.Add(message);
-                    _inRiverContext.Log(LogLevel.Warning, message);
+                    InRiverContext.Log(LogLevel.Warning, message);
                     continue;
                 }
 
@@ -542,14 +539,14 @@ namespace Bynder.Workers
 
         private void SetMetapropertyData(Entity resourceEntity, Media asset, WorkerResult result)
         {
-            var metaPropertyMapping = SettingHelper.GetConfiguredMetaPropertyMap(_inRiverContext.Settings, _inRiverContext.Logger);
+            var metaPropertyMapping = SettingHelper.GetConfiguredMetaPropertyMap(InRiverContext.Settings, InRiverContext.Logger);
             if (metaPropertyMapping.Count == 0)
             {
-                _inRiverContext.Log(LogLevel.Verbose, "Could not find configured metaproperty Map");
+                InRiverContext.Log(LogLevel.Verbose, "Could not find configured metaproperty Map");
                 return;
             }
 
-            _inRiverContext.Log(LogLevel.Verbose, $"Setting metaproperties on entity {resourceEntity.Id}");
+            InRiverContext.Log(LogLevel.Verbose, $"Setting metaproperties on entity {resourceEntity.Id}");
 
             var matchedProperties =
                 asset.MetaProperties.Join(
@@ -562,7 +559,7 @@ namespace Bynder.Workers
 
             foreach (var matchedProperty in matchedProperties)
             {
-                _inRiverContext.Log(LogLevel.Debug, $"{matchedProperty.property.Name} ({matchedProperty.property.Id}) -> {matchedProperty.map.InriverFieldTypeId}");
+                InRiverContext.Log(LogLevel.Debug, $"{matchedProperty.property.Name} ({matchedProperty.property.Id}) -> {matchedProperty.map.InriverFieldTypeId}");
             }
 
             foreach (var match in matchedProperties)
@@ -572,7 +569,7 @@ namespace Bynder.Workers
                 if (field == null)
                 {
                     result.Messages.Add($"FieldType '{fieldTypeId}' in MetaPropertyMapping does not exist on Resource EntityType");
-                    _inRiverContext.Log(LogLevel.Warning, $"FieldType '{fieldTypeId}' does not exist on Resource EntityType");
+                    InRiverContext.Log(LogLevel.Warning, $"FieldType '{fieldTypeId}' does not exist on Resource EntityType");
                     continue;
                 }
 
@@ -598,28 +595,28 @@ namespace Bynder.Workers
         /// <returns></returns>
         private WorkerResult SetValuesOnResource(WorkerResult result, string bynderAssetId, Entity resourceEntity)
         {
-            var fieldValueCombinations = SettingHelper.GetFieldValueCombinations(_inRiverContext.Settings, _inRiverContext.Logger);
+            var fieldValueCombinations = SettingHelper.GetFieldValueCombinations(InRiverContext.Settings, InRiverContext.Logger);
             if (fieldValueCombinations.Count == 0)
             {
-                _inRiverContext.Log(LogLevel.Verbose, $"No fieldvalue combinations found. Not updating resource for archived bynder asset {bynderAssetId}");
+                InRiverContext.Log(LogLevel.Verbose, $"No fieldvalue combinations found. Not updating resource for archived bynder asset {bynderAssetId}");
                 return result;
             }
 
             var fieldsToUpdate = new List<Field>();
-            var dateTimeSettings = SettingHelper.GetDateTimeSettings(_inRiverContext.Settings, _inRiverContext.Logger);
+            var dateTimeSettings = SettingHelper.GetDateTimeSettings(InRiverContext.Settings, InRiverContext.Logger);
 
             foreach (var fvc in fieldValueCombinations)
             {
                 if (string.IsNullOrWhiteSpace(fvc.FieldTypeId))
                 {
-                    _inRiverContext.Log(LogLevel.Verbose, $"Field value combination found without FieldTypeId setting filled in setting '{Settings.FieldValuesToSetOnArchiveEvent}'!");
+                    InRiverContext.Log(LogLevel.Verbose, $"Field value combination found without FieldTypeId setting filled in setting '{Settings.FieldValuesToSetOnArchiveEvent}'!");
                     continue;
                 }
 
                 var field = resourceEntity.GetField(fvc.FieldTypeId);
                 if (field == null)
                 {
-                    _inRiverContext.Log(LogLevel.Verbose, $"Field '{fvc.FieldTypeId}' used in the setting '{Settings.FieldValuesToSetOnArchiveEvent}' does not exist on Resource!");
+                    InRiverContext.Log(LogLevel.Verbose, $"Field '{fvc.FieldTypeId}' used in the setting '{Settings.FieldValuesToSetOnArchiveEvent}' does not exist on Resource!");
                     continue;
                 }
 
@@ -627,7 +624,7 @@ namespace Bynder.Workers
                 {
                     if (dateTimeSettings == null)
                     {
-                        _inRiverContext.Log(LogLevel.Verbose, $"Field value combination found with {nameof(FieldValueCombination.SetTimestamp)} on true, but the setting '{Settings.TimestampSettings}' is empty!");
+                        InRiverContext.Log(LogLevel.Verbose, $"Field value combination found with {nameof(FieldValueCombination.SetTimestamp)} on true, but the setting '{Settings.TimestampSettings}' is empty!");
                         continue;
                     }
 
@@ -643,13 +640,13 @@ namespace Bynder.Workers
 
             if (fieldsToUpdate.Count > 0)
             {
-                _inRiverContext.Log(LogLevel.Verbose, $"Setting values on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
-                resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldsToUpdate);
+                InRiverContext.Log(LogLevel.Verbose, $"Setting values on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
+                resourceEntity = InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldsToUpdate);
                 result.Messages.Add($"Updated field(s) on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
             }
             else
             {
-                _inRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
+                InRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
             }
 
             return result;
@@ -657,7 +654,7 @@ namespace Bynder.Workers
 
         private WorkerResult UpdateMetadata(WorkerResult result, Media asset, Entity resourceEntity)
         {
-            _inRiverContext.Log(LogLevel.Verbose, $"Update metadata only for Resource {resourceEntity.Id}");
+            InRiverContext.Log(LogLevel.Verbose, $"Update metadata only for Resource {resourceEntity.Id}");
 
             // get current fieldvalues so we can check the updated fields later on
             var oldFieldValues = resourceEntity.Fields.Select(x => (Field)x.Clone()).ToList();
@@ -674,12 +671,12 @@ namespace Bynder.Workers
             var updatedFields = resourceEntity.Fields.Where(x => oldFieldValues.First(y => Equals(y.FieldType.Id, x.FieldType.Id)).ValueHasBeenModified(x.Data)).ToList();
             if (updatedFields.Count > 0)
             {
-                resourceEntity = _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(updatedFields);
+                resourceEntity = InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(updatedFields);
                 result.Messages.Add($"Resource {resourceEntity.Id} updated");
             }
             else
             {
-                _inRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for asset {asset.Id}");
+                InRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for asset {asset.Id}");
             }
 
             return result;

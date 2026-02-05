@@ -61,8 +61,9 @@
     <Compile Include="Extension\AbstractScheduledExtension.cs" />
     <Compile Include="Extension\AssetLoader.cs" />
     <Compile Include="Extension\CvlSyncListener.cs" />
+    <Compile Include="Extension\AbstractBynderExtension.cs" />
     <Compile Include="Extension\Registry.cs" />
-    <Compile Include="Extension\Extension.cs" />
+    <Compile Include="Extension\AbstractExtension.cs" />
     <Compile Include="Extension\ScheduledNotificationHandler.cs" />
     <Compile Include="Extension\Uploader.cs" />
     <Compile Include="Models\Condition.cs" />
@@ -75,7 +76,15 @@
     <Compile Include="Models\MediaTypeTransformConfig.cs" />
     <Compile Include="Models\MetapropertyMap.cs" />
     <Compile Include="Models\AttemptSNSMessageWrapper.cs" />
+    <Compile Include="Models\NotificationWorkerResult.cs" />
+    <Compile Include="Models\ResourceUploadData.cs" />
     <Compile Include="Names\ConnectorStateIds.cs" />
+    <Compile Include="SettingProviders\AssetDownloadWorkerSettingsProvider.cs" />
+    <Compile Include="SettingProviders\AssetUsageUpdateWorkerSettingsProvider.cs" />
+    <Compile Include="SettingProviders\NonResourceMetapropertyWorkerSettingsProvider.cs" />
+    <Compile Include="SettingProviders\ResourceMetapropertyUpdateWorkerSettingsProvider.cs" />
+    <Compile Include="SettingProviders\AssetUploadWorkerSettingsProvider.cs" />
+    <Compile Include="SettingProviders\FilenameEvaluatorSettingsProvider.cs" />
     <Compile Include="Utils\Extensions\ParseExtensions.cs" />
     <Compile Include="Utils\Extensions\StringExtensions.cs" />
     <Compile Include="Utils\Extensions\StringToCollectionExtensions.cs" />
@@ -87,6 +96,8 @@
     <Compile Include="Utils\Helpers\JsonHelper.cs" />
     <Compile Include="Utils\Helpers\SettingHelper.cs" />
     <Compile Include="Utils\InRiver\DataServiceExtensions.cs" />
+    <Compile Include="Workers\AbstractBynderWorker.cs" />
+    <Compile Include="Workers\AbstractWorker.cs" />
     <Compile Include="Workers\AssetDeletedWorker.cs" />
     <Compile Include="Workers\AssetDownloadWorker.cs" />
     <Compile Include="Workers\AssetUpdatedWorker.cs" />
@@ -110,6 +121,11 @@
     <Compile Include="Config\Settings.cs" />
     <Compile Include="Utils\FilenameEvaluator.cs" />
     <Compile Include="Workers\NotificationWorker.cs" />
+    <Compile Include="Models\WorkerResult.cs" />
+    <Compile Include="SettingProviders\NotificationWorkerSettingsProvider.cs" />
+    <Compile Include="SettingProviders\AssetUpdatedWorkerSettingsProvider.cs" />
+    <Compile Include="SettingProviders\AssetDeletedWorkerSettingsProvider.cs" />
+    <Compile Include="SettingProviders\CvlSyncWorkerSettingsProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BynderExtension.nuspec" />

@@ -1,32 +1,29 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
+using System.Collections.Generic;
 
 namespace Bynder.Workers
 {
     using Api;
-    using Bynder.Sdk.Query.Asset;
+    using Bynder.SettingProviders;
     using Names;
+    using Sdk.Query.Asset;
     using Utils.Helpers;
     using Utils.InRiver;
-    using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
+    using SdkIBynderClient = Sdk.Service.IBynderClient;
     using SdkUploadQuery = Sdk.Query.Upload.UploadQuery;
 
-    internal class AssetUsageUpdateWorker : IWorker
+    internal class AssetUsageUpdateWorker : AbstractBynderWorker, IWorker
     {
         #region Fields
-
-        private readonly SdkIBynderClient _bynderBynderClient;
-        private readonly inRiverContext _inRiverContext;
-
+        public override Dictionary<string, string> DefaultSettings => AssetUsageUpdateWorkerSettingsProvider.Create();
         #endregion Fields
 
         #region Constructors
-
-        public AssetUsageUpdateWorker(inRiverContext inRiverContext, SdkIBynderClient bynderBynderClient)
+        public AssetUsageUpdateWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null) :
+            base(inRiverContext, bynderClient)
         {
-            _inRiverContext = inRiverContext;
-            _bynderBynderClient = bynderBynderClient;
         }
 
         #endregion Constructors
@@ -36,14 +33,14 @@ namespace Bynder.Workers
         public void Execute(Entity resourceEntity)
         {
             // get settings, if missing return, nothing to do
-            string integrationId = SettingHelper.GetInRiverIntegrationId(_inRiverContext.Settings, _inRiverContext.Logger);
-            string inriverEntityUrl = SettingHelper.GetInRiverEntityUrl(_inRiverContext.Settings, _inRiverContext.Logger);
+            string integrationId = SettingHelper.GetInRiverIntegrationId(InRiverContext.Settings, InRiverContext.Logger);
+            string inriverEntityUrl = SettingHelper.GetInRiverEntityUrl(InRiverContext.Settings, InRiverContext.Logger);
 
             if (string.IsNullOrWhiteSpace(integrationId) || string.IsNullOrWhiteSpace(inriverEntityUrl)) return;
 
             // get resource entity with fields
             resourceEntity =
-                _inRiverContext.ExtensionManager.DataService.EntityLoadLevel(resourceEntity, LoadLevel.DataOnly);
+                InRiverContext.ExtensionManager.DataService.EntityLoadLevel(resourceEntity, LoadLevel.DataOnly);
             string assetId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderId)?.Data;
 
             // check if empty - nothing to do
@@ -52,11 +49,11 @@ namespace Bynder.Workers
             string formattedInriverResourceUrl = inriverEntityUrl.Replace("{entityId}", resourceEntity.Id.ToString());
 
             // clear all current usages
-            _inRiverContext.Log(LogLevel.Information, $"Set asset usage for asset {assetId}");
-            _bynderBynderClient.GetAssetService().DeleteAssetUsage(new AssetUsageQuery(integrationId, assetId));
+            InRiverContext.Log(LogLevel.Information, $"Set asset usage for asset {assetId}");
+            _bynderClient.GetAssetService().DeleteAssetUsage(new AssetUsageQuery(integrationId, assetId));
 
             // and set new one
-            _bynderBynderClient.GetAssetService().CreateAssetUsage(new AssetUsageQuery(integrationId, assetId)
+            _bynderClient.GetAssetService().CreateAssetUsage(new AssetUsageQuery(integrationId, assetId)
             {
                 Uri = formattedInriverResourceUrl
             });

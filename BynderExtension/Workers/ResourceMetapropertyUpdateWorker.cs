@@ -6,29 +6,27 @@ using System.Linq;
 
 namespace Bynder.Workers
 {
-    using Bynder.Sdk.Query.Asset;
-    using Bynder.Sdk.Service;
+    using Api;
+    using Sdk.Query.Asset;
+    using Sdk.Service;
+    using SettingProviders;
     using Models;
     using Names;
     using Utils.Extensions;
     using Utils.Helpers;
     using Utils.InRiver;
 
-    public class ResourceMetapropertyUpdateWorker : IWorker
+    public class ResourceMetapropertyUpdateWorker : AbstractBynderWorker, IWorker
     {
+
         #region Fields
-
-        private readonly BynderClient _bynderClient;
-        private readonly inRiverContext _inRiverContext;
-
+        public override Dictionary<string, string> DefaultSettings => ResourceMetapropertyUpdateWorkerSettingsProvider.Create();
         #endregion Fields
 
         #region Constructors
 
-        public ResourceMetapropertyUpdateWorker(inRiverContext inRiverContext, BynderClient bynderClient)
+        public ResourceMetapropertyUpdateWorker(inRiverContext inRiverContext, IBynderClient bynderClient = null) : base(inRiverContext, bynderClient)
         {
-            _inRiverContext = inRiverContext;
-            _bynderClient = bynderClient;
         }
 
         #endregion Constructors
@@ -41,38 +39,39 @@ namespace Bynder.Workers
             if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
 
             // parse setting map in dictionary
-            var configuredMetaPropertyMap = SettingHelper.GetConfiguredMetaPropertyMap(_inRiverContext.Settings, _inRiverContext.Logger);
+            var configuredMetaPropertyMap = SettingHelper.GetConfiguredMetaPropertyMap(InRiverContext.Settings, InRiverContext.Logger);
             if (configuredMetaPropertyMap.Count == 0)
             {
-                _inRiverContext.Log(LogLevel.Warning, "No metaproperty mappings configured, skipping metaproperty update");
+                InRiverContext.Log(LogLevel.Warning, "No metaproperty mappings configured, skipping metaproperty update");
                 return;
             }
 
             // get full resource entity (again to also prevent revision errors)
-            resourceEntity = _inRiverContext.ExtensionManager.DataService.EntityLoadLevel(resourceEntity, LoadLevel.DataOnly);
+            resourceEntity = InRiverContext.ExtensionManager.DataService.EntityLoadLevel(resourceEntity, LoadLevel.DataOnly);
 
             // block resourceEntity for bynder update if no BynderId is found on entity
             string bynderId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderId)?.Data;
             if (string.IsNullOrWhiteSpace(bynderId))
             {
-                _inRiverContext.Log(LogLevel.Warning, $"No BynderId found on resource {resourceEntity.Id}, skipping metaproperty update");
+                InRiverContext.Log(LogLevel.Warning, $"No BynderId found on resource {resourceEntity.Id}, skipping metaproperty update");
                 return; 
             }
 
             // only update bynder asset if resource has been downloaded or uploaded
             string bynderDownloadStatus = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState)?.Data;
             string bynderUploadStatus = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState)?.Data;
+            
             if ((string.IsNullOrWhiteSpace(bynderDownloadStatus) && string.IsNullOrWhiteSpace(bynderUploadStatus))
                 || (bynderDownloadStatus != BynderStates.Done && bynderUploadStatus != BynderStates.Done))
             {
-                _inRiverContext.Log(LogLevel.Information, $"BynderId found on resource {resourceEntity.Id}, but resource not downloaded or uploaded yet, skipping metaproperty update");
+                InRiverContext.Log(LogLevel.Information, $"BynderId found on resource {resourceEntity.Id}, but resource not downloaded or uploaded yet, skipping metaproperty update");
                 return;
             }
 
             // check if it may export
             if (!EntityAppliesToConditions(resourceEntity)) 
-            { 
-                _inRiverContext.Log(LogLevel.Information, $"Resource {resourceEntity.Id} does not apply to conditions, skipping metaproperty update");
+            {
+                InRiverContext.Log(LogLevel.Information, $"Resource {resourceEntity.Id} does not apply to conditions, skipping metaproperty update");
                 return;
             }
 
@@ -85,7 +84,7 @@ namespace Bynder.Workers
             if (newMetapropertyValues.Count > 0)
             {
                 // inform bynder of the changes:
-                _inRiverContext.Log(LogLevel.Information, $"Update metaproperties {string.Join(";", newMetapropertyValues.Keys)}");
+                InRiverContext.Log(LogLevel.Information, $"Update metaproperties {string.Join(";", newMetapropertyValues.Keys)}");
                 
                 var query = new ModifyMediaQuery(bynderId)
                 {
@@ -99,7 +98,7 @@ namespace Bynder.Workers
             }
             else
             {
-                _inRiverContext.Log(LogLevel.Verbose, $"No metaproperties mapped or found");
+                InRiverContext.Log(LogLevel.Verbose, $"No metaproperties mapped or found");
             }
         }
 
@@ -150,14 +149,14 @@ namespace Bynder.Workers
                 var field = resourceEntity.GetField(map.InriverFieldTypeId);
                 var values = GetValuesForField(field);
 
-                _inRiverContext.Log(LogLevel.Debug, $"Checking value(s) for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}): {values.Count} values");
+                InRiverContext.Log(LogLevel.Debug, $"Checking value(s) for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}): {values.Count} values");
 
                 if (values.Count == 0)
                 {
                     continue;
                 }
 
-                _inRiverContext.Log(LogLevel.Debug, $"Saving value for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}) (R)");
+                InRiverContext.Log(LogLevel.Debug, $"Saving value for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}) (R)");
                 newMetapropertyValues.Add(map.BynderMetaProperty, values);
             }
         }
@@ -165,7 +164,7 @@ namespace Bynder.Workers
         protected void AddMetapropertyValuesForLinks(Entity resourceEntity, List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
         {
             var inboundLinks =
-                _inRiverContext.ExtensionManager.DataService.GetInboundLinksForEntity(resourceEntity.Id);
+                InRiverContext.ExtensionManager.DataService.GetInboundLinksForEntity(resourceEntity.Id);
 
             // only process when inbound links are found
             if (inboundLinks.Count == 0)
@@ -185,12 +184,12 @@ namespace Bynder.Workers
                 // check if configured fieldtype is on one of the inbound entities
                 foreach (var inboundLink in inboundLinks)
                 {
-                    Field field = _inRiverContext.ExtensionManager.DataService.GetField(inboundLink.Source.Id, mapping.InriverFieldTypeId);
+                    Field field = InRiverContext.ExtensionManager.DataService.GetField(inboundLink.Source.Id, mapping.InriverFieldTypeId);
                     var fieldValues = GetValuesForField(field);
                     values.AddRange(fieldValues);
                 }
 
-                _inRiverContext.Log(LogLevel.Debug, $"Saving value for metaproperty {mapping.BynderMetaProperty} ({mapping.InriverFieldTypeId}) (L)");
+                InRiverContext.Log(LogLevel.Debug, $"Saving value for metaproperty {mapping.BynderMetaProperty} ({mapping.InriverFieldTypeId}) (L)");
                 newMetapropertyValues.Add(mapping.BynderMetaProperty, values);
             }
         }
@@ -216,7 +215,7 @@ namespace Bynder.Workers
 
         private bool EntityAppliesToConditions(Entity entity)
         {
-            var conditions = SettingHelper.GetExportConditions(_inRiverContext.Settings, _inRiverContext.Logger);
+            var conditions = SettingHelper.GetExportConditions(InRiverContext.Settings, InRiverContext.Logger);
 
             // return true if no conditions found. Conditions are optional.
             if (conditions.Count == 0) return true;
@@ -225,7 +224,7 @@ namespace Bynder.Workers
             {
                 if (!GetConditionResult(entity, condition))
                 {
-                    _inRiverContext.Log(LogLevel.Debug, $"Resource {entity.Id} does not apply to condition on field {condition.InRiverFieldTypeId} [value: {entity.GetField(condition.InRiverFieldTypeId).Data?.ToString()}], skipping metaproperty update; Condition values: {string.Join(";", condition.Values)}");
+                    InRiverContext.Log(LogLevel.Debug, $"Resource {entity.Id} does not apply to condition on field {condition.InRiverFieldTypeId} [value: {entity.GetField(condition.InRiverFieldTypeId).Data?.ToString()}], skipping metaproperty update; Condition values: {string.Join(";", condition.Values)}");
                     return false;
                 }
             }

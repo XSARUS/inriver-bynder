@@ -10,42 +10,37 @@ using System.Threading;
 namespace Bynder.Workers
 {
     using Api;
-    using Bynder.Sdk.Model;
+    using SettingProviders;
+    using Enums;
     using Exceptions;
+    using Models;
     using Names;
+    using Sdk.Model;
+    using Utils;
     using Utils.Helpers;
-    using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
+    using SdkIBynderClient = Sdk.Service.IBynderClient;
     using SdkUploadQuery = Sdk.Query.Upload.UploadQuery;
 
-    public class AssetUploadWorker : IWorker
+    public class AssetUploadWorker : AbstractBynderWorker, IWorker
     {
-        #region Fields
-
-        private readonly SdkIBynderClient _bynderClient;
-        private readonly inRiverContext _inRiverContext;
-
-        #endregion Fields
+        public override Dictionary<string, string> DefaultSettings => AssetUploadWorkerSettingsProvider.Create();
 
         #region Constructors
-
-        public AssetUploadWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null)
+        public AssetUploadWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null) : base(inRiverContext, bynderClient)
         {
-            _inRiverContext = inRiverContext;
-            _bynderClient = bynderClient;
         }
-
         #endregion Constructors
 
         #region Methods
 
         public void Execute(Entity resourceEntity)
         {
-            _inRiverContext.Log(LogLevel.Information, $"Start uploading resource entity {resourceEntity.Id}");
+            InRiverContext.Log(LogLevel.Information, $"Start uploading resource entity {resourceEntity.Id}");
 
             if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
 
             if (resourceEntity.LoadLevel < LoadLevel.DataOnly)
-                resourceEntity = _inRiverContext.ExtensionManager.DataService.GetEntity(resourceEntity.Id, LoadLevel.DataOnly);
+                resourceEntity = InRiverContext.ExtensionManager.DataService.GetEntity(resourceEntity.Id, LoadLevel.DataOnly);
 
             string bynderUploadState = GetBynderUploadStateFromEntity(resourceEntity);
             if (string.IsNullOrWhiteSpace(bynderUploadState) || bynderUploadState != BynderStates.Todo) return;
@@ -55,7 +50,7 @@ namespace Bynder.Workers
 
         private string GetBrandIdBasedOnSettingKey()
         {
-            var brandName = SettingHelper.GetBynderBrandName(_inRiverContext.Settings, _inRiverContext.Logger);
+            var brandName = SettingHelper.GetBynderBrandName(InRiverContext.Settings, InRiverContext.Logger);
             if (string.IsNullOrEmpty(brandName))
             {
                 return null;
@@ -66,7 +61,7 @@ namespace Bynder.Workers
 
             if (brand == null)
             {
-                _inRiverContext.Log(LogLevel.Warning, $"Could not get brand from Bynder for setting value: {brandName}!");
+                InRiverContext.Log(LogLevel.Warning, $"Could not get brand from Bynder for setting value: {brandName}!");
             }
 
             return brand;
@@ -79,18 +74,12 @@ namespace Bynder.Workers
 
         private ResourceUploadData GetDataForUpload(Entity resourceEntity)
         {
-            string brandId = GetBrandIdBasedOnSettingKey();
-            if (brandId == null)
-            {
+            string brandId = GetBrandIdBasedOnSettingKey() ?? 
                 throw new MissingDataException($"Upload resource entity {resourceEntity.Id} failed, because the brandname within settings is not correctly configurated!");
-            }
-
-            string filename = GetFileNameFromEntity(resourceEntity);
-            if (filename == null)
-            {
+            
+            string filename = GetFileNameFromEntity(resourceEntity) ?? 
                 throw new MissingDataException($"Upload resource entity {resourceEntity.Id} failed, because the filename within the entity is not set!");
-            }
-
+            
             int fileId = GetFileIdFromEntity(resourceEntity);
 
             byte[] bytes = GetResourceByteArrayFromEntity(fileId);
@@ -121,7 +110,7 @@ namespace Bynder.Workers
 
         private byte[] GetResourceByteArrayFromEntity(int fileId)
         {
-            return _inRiverContext.ExtensionManager.UtilityService.GetFile(fileId, "Original");
+            return InRiverContext.ExtensionManager.UtilityService.GetFile(fileId, "Original");
         }
 
         private void UploadResourceForEntity(Entity resourceEntity)
@@ -139,7 +128,7 @@ namespace Bynder.Workers
                 };
 
                 var mediaId = resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId)?.Data?.ToString();
-                _inRiverContext.Log(LogLevel.Debug, $"MediaID to upload '{mediaId}'");
+                InRiverContext.Log(LogLevel.Debug, $"MediaID to upload '{mediaId}'");
 
                 SaveMediaResponse uploadResult = _bynderClient.GetAssetService().UploadFileAsync(fileStream, new SdkUploadQuery()
                 {
@@ -158,35 +147,19 @@ namespace Bynder.Workers
                 }
 
                 bynderUploadStateField.Data = BynderStates.Done;
-                _inRiverContext.Log(LogLevel.Information, $"Finished uploading resource entity {resourceEntity.Id}");
+                InRiverContext.Log(LogLevel.Information, $"Finished uploading resource entity {resourceEntity.Id}");
             }
             catch (Exception ex)
             {
                 bynderUploadStateField.Data = BynderStates.Error;
-                _inRiverContext.Log(LogLevel.Error, $"Error uploading resource entity {resourceEntity.Id}. Message: {ex.GetBaseException().Message}", ex);
+                InRiverContext.Log(LogLevel.Error, $"Error uploading resource entity {resourceEntity.Id}. Message: {ex.GetBaseException().Message}", ex);
             }
 
             fieldsToUpdate.Add(bynderUploadStateField);
 
-            _inRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldsToUpdate);
+            InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldsToUpdate);
         }
 
         #endregion Methods
-
-        #region Classes
-
-        private sealed class ResourceUploadData
-        {
-            #region Properties
-
-            public string BrandId { get; set; }
-            public byte[] Bytes { get; set; }
-            public int FileId { get; set; }
-            public string Filename { get; set; }
-
-            #endregion Properties
-        }
-
-        #endregion Classes
     }
 }

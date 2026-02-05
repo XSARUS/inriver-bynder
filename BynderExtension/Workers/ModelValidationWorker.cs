@@ -3,22 +3,21 @@ using inRiver.Remoting.Objects;
 
 namespace Bynder.Workers
 {
+    using Models;
     using Names;
 
-    public class ModelValidationWorker : IWorker
+    public class ModelValidationWorker : AbstractWorker, IWorker
     {
         #region Fields
 
-        private readonly inRiverContext _inRiverContext;
         private WorkerResult _workerResult;
 
         #endregion Fields
 
         #region Constructors
 
-        public ModelValidationWorker(inRiverContext inRiverContext)
+        public ModelValidationWorker(inRiverContext inRiverContext) : base(inRiverContext)
         {
-            _inRiverContext = inRiverContext;
         }
 
         #endregion Constructors
@@ -58,7 +57,7 @@ namespace Bynder.Workers
 
         private void AssumeCVLExists(string id)
         {
-            var cvl = _inRiverContext.ExtensionManager.ModelService.GetCVL(id);
+            var cvl = InRiverContext.ExtensionManager.ModelService.GetCVL(id);
             AddResultLine(cvl == null
                 ? $"ERROR: CVL '{id}' does not exist in model."
                 : $"OK: CVL '{id}' exists in model.");
@@ -66,7 +65,7 @@ namespace Bynder.Workers
 
         private void AssumeCVLValuesExists(string id, string[] values)
         {
-            var cvlValues = _inRiverContext.ExtensionManager.ModelService.GetCVLValuesForCVL(id);
+            var cvlValues = InRiverContext.ExtensionManager.ModelService.GetCVLValuesForCVL(id);
             foreach (var value in values)
             {
                 if (cvlValues == null || !cvlValues.Exists(v => v.Key.Equals(value)))
@@ -82,7 +81,7 @@ namespace Bynder.Workers
 
         private void AssumeFieldTypeExists(string id)
         {
-            var fieldType = _inRiverContext.ExtensionManager.ModelService.GetFieldType(id);
+            var fieldType = InRiverContext.ExtensionManager.ModelService.GetFieldType(id);
             AddResultLine(fieldType == null
                 ? $"ERROR: FieldType '{id}' does not exist in model."
                 : $"OK: FieldType '{id}' exists in model.");
@@ -90,7 +89,7 @@ namespace Bynder.Workers
 
         private void AssumeFieldTypeIsCVL(string fieldTypeId, string cvlId)
         {
-            var fieldType = _inRiverContext.ExtensionManager.ModelService.GetFieldType(fieldTypeId);
+            var fieldType = InRiverContext.ExtensionManager.ModelService.GetFieldType(fieldTypeId);
             if (fieldType == null
                 || fieldType.DataType != DataType.CVL
                 || fieldType.CVLId != cvlId)

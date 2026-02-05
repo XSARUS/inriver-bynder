@@ -9,10 +9,12 @@ using System.Text;
 
 namespace Bynder.Extension
 {
-    using Bynder.Config;
-    using Bynder.Models;
-    using Bynder.Sdk.Model;
-    using Bynder.Utils.Helpers;
+    using Api;
+    using Config;
+    using Models;
+    using Sdk.Model;
+    using Utils.Helpers;
+    using SettingProviders;
     using Enums;
     using Workers;
 
@@ -25,25 +27,28 @@ namespace Bynder.Extension
             get
             {
                 var settings = base.DefaultSettings;
-                settings.Add(Settings.MaxRetryAttempts, Settings.DefaultMaxRetryAttempts.ToString());
 
-                // Remove settings that are not used in this extension:
-                var settingsToRemove = new List<string>(12)
+                foreach (var setting in SettingNames.GetDefaultBynderApiSettings())
                 {
-                    Settings.BynderBrandName,
-                    Settings.BynderLocaleForMetapropertyOptionLabel,
-                    Settings.CvlMetapropertyMapping,
-                    Settings.DownloadMediaType,
-                    Settings.FilenameExtensionMediaTypeMapping,
-                    Settings.ExportConditions,
-                    Settings.InitialAssetLoadUrlQuery,
-                    Settings.InitialAssetLoadLimit,
-                    Settings.InRiverEntityUrl,
-                    Settings.InRiverIntegrationId,
-                    Settings.LocaleMappingInriverToBynder
-                };
+                    settings[setting.Key] = setting.Value;
+                }
 
-                settingsToRemove.ForEach(s => settings.Remove(s));
+                foreach (var setting in NotificationWorkerSettingsProvider.Create())
+                {
+                    settings[setting.Key] = setting.Value;
+                }
+
+                foreach (var setting in AssetUpdatedWorkerSettingsProvider.Create())
+                {
+                    settings[setting.Key] = setting.Value;
+                }
+               
+                foreach (var setting in AssetDeletedWorkerSettingsProvider.Create())
+                {
+                    settings[setting.Key] = setting.Value;
+                }
+
+                settings.Add(Settings.MaxRetryAttempts, Settings.DefaultMaxRetryAttempts.ToString());
 
                 return settings;
             }
