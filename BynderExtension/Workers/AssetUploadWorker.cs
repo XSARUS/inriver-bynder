@@ -96,7 +96,7 @@ namespace Bynder.Workers
             byte[] bytes = GetResourceByteArrayFromEntity(fileId);
             if (bytes.Length == 0)
             {
-                throw new MissingDataException($"Upload resource entity {resourceEntity.Id} failed, because there is no resource avaiable!");
+                throw new MissingDataException($"Upload resource entity {resourceEntity.Id} failed, because there is no resource filedata available!");
             }
 
             return new ResourceUploadData
@@ -133,12 +133,18 @@ namespace Bynder.Workers
             {
                 var resourceUploadData = GetDataForUpload(resourceEntity);
 
-                var fileStream = new MemoryStream(resourceUploadData.Bytes, writable: false);
+                var fileStream = new MemoryStream(resourceUploadData.Bytes)
+                {
+                    Position = 0
+                };
+
                 SaveMediaResponse uploadResult = _bynderClient.GetAssetService().UploadFileAsync(fileStream, new SdkUploadQuery()
                 {
                     BrandId = resourceUploadData.BrandId,
                     Name = resourceUploadData.Filename,
                     MediaId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId)?.Data,
+                    OriginalFileName = resourceUploadData.Filename,
+                    Filepath = resourceUploadData.Filename,
                 }).GetAwaiter().GetResult();
                 
                 if (uploadResult.IsSuccessful)
@@ -154,7 +160,7 @@ namespace Bynder.Workers
             catch (Exception ex)
             {
                 bynderUploadStateField.Data = BynderStates.Error;
-                _inRiverContext.Log(LogLevel.Error, $"Error uploading resource entity {resourceEntity.Id}. Message: {ex.GetBaseException().Message}");
+                _inRiverContext.Log(LogLevel.Error, $"Error uploading resource entity {resourceEntity.Id}. Message: {ex.GetBaseException().Message}", ex);
             }
 
             fieldsToUpdate.Add(bynderUploadStateField);
