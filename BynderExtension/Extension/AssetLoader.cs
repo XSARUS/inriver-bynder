@@ -18,6 +18,7 @@ namespace Bynder.Extension
     using Utils.Helpers;
     using Workers;
     using SettingProviders;
+    using Utils.Extensions;
 
     public class AssetLoader : AbstractBynderExtension, IScheduledExtension
     {
