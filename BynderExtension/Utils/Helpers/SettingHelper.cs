@@ -12,6 +12,7 @@ namespace Bynder.Utils.Helpers
     using Enums;
     using Extensions;
     using Models;
+    using Newtonsoft.Json.Linq;
     using System.Runtime;
 
     public static class SettingHelper
@@ -179,9 +180,19 @@ namespace Bynder.Utils.Helpers
             if (settings.ContainsKey(Settings.FilenameExtensionMediaTypeMapping) && !string.IsNullOrWhiteSpace(settings[Settings.FilenameExtensionMediaTypeMapping]))
             {
                 var femTypeMappingSetting = settings[Settings.FilenameExtensionMediaTypeMapping];
+                logger.Log(LogLevel.Debug, $"RAW JSON from setting 'Settings.FilenameExtensionMediaTypeMapping': '{femTypeMappingSetting}'");
+
                 if (femTypeMappingSetting != "[]" && femTypeMappingSetting != "{}" && femTypeMappingSetting != "[{}]")
                 {
-                    return JsonConvert.DeserializeObject<Dictionary<string, List<MediaTypeTransformConfig>>>(settings[Settings.FilenameExtensionMediaTypeMapping]);
+                    try
+                    {
+                        var mapping = JsonConvert.DeserializeObject<Dictionary<string, List<MediaTypeTransformConfig>>>(settings[Settings.FilenameExtensionMediaTypeMapping]);
+                        return mapping;
+                    }
+                    catch {
+                        logger.Log(LogLevel.Warning, $"Could not find deserialize for '{Settings.FilenameExtensionMediaTypeMapping}'");
+                        return new Dictionary<string, List<MediaTypeTransformConfig>>();
+                    }
                 }
             }
 
