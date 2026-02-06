@@ -110,7 +110,7 @@ namespace Bynder.Workers
             bynderDownloadStateField.Data = BynderStates.Done;
             resourceFilenameField.Data = fileHandlingDetails.Item2;
 
-            var fieldList = new List<Field> {
+            var fieldList = new List<Field> {   
                     resourceFilenameField,
                     bynderDownloadStateField,
                     resourceFileIdField,
@@ -138,15 +138,15 @@ namespace Bynder.Workers
             var originalFileExtension = Path.GetExtension(asset.GetOriginalFileName()).Replace(".", "").ToLower();
             var mappings = SettingHelper.GetFilenameExtensionMediaTypeMapping(InRiverContext.Settings, InRiverContext.Logger);
 
-            InRiverContext.Log(LogLevel.Verbose, $"Got {mappings.Count} filename-ext mappings!");
+            //InRiverContext.Log(LogLevel.Verbose, $"Got {mappings.Count} filename-ext mappings!");
 
             // Loop through all mappings if the file-extension has any mappings configured.
             // Use the first mapping which applies and skip the rest 
             if (mappings.ContainsKey(originalFileExtension)) {
-                InRiverContext.Log(LogLevel.Verbose, $"Mapping(s) found for filename-ext '{originalFileExtension}'!");
+                //InRiverContext.Log(LogLevel.Verbose, $"Mapping(s) found for filename-ext '{originalFileExtension}'!");
                 foreach (var mapping in mappings[originalFileExtension])
                 {
-                    InRiverContext.Log(LogLevel.Verbose, $"Processing mapping for filename-ext '{originalFileExtension}'!");
+                    //InRiverContext.Log(LogLevel.Verbose, $"Processing mapping for filename-ext '{originalFileExtension}'!");
                     if (asset.Thumbnails.All.ContainsKey(mapping.MediaType))
                     {
                         string downloadUrl = asset.Thumbnails.All[mapping.MediaType].Value<string>();
@@ -154,7 +154,7 @@ namespace Bynder.Workers
                         string formattedFilename = Path.GetFileName(uri.LocalPath);
                         string extension = Path.GetExtension(formattedFilename);
 
-                        InRiverContext.Log(LogLevel.Verbose, $"For mediatype '{mapping.MediaType}' for mapping with filename-ext '{originalFileExtension}' got url '{downloadUrl}', formatted filename '{formattedFilename}' and extension '{extension}'!");
+                        //InRiverContext.Log(LogLevel.Verbose, $"For mediatype '{mapping.MediaType}' for mapping with filename-ext '{originalFileExtension}' got url '{downloadUrl}', formatted filename '{formattedFilename}' and extension '{extension}'!");
 
                         if (string.IsNullOrWhiteSpace(extension)) {
                             formattedFilename = asset.GetOriginalFileName();
@@ -162,8 +162,9 @@ namespace Bynder.Workers
 
                         if (!string.IsNullOrWhiteSpace(mapping.FilenameRegex?.Trim()))
                         {
+                            //InRiverContext.Log(LogLevel.Verbose, $"For mediatype '{mapping.MediaType}' for mapping with filename-ext '{originalFileExtension}' applying regex: '{mapping.FilenameRegex}'!");
                             string regexPattern = mapping.FilenameRegex;
-                            formattedFilename = Regex.Replace(formattedFilename, regexPattern, "");
+                            formattedFilename = Regex.Replace(formattedFilename, regexPattern, string.Empty, RegexOptions.IgnoreCase);
                         }
 
                         InRiverContext.Log(LogLevel.Verbose, $"For mediatype '{mapping.MediaType}' for mapping with filename-ext '{originalFileExtension}' got eventually formatted filename '{formattedFilename}'!");
@@ -177,7 +178,7 @@ namespace Bynder.Workers
             }
             else
             {
-                InRiverContext.Log(LogLevel.Verbose, $"No mappings found for filename-ext '{originalFileExtension}'!");
+                // InRiverContext.Log(LogLevel.Verbose, $"No mappings found for filename-ext '{originalFileExtension}'!");
             }
 
             // Default to original when no mapping is found
