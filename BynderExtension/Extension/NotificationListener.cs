@@ -10,9 +10,11 @@ namespace Bynder.Extension
 {
     using Models;
     using Names;
-    
+
     public class NotificationListener : AbstractExtension, IInboundDataExtension
     {
+        #region Properties
+
         public override Dictionary<string, string> DefaultSettings
         {
             get
@@ -21,10 +23,12 @@ namespace Bynder.Extension
                 {
                     // No settings for this extension
                 };
-                
+
                 return settings;
             }
         }
+
+        #endregion Properties
 
         #region Methods
 
@@ -41,6 +45,23 @@ namespace Bynder.Extension
         /// <param name="value"></param>
         /// <returns></returns>
         public string Delete(string value) => string.Empty;
+
+        public override string Test()
+        {
+            var sb = new StringBuilder();
+
+            try
+            {
+                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
+                sb.AppendLine($"Number of connectorstates currently: {states.Count}");
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine(ex.ToString());
+            }
+
+            return sb.ToString();
+        }
 
         /// <summary>
         /// called on PUT/POST
@@ -74,23 +95,6 @@ namespace Bynder.Extension
             Context.Log(LogLevel.Verbose, responseMessage);
 
             return responseMessage;
-        }
-
-        public override string Test()
-        {
-            var sb = new StringBuilder();
-
-            try
-            {
-                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
-                sb.AppendLine($"Number of connectorstates currently: {states.Count}");
-            }
-            catch (Exception ex)
-            {
-                sb.AppendLine(ex.ToString());
-            }
-
-            return sb.ToString();
         }
 
         #endregion Methods

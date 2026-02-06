@@ -5,14 +5,18 @@ using System.Collections.Generic;
 
 namespace Bynder.Workers
 {
-    using SettingProviders;
     using Models;
     using Names;
+    using SettingProviders;
     using Utils.Helpers;
 
     public class AssetDeletedWorker : AbstractWorker, IWorker
     {
+        #region Properties
+
         public override Dictionary<string, string> DefaultSettings => AssetDeletedWorkerSettingsProvider.Create();
+
+        #endregion Properties
 
         #region Constructors
 

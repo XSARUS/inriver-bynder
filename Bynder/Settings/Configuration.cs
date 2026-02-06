@@ -1,9 +1,9 @@
 // Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json;
 using System;
 using System.IO;
-using Newtonsoft.Json;
 
 namespace Bynder.Sdk.Settings
 {
@@ -12,6 +12,8 @@ namespace Bynder.Sdk.Settings
     /// </summary>
     public class Configuration
     {
+        #region Properties
+
         /// <summary>
         /// Bynder domain Url we want to communicate with
         /// </summary>
@@ -47,6 +49,10 @@ namespace Bynder.Sdk.Settings
         [JsonProperty("scopes")]
         public string Scopes { get; set; }
 
+        #endregion Properties
+
+        #region Methods
+
         /// <summary>
         /// Create a <see cref="Configuration"/> using the given filepath
         /// </summary>
@@ -57,5 +63,7 @@ namespace Bynder.Sdk.Settings
             Console.WriteLine("Read config from " + filepath);
             return JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(filepath));
         }
+
+        #endregion Methods
     }
 }

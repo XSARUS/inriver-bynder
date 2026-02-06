@@ -6,6 +6,8 @@ namespace Bynder.SettingProviders
 
     public static class CvlSyncWorkerSettingsProvider
     {
+        #region Methods
+
         public static Dictionary<string, string> Create()
         {
             return new Dictionary<string, string>()
@@ -15,5 +17,7 @@ namespace Bynder.SettingProviders
                 { Settings.BynderLocaleForMetapropertyOptionLabel, string.Empty },
             };
         }
+
+        #endregion Methods
     }
 }

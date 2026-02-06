@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using Bynder.Sdk.Model;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Bynder.Sdk.Model;
 
 namespace Bynder.Sdk.Service.Upload
 {
@@ -12,6 +12,8 @@ namespace Bynder.Sdk.Service.Upload
     /// </summary>
     internal class AmazonApi : IAmazonApi
     {
+        #region Methods
+
         /// <summary>
         /// Check <see cref="IAmazonApi"/> for more information
         /// </summary>
@@ -51,5 +53,7 @@ namespace Bynder.Sdk.Service.Upload
                 response.EnsureSuccessStatusCode();
             }
         }
+
+        #endregion Methods
     }
 }

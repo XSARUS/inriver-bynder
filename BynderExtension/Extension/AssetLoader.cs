@@ -14,14 +14,14 @@ namespace Bynder.Extension
     using Sdk.Model;
     using Sdk.Query.Asset;
     using Sdk.Service;
-    using Utils.Helpers;
-    using Workers;
     using SettingProviders;
     using Utils.Extensions;
+    using Utils.Helpers;
+    using Workers;
 
     public class AssetLoader : AbstractBynderExtension, IScheduledExtension
     {
-        #region Methods
+        #region Properties
 
         public override Dictionary<string, string> DefaultSettings
         {
@@ -38,6 +38,10 @@ namespace Bynder.Extension
             }
         }
 
+        #endregion Properties
+
+        #region Methods
+
         /// <summary>
         /// Get a list of all assetIds from Bynder using the configured filter Query
         /// which will be executed against api/v4/media/?-----
@@ -50,7 +54,7 @@ namespace Bynder.Extension
 
             try
             {
-                Context.Log(LogLevel.Information, "Start loading assets");              
+                Context.Log(LogLevel.Information, "Start loading assets");
 
                 // get all assets ids
                 // note: this is a paged result set, call next page until reaching end.
@@ -62,7 +66,8 @@ namespace Bynder.Extension
 
                 Context.Log(LogLevel.Information, $"Start processing {media.Count} assets.");
 
-                foreach (Media medium in media) {
+                foreach (Media medium in media)
+                {
                     var result = worker.Execute(medium.Id, NotificationType.DataUpsert);
                     if (result != null && result.Messages.Any())
                     {
@@ -79,6 +84,36 @@ namespace Bynder.Extension
             }
 
             Context.Log(LogLevel.Information, "Initial import finished!");
+        }
+
+        public AssetUpdatedWorker GetWorker()
+        {
+            return Container.GetInstance<AssetUpdatedWorker>();
+        }
+
+        public override string Test()
+        {
+            var sb = new StringBuilder();
+
+            try
+            {
+                if (SettingHelper.ExecuteBaseTestMethod(Context.Settings, Context.Logger))
+                {
+                    sb.AppendLine(base.Test());
+                }
+
+                var query = GetQuery(true, true);
+                MediaFullResult result = RunSync(() => SearchAsync(query));
+
+                sb.AppendLine($"Search resulted in {result.Count.Total} assets in total, without the limit applied.");
+                sb.AppendLine($"Search resulted in {result.Media.Count} assets.");
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine(ex.ToString());
+            }
+
+            return sb.ToString();
         }
 
         internal MediaQuerySearch GetQuery(bool includeCount = false, bool includeTotal = false)
@@ -125,36 +160,6 @@ namespace Bynder.Extension
                 .GetAssetService()
                 .GetMediaFullResultAsync(mediaQuery)
                 .ConfigureAwait(false);
-        }
-
-        public AssetUpdatedWorker GetWorker()
-        {
-            return Container.GetInstance<AssetUpdatedWorker>();
-        }
-
-        public override string Test()
-        {
-            var sb = new StringBuilder();
-
-            try
-            {
-                if (SettingHelper.ExecuteBaseTestMethod(Context.Settings, Context.Logger))
-                {
-                    sb.AppendLine(base.Test());
-                }
-
-                var query = GetQuery(true, true);
-                MediaFullResult result = RunSync(() => SearchAsync(query));
-
-                sb.AppendLine($"Search resulted in {result.Count.Total} assets in total, without the limit applied.");
-                sb.AppendLine($"Search resulted in {result.Media.Count} assets.");
-            }
-            catch (Exception ex)
-            {
-                sb.AppendLine(ex.ToString());
-            }
-
-            return sb.ToString();
         }
 
         #endregion Methods

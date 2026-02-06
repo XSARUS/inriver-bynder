@@ -6,6 +6,8 @@ namespace Bynder.SettingProviders
 
     public static class NonResourceMetapropertyWorkerSettingsProvider
     {
+        #region Methods
+
         public static Dictionary<string, string> Create()
         {
             var settings = new Dictionary<string, string>()
@@ -15,5 +17,7 @@ namespace Bynder.SettingProviders
 
             return settings;
         }
+
+        #endregion Methods
     }
 }

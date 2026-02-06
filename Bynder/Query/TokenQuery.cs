@@ -10,6 +10,8 @@ namespace Bynder.Sdk.Query
     /// </summary>
     public class TokenQuery
     {
+        #region Properties
+
         /// <summary>
         /// Gets or sets the client identifier.
         /// </summary>
@@ -25,11 +27,11 @@ namespace Bynder.Sdk.Query
         public string ClientSecret { get; set; }
 
         /// <summary>
-        /// Gets or sets the redirect URI.
+        /// Gets or sets the code.
         /// </summary>
-        /// <value>The redirect URI.</value>
-        [ApiField("redirect_uri")]
-        public string RedirectUri { get; set; }
+        /// <value>The code.</value>
+        [ApiField("code")]
+        public string Code { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the grant.
@@ -39,11 +41,18 @@ namespace Bynder.Sdk.Query
         public string GrantType { get; set; }
 
         /// <summary>
-        /// Gets or sets the code.
+        /// Gets or sets the redirect URI.
         /// </summary>
-        /// <value>The code.</value>
-        [ApiField("code")]
-        public string Code { get; set; }
+        /// <value>The redirect URI.</value>
+        [ApiField("redirect_uri")]
+        public string RedirectUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the refresh token.
+        /// </summary>
+        /// <value>The refresh token.</value>
+        [ApiField("refresh_token")]
+        public string RefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets the scopes.
@@ -52,11 +61,6 @@ namespace Bynder.Sdk.Query
         [ApiField("scope")]
         public string Scopes { get; set; }
 
-        /// <summary>
-        /// Gets or sets the refresh token.
-        /// </summary>
-        /// <value>The refresh token.</value>
-        [ApiField("refresh_token")]
-        public string RefreshToken { get; set; }
+        #endregion Properties
     }
 }

@@ -158,7 +158,7 @@ namespace Bynder.Extension
 
         private void InitializeScheduler()
         {
-            _cronExpression = SettingHelper.GetCronExpression(Context.Settings, Context.Logger); 
+            _cronExpression = SettingHelper.GetCronExpression(Context.Settings, Context.Logger);
             _crontabScheduler = CrontabSchedule.Parse(_cronExpression);
             InitializeScheduledTimer();
 

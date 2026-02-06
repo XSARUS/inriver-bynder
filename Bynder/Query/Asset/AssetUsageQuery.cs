@@ -1,8 +1,6 @@
 using Bynder.Sdk.Api.Converters;
 using Bynder.Sdk.Query.Decoder;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Bynder.Sdk.Query.Asset
 {
@@ -11,28 +9,25 @@ namespace Bynder.Sdk.Query.Asset
     /// </summary>
     public class AssetUsageQuery
     {
-        /// <summary>
-        /// Initializes the class with asset usage information.
-        /// </summary>
-        /// <param name="integrationId">ID of the integration that the usage applies to.</param>
-        /// <param name="assetId">ID of the asset that the usage applies to.</param>
-        public AssetUsageQuery(string integrationId, string assetId)
-        {
-            IntegrationId = integrationId;
-            AssetId = assetId;
-        }
+        #region Properties
 
         /// <summary>
-        /// ID of the integration that the usage applies to.
+        /// Additional information.
         /// </summary>
-        [ApiField("integration_id")]
-        public string IntegrationId { get; set; }
+        [ApiField("additional")]
+        public string Additional { get; set; }
 
         /// <summary>
         /// ID of the asset that the usage applies to.
         /// </summary>
         [ApiField("asset_id")]
         public string AssetId { get; set; }
+
+        /// <summary>
+        /// ID of the integration that the usage applies to.
+        /// </summary>
+        [ApiField("integration_id")]
+        public string IntegrationId { get; set; }
 
         /// <summary>
         /// Timestamp of the operation.
@@ -46,10 +41,21 @@ namespace Bynder.Sdk.Query.Asset
         [ApiField("uri")]
         public string Uri { get; set; }
 
+        #endregion Properties
+
+        #region Constructors
+
         /// <summary>
-        /// Additional information.
+        /// Initializes the class with asset usage information.
         /// </summary>
-        [ApiField("additional")]
-        public string Additional { get; set; }
+        /// <param name="integrationId">ID of the integration that the usage applies to.</param>
+        /// <param name="assetId">ID of the asset that the usage applies to.</param>
+        public AssetUsageQuery(string integrationId, string assetId)
+        {
+            IntegrationId = integrationId;
+            AssetId = assetId;
+        }
+
+        #endregion Constructors
     }
 }

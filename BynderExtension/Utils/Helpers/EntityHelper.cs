@@ -3,10 +3,9 @@ using inRiver.Remoting.Objects;
 
 namespace Bynder.Utils.Helpers
 {
-    using Model;
-    using Sdk.Model;
     using Enums;
     using Names;
+    using Sdk.Model;
 
     public static class EntityHelper
     {

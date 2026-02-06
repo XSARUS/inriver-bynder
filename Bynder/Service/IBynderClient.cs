@@ -16,11 +16,7 @@ namespace Bynder.Sdk.Service
     /// </summary>
     public interface IBynderClient : IDisposable
     {
-        /// <summary>
-        /// Occurs when credentials changed, and that happens every time
-        /// the access token is refreshed.
-        /// </summary>
-        event EventHandler<Token> OnCredentialsChanged;
+        #region Methods
 
         /// <summary>
         /// Gets the asset service to interact with assets in your Bynder portal.
@@ -51,5 +47,17 @@ namespace Bynder.Sdk.Service
         /// </summary>
         /// <returns>The User service</returns>
         IUserService GetUserService();
+
+        #endregion Methods
+
+        #region Events
+
+        /// <summary>
+        /// Occurs when credentials changed, and that happens every time
+        /// the access token is refreshed.
+        /// </summary>
+        event EventHandler<Token> OnCredentialsChanged;
+
+        #endregion Events
     }
 }

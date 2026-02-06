@@ -1,12 +1,12 @@
 ﻿using Bynder.Api;
 using Bynder.Enums;
 using Bynder.Sdk.Settings;
-using BynderClient = Bynder.Sdk.Service.BynderClient;
 using inRiver.Remoting;
 using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using BynderClient = Bynder.Sdk.Service.BynderClient;
 
 namespace BynderTest
 {
@@ -49,9 +49,10 @@ namespace BynderTest
             {Bynder.Config.Settings.TimestampSettings, "{\"timestampType\": \"Utc\",\"localTimeZone\": \"W. Europe Standard Time\",\"localDstEnabled\": true}" },
         };
 
-        private const string _customerRemotingUrl = "https://remoting.productmarketingcloud.com";
         // set your inriver user api key here
         private const string _customerRemotingApiKey = "***";
+
+        private const string _customerRemotingUrl = "https://remoting.productmarketingcloud.com";
 
         #endregion Fields
 
@@ -59,14 +60,14 @@ namespace BynderTest
 
         public TestContext TestContext { get; set; }
 
+        internal BynderClient _bynderClient { get; set; }
+
         protected BynderClientSettings BynderSettings => new BynderClientSettings()
         {
             ConsumerKey = TestSettings[SettingNames.BynderClientId],
             ConsumerSecret = TestSettings[SettingNames.BynderSecretId],
             CustomerBynderUrl = TestSettings[SettingNames.BynderClientUrl],
         };
-
-        internal BynderClient _bynderClient { get; set; }
 
         #endregion Properties
 

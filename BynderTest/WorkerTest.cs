@@ -1,7 +1,6 @@
 ﻿using Bynder.Api;
 using Bynder.Extension;
 using Bynder.Sdk.Settings;
-using inRiver.Remoting.Extension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using SdkIBynderClient = Bynder.Sdk.Service.BynderClient;
@@ -28,7 +27,7 @@ namespace BynderTest
                 ClientSecret = bynderClientSettings.ConsumerSecret
             };
             var worker = new Bynder.Workers.AssetUpdatedWorker(
-                InRiverContext,  
+                InRiverContext,
                 new Bynder.Utils.FilenameEvaluator(InRiverContext),
                 new SdkIBynderClient(configuration)
             );

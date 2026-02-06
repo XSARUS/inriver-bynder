@@ -6,6 +6,23 @@ namespace Bynder.Sdk.Query.Asset
 {
     public class AddTagToMediaQuery
     {
+        #region Properties
+
+        /// <summary>
+        /// list of asset ids to which you'd like to add the tag
+        /// </summary>
+        [ApiField("data", Converter = typeof(JsonConverter))]
+        public IList<string> MediaIds { get; private set; }
+
+        /// <summary>
+        /// Id of the tag on which to perform the action
+        /// </summary>
+        public string TagId { get; private set; }
+
+        #endregion Properties
+
+        #region Constructors
+
         /// <summary>
         /// Initializes the class with needed information
         /// </summary>
@@ -17,15 +34,6 @@ namespace Bynder.Sdk.Query.Asset
             MediaIds = mediaIds;
         }
 
-        /// <summary>
-        /// Id of the tag on which to perform the action
-        /// </summary>
-        public string TagId { get; private set; }
-
-        /// <summary>
-        /// list of asset ids to which you'd like to add the tag
-        /// </summary>
-        [ApiField("data", Converter = typeof(JsonConverter))]
-        public IList<string> MediaIds { get; private set; }
+        #endregion Constructors
     }
 }

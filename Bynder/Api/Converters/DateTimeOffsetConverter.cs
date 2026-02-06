@@ -10,13 +10,15 @@ namespace Bynder.Sdk.Api.Converters
     /// </summary>
     public class DateTimeOffsetConverter : ITypeToStringConverter
     {
+        #region Methods
+
         /// <summary>
         /// Checks if the converter can convert a specific type
         /// </summary>
         /// <param name="typeToConvert">Type to convert from</param>
         /// <returns>true if the type is <see cref="DateTimeOffset"/></returns>
         public bool CanConvert(Type typeToConvert)
-        {       
+        {
             return typeof(DateTimeOffset) == typeToConvert || typeof(DateTimeOffset) == Nullable.GetUnderlyingType(typeToConvert);
         }
 
@@ -34,5 +36,7 @@ namespace Bynder.Sdk.Api.Converters
 
             return string.Empty;
         }
+
+        #endregion Methods
     }
 }

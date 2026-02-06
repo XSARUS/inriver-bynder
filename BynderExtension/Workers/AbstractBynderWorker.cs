@@ -4,16 +4,22 @@ namespace Bynder.Workers
 {
     using SdkIBynderClient = Sdk.Service.IBynderClient;
 
-    public class AbstractBynderWorker: AbstractWorker
+    public class AbstractBynderWorker : AbstractWorker
     {
-        #region Properties
+        #region Fields
+
         protected readonly SdkIBynderClient _bynderClient;
-        #endregion Properties
+
+        #endregion Fields
+
+        #region Constructors
 
         public AbstractBynderWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null)
             : base(inRiverContext)
         {
             _bynderClient = bynderClient;
         }
+
+        #endregion Constructors
     }
 }

@@ -8,15 +8,19 @@ namespace Bynder.Sdk.Query.Asset
     /// </summary>
     public class DownloadMediaQuery
     {
+        #region Properties
+
         /// <summary>
         /// Media id
         /// </summary>
         public string MediaId { get; set; }
 
         /// <summary>
-        /// Media item id. Can be null and Url returned will be the Url for the 
+        /// Media item id. Can be null and Url returned will be the Url for the
         /// original item
         /// </summary>
         public string MediaItemId { get; set; }
+
+        #endregion Properties
     }
 }

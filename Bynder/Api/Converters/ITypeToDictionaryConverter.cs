@@ -12,6 +12,8 @@ namespace Bynder.Sdk.Api.Converters
     /// </summary>
     public interface ITypeToDictionaryConverter
     {
+        #region Methods
+
         /// <summary>
         /// Checks if the converter can convert a specific type
         /// </summary>
@@ -25,5 +27,7 @@ namespace Bynder.Sdk.Api.Converters
         /// <param name="value">value to be converted</param>
         /// <returns>converted string value</returns>
         IDictionary<string, string> Convert(object value);
+
+        #endregion Methods
     }
 }

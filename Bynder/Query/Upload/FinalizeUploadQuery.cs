@@ -10,17 +10,7 @@ namespace Bynder.Sdk.Query.Upload
     /// </summary>
     internal class FinalizeUploadQuery
     {
-        /// <summary>
-        /// Target id
-        /// </summary>
-        [ApiField("targetid")]
-        public string TargetId { get; set; }
-
-        /// <summary>
-        /// S3 filename
-        /// </summary>
-        [ApiField("s3_filename")]
-        public string S3Filename { get; set; }
+        #region Properties
 
         /// <summary>
         /// Number of chunks
@@ -29,8 +19,22 @@ namespace Bynder.Sdk.Query.Upload
         public string Chunks { get; set; }
 
         /// <summary>
+        /// S3 filename
+        /// </summary>
+        [ApiField("s3_filename")]
+        public string S3Filename { get; set; }
+
+        /// <summary>
+        /// Target id
+        /// </summary>
+        [ApiField("targetid")]
+        public string TargetId { get; set; }
+
+        /// <summary>
         /// Upload id
         /// </summary>
         public string UploadId { get; set; }
+
+        #endregion Properties
     }
 }

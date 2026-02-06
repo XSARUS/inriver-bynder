@@ -6,14 +6,16 @@ using System.Text;
 
 namespace Bynder.Extension
 {
-    using SettingProviders;
     using Names;
+    using SettingProviders;
     using Utils.Helpers;
     using Utils.InRiver;
     using Workers;
 
     public class Uploader : AbstractBynderExtension, IEntityListener
     {
+        #region Properties
+
         public override Dictionary<string, string> DefaultSettings
         {
             get
@@ -33,6 +35,8 @@ namespace Bynder.Extension
                 return settings;
             }
         }
+
+        #endregion Properties
 
         #region Methods
 

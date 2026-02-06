@@ -12,7 +12,6 @@ namespace Bynder.Workers
     public class NotificationWorker : IWorker
     {
         #region Fields
-        public Dictionary<string, string> DefaultSettings => NotificationWorkerSettingsProvider.Create();
 
         private readonly Dictionary<string, NotificationType> _notificationMapping = new Dictionary<string, NotificationType>
         {
@@ -27,6 +26,12 @@ namespace Bynder.Workers
         };
 
         #endregion Fields
+
+        #region Properties
+
+        public Dictionary<string, string> DefaultSettings => NotificationWorkerSettingsProvider.Create();
+
+        #endregion Properties
 
         #region Methods
 

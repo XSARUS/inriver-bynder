@@ -9,10 +9,13 @@ namespace Bynder.Workers
     internal class BynderSettingsValidationWorker : AbstractWorker, IWorker
     {
         #region Fields
+
         private WorkerResult _workerResult;
+
         #endregion Fields
 
         #region Constructors
+
         public BynderSettingsValidationWorker(inRiverContext inRiverContext) : base(inRiverContext)
         {
         }

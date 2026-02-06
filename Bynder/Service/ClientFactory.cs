@@ -10,6 +10,8 @@ namespace Bynder.Sdk.Service
     /// </summary>
     public static class ClientFactory
     {
+        #region Methods
+
         /// <summary>
         /// Creates the client to be used to communicate with Bynder.
         /// </summary>
@@ -19,5 +21,7 @@ namespace Bynder.Sdk.Service
         {
             return new BynderClient(configuration);
         }
+
+        #endregion Methods
     }
 }

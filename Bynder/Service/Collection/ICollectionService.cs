@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using Bynder.Sdk.Model;
+using Bynder.Sdk.Query.Collection;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bynder.Sdk.Query.Collection;
-using Bynder.Sdk.Model;
 
 namespace Bynder.Sdk.Service.Collection
 {
@@ -13,20 +13,15 @@ namespace Bynder.Sdk.Service.Collection
     /// </summary>
     public interface ICollectionService
     {
-        /// <summary>
-        /// Gets Collections Async
-        /// </summary>
-        /// <param name="query">information to correctly filter/paginate</param>
-        /// <returns>Task with a list of <see cref="Collection"/> items</returns>
-        Task<IList<Model.Collection>> GetCollectionsAsync(GetCollectionsQuery query);
+        #region Methods
 
         /// <summary>
-        /// Gets a specific colection
+        /// Adds Media to Collection
         /// </summary>
-        /// <param name="id">The uuid of the specific <see cref="Collection"/></param>
-        /// <returns>Task that contains the specific <see cref="Collection"/></returns>
+        /// <param name="query">information needed to add media to a Collection</param>
+        /// <returns>Task with the Uri of the created Collection</returns>
         /// <exception cref="HttpRequestException">Can be thrown when requests to server can't be completed or HTTP code returned by server is an error</exception>
-        Task<Model.Collection> GetCollectionAsync(string id);
+        Task<Status> AddMediaAsync(AddMediaQuery query);
 
         /// <summary>
         /// Creates a new Collection
@@ -45,20 +40,27 @@ namespace Bynder.Sdk.Service.Collection
         Task<Status> DeleteCollectionAsync(string id);
 
         /// <summary>
+        /// Gets a specific colection
+        /// </summary>
+        /// <param name="id">The uuid of the specific <see cref="Collection"/></param>
+        /// <returns>Task that contains the specific <see cref="Collection"/></returns>
+        /// <exception cref="HttpRequestException">Can be thrown when requests to server can't be completed or HTTP code returned by server is an error</exception>
+        Task<Model.Collection> GetCollectionAsync(string id);
+
+        /// <summary>
+        /// Gets Collections Async
+        /// </summary>
+        /// <param name="query">information to correctly filter/paginate</param>
+        /// <returns>Task with a list of <see cref="Collection"/> items</returns>
+        Task<IList<Model.Collection>> GetCollectionsAsync(GetCollectionsQuery query);
+
+        /// <summary>
         /// Gets Media of Collection Async
         /// </summary>
         /// <param name="query">information needed to retrieve Media of a Collection</param>
         /// <returns>Task with a list of <see cref="Collection"/> items</returns>
         /// <exception cref="HttpRequestException">Can be thrown when requests to server can't be completed or HTTP code returned by server is an error</exception>
         Task<IList<string>> GetMediaAsync(GetMediaQuery query);
-
-        /// <summary>
-        /// Adds Media to Collection
-        /// </summary>
-        /// <param name="query">information needed to add media to a Collection</param>
-        /// <returns>Task with the Uri of the created Collection</returns>
-        /// <exception cref="HttpRequestException">Can be thrown when requests to server can't be completed or HTTP code returned by server is an error</exception>
-        Task<Status> AddMediaAsync(AddMediaQuery query);
 
         /// <summary>
         /// Removes Media from Colection
@@ -75,5 +77,7 @@ namespace Bynder.Sdk.Service.Collection
         /// <returns>Task</returns>
         /// <exception cref="HttpRequestException">Can be thrown when requests to server can't be completed or HTTP code returned by server is an error</exception>
         Task<Status> ShareCollectionAsync(ShareQuery query);
+
+        #endregion Methods
     }
 }

@@ -1,6 +1,5 @@
 namespace Bynder.Sdk.Model
 {
-
     public enum TagsOrderBy
     {
         TagAscending,
@@ -8,5 +7,4 @@ namespace Bynder.Sdk.Model
         MediaCountAscending,
         MediaCountDescending
     }
-
 }

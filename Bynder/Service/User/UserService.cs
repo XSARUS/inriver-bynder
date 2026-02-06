@@ -1,25 +1,24 @@
-﻿using Bynder.Query.Profile;
-using Bynder.Query.User;
+﻿using Bynder.Query.User;
 using Bynder.Sdk.Api.Requests;
 using Bynder.Sdk.Api.RequestSender;
-using Bynder.Sdk.Model;
-using Bynder.Sdk.Service.Asset;
-using Bynder.Sdk.Service.Upload;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Bynder.Sdk.Service.User
 {
     internal class UserService : IUserService
     {
+        #region Fields
+
         /// <summary>
         /// Request sender to communicate with the Bynder API
         /// </summary>
         private readonly IApiRequestSender _requestSender;
+
+        #endregion Fields
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the class
@@ -30,15 +29,9 @@ namespace Bynder.Sdk.Service.User
             _requestSender = requestSender;
         }
 
-        public async Task<IList<Model.User>> GetUsersAsync(UsersQuery query)
-        {
-            return await _requestSender.SendRequestAsync(new ApiRequest<IList<Model.User>>
-            {
-                Path = "/api/v4/users",
-                HTTPMethod = HttpMethod.Get,
-                Query = query,
-            }).ConfigureAwait(false);
-        }
+        #endregion Constructors
+
+        #region Methods
 
         public async Task<Model.User> GetCurrentUserAsync()
         {
@@ -57,5 +50,17 @@ namespace Bynder.Sdk.Service.User
                 HTTPMethod = HttpMethod.Get,
             }).ConfigureAwait(false);
         }
+
+        public async Task<IList<Model.User>> GetUsersAsync(UsersQuery query)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest<IList<Model.User>>
+            {
+                Path = "/api/v4/users",
+                HTTPMethod = HttpMethod.Get,
+                Query = query,
+            }).ConfigureAwait(false);
+        }
+
+        #endregion Methods
     }
 }

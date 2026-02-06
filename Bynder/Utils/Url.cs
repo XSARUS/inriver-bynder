@@ -12,6 +12,8 @@ namespace Bynder.Sdk.Utils
     /// </summary>
     public static class Url
     {
+        #region Methods
+
         /// <summary>
         /// Converts dictionary to query parameters.
         /// </summary>
@@ -26,5 +28,7 @@ namespace Bynder.Sdk.Utils
 
             return queryUri;
         }
+
+        #endregion Methods
     }
 }

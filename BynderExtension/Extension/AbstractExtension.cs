@@ -21,8 +21,6 @@ namespace Bynder.Extension
 
         public inRiverContext Context { get; set; }
 
-        protected Container Container => _container ?? (_container = new Container(new Registry(Context)));
-
         public virtual Dictionary<string, string> DefaultSettings
         {
             get
@@ -35,6 +33,8 @@ namespace Bynder.Extension
                 return settings;
             }
         }
+
+        protected Container Container => _container ?? (_container = new Container(new Registry(Context)));
 
         #endregion Properties
 

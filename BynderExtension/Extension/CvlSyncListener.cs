@@ -6,8 +6,8 @@ using System.Text;
 
 namespace Bynder.Extension
 {
-    using SettingProviders;
     using Enums;
+    using SettingProviders;
     using Utils.Helpers;
     using Workers;
 
@@ -36,6 +36,7 @@ namespace Bynder.Extension
         #endregion Properties
 
         #region Methods
+
         public void CVLValueCreated(string cvlId, string cvlValueKey)
         {
             try
@@ -127,7 +128,6 @@ namespace Bynder.Extension
 
             return sb.ToString();
         }
-
 
         #endregion Methods
     }

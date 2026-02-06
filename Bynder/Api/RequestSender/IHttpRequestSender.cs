@@ -13,6 +13,8 @@ namespace Bynder.Sdk.Api.RequestSender
     /// </summary>
     internal interface IHttpRequestSender : IDisposable
     {
+        #region Methods
+
         /// <summary>
         /// Sends the HTTP request and returns its response.
         /// </summary>
@@ -21,5 +23,7 @@ namespace Bynder.Sdk.Api.RequestSender
         /// <exception cref="T:System.Net.Http.HttpRequestException">The request failed due to an underlying issue
         /// such as network connectivity, DNS failure, server certificate validation or timeout.</exception>
         Task<HttpResponseMessage> SendHttpRequest(HttpRequestMessage httpRequest);
+
+        #endregion Methods
     }
 }

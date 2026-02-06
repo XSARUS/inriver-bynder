@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using Bynder.Sdk.Exceptions;
-using Bynder.Sdk.Settings;
 
 namespace Bynder.Sdk.Settings.Validators
 {
@@ -11,6 +10,8 @@ namespace Bynder.Sdk.Settings.Validators
     /// </summary>
     internal class OAuth2ServiceConfigurationValidator
     {
+        #region Methods
+
         /// <summary>
         /// Validates the specified configuration is valid to be used by <see cref="OAuthService"/>.
         /// Throws if configuration is not valid.
@@ -23,5 +24,7 @@ namespace Bynder.Sdk.Settings.Validators
                 throw new InvalidConfigurationException("Missing Client Secret");
             }
         }
+
+        #endregion Methods
     }
 }

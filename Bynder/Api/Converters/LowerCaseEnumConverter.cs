@@ -10,6 +10,8 @@ namespace Bynder.Sdk.Api.Converters
     /// </summary>
     public class LowerCaseEnumConverter : ITypeToStringConverter
     {
+        #region Methods
+
         /// <summary>
         /// Returns true if type is assignable from Enum or a nullable Enum
         /// </summary>
@@ -29,5 +31,7 @@ namespace Bynder.Sdk.Api.Converters
         {
             return value?.ToString().ToLowerInvariant() ?? string.Empty;
         }
+
+        #endregion Methods
     }
 }

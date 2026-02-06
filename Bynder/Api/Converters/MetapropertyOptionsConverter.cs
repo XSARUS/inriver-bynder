@@ -6,6 +6,7 @@ namespace Bynder.Sdk.Api.Converters
 {
     public class MetapropertyOptionsConverter : ITypeToDictionaryConverter
     {
+        #region Methods
 
         public bool CanConvert(Type typeToConvert)
         {
@@ -20,5 +21,6 @@ namespace Bynder.Sdk.Api.Converters
             );
         }
 
+        #endregion Methods
     }
 }

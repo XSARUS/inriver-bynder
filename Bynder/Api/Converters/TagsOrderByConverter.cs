@@ -1,10 +1,12 @@
-using System;
 using Bynder.Sdk.Model;
+using System;
 
 namespace Bynder.Sdk.Api.Converters
 {
     public class TagsOrderByConverter : ITypeToStringConverter
     {
+        #region Methods
+
         /// <summary>
         /// Returns true if type is assignable from IEnumerable of strings
         /// </summary>
@@ -16,7 +18,7 @@ namespace Bynder.Sdk.Api.Converters
         }
 
         /// <summary>
-        /// Converts TagsOrderBy enum to string 
+        /// Converts TagsOrderBy enum to string
         /// </summary>
         /// <param name="value">TagsOrderBy value</param>
         /// <returns>converted string</returns>
@@ -26,15 +28,21 @@ namespace Bynder.Sdk.Api.Converters
             {
                 case TagsOrderBy.TagAscending:
                     return "tag asc";
+
                 case TagsOrderBy.TagDescending:
                     return "tag desc";
+
                 case TagsOrderBy.MediaCountAscending:
                     return "mediaCount asc";
+
                 case TagsOrderBy.MediaCountDescending:
                     return "mediaCount desc";
+
                 default:
                     return null;
             }
         }
+
+        #endregion Methods
     }
 }

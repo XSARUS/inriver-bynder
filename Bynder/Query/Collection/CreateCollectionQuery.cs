@@ -10,6 +10,24 @@ namespace Bynder.Sdk.Query.Collection
     /// </summary>
     public class CreateCollectionQuery
     {
+        #region Properties
+
+        /// <summary>
+        /// Description of collection
+        /// </summary>
+        [ApiField("description")]
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Name of collection
+        /// </summary>
+        [ApiField("name")]
+        public string Name { get; private set; }
+
+        #endregion Properties
+
+        #region Constructors
+
         /// <summary>
         /// Initializes the class with needed information
         /// </summary>
@@ -19,16 +37,6 @@ namespace Bynder.Sdk.Query.Collection
             Name = name;
         }
 
-        /// <summary>
-        /// Name of collection
-        /// </summary>
-        [ApiField("name")]
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// Description of collection
-        /// </summary>
-        [ApiField("description")]
-        public string Description { get; set; }
+        #endregion Constructors
     }
 }

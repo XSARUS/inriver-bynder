@@ -10,7 +10,7 @@ namespace BynderTest
     {
         #region Methods
 
-        [TestMethod,Ignore("Depends on previous code-base with the custom API!")]
+        [TestMethod, Ignore("Depends on previous code-base with the custom API!")]
         public void TestConversion()
         {
             /*string assetApiJson = "";

@@ -7,19 +7,23 @@ using System.Text.RegularExpressions;
 
 namespace Bynder.Utils
 {
-    using SettingProviders;
     using Helpers;
     using Names;
+    using SettingProviders;
 
     public class FilenameEvaluator
     {
-        public Dictionary<string, string> DefaultSettings => FilenameEvaluatorSettingsProvider.Create();
-
         #region Fields
 
         private readonly inRiverContext _inRiverContext;
 
         #endregion Fields
+
+        #region Properties
+
+        public Dictionary<string, string> DefaultSettings => FilenameEvaluatorSettingsProvider.Create();
+
+        #endregion Properties
 
         #region Constructors
 
@@ -49,7 +53,7 @@ namespace Bynder.Utils
                 _inRiverContext.Log(LogLevel.Warning, $"Filename '{fileName}' did not match the configured reg. expr.!");
                 return result;
             }
-            
+
             for (int i = 1; i < result.Match.Groups.Count; i++)
             {
                 // check if matchgroup name indicates a non resource field, if so, add to output collection

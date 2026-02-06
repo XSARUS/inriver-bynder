@@ -11,6 +11,8 @@ namespace Bynder.Sdk.Exceptions
     /// </summary>
     public class InvalidConfigurationException : Exception
     {
+        #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InvalidConfigurationException"/> class.
         /// </summary>
@@ -19,5 +21,7 @@ namespace Bynder.Sdk.Exceptions
             : base(message)
         {
         }
+
+        #endregion Constructors
     }
 }

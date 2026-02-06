@@ -13,7 +13,13 @@ namespace Bynder.Sdk.Api.RequestSender
     /// </summary>
     internal class HttpRequestSender : IHttpRequestSender
     {
+        #region Fields
+
         private readonly HttpClient _httpClient = new HttpClient();
+
+        #endregion Fields
+
+        #region Properties
 
         /// <summary>
         /// User-Agent header we add to each request.
@@ -21,6 +27,23 @@ namespace Bynder.Sdk.Api.RequestSender
         public string UserAgent
         {
             get { return $"bynder-c-sharp-sdk/{Assembly.GetExecutingAssembly().GetName().Version}"; }
+        }
+
+        #endregion Properties
+
+        #region Methods
+
+        /// <summary>
+        /// Releases all resources used by the <see cref="T:Sdk.Api.ApiRequestSender"/> object.
+        /// </summary>
+        /// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="T:Sdk.Api.ApiRequestSender"/>. The
+        /// <see cref="Dispose"/> method leaves the <see cref="T:Sdk.Api.ApiRequestSender"/> in an unusable state. After
+        /// calling <see cref="Dispose"/>, you must release all references to the
+        /// <see cref="T:Sdk.Api.ApiRequestSender"/> so the garbage collector can reclaim the memory that the
+        /// <see cref="T:Sdk.Api.ApiRequestSender"/> was occupying.</remarks>
+        public void Dispose()
+        {
+            _httpClient.Dispose();
         }
 
         /// <summary>
@@ -37,7 +60,7 @@ namespace Bynder.Sdk.Api.RequestSender
             {
                 var content = response.Content.ReadAsStringAsync().Result;
             }
-            
+
             // response.EnsureSuccessStatusCode();
 
             if (!response.IsSuccessStatusCode)
@@ -50,17 +73,6 @@ namespace Bynder.Sdk.Api.RequestSender
             return response;
         }
 
-        /// <summary>
-        /// Releases all resources used by the <see cref="T:Sdk.Api.ApiRequestSender"/> object.
-        /// </summary>
-        /// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="T:Sdk.Api.ApiRequestSender"/>. The
-        /// <see cref="Dispose"/> method leaves the <see cref="T:Sdk.Api.ApiRequestSender"/> in an unusable state. After
-        /// calling <see cref="Dispose"/>, you must release all references to the
-        /// <see cref="T:Sdk.Api.ApiRequestSender"/> so the garbage collector can reclaim the memory that the
-        /// <see cref="T:Sdk.Api.ApiRequestSender"/> was occupying.</remarks>
-        public void Dispose()
-        {
-            _httpClient.Dispose();
-        }
+        #endregion Methods
     }
 }

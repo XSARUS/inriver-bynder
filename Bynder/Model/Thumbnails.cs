@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace Bynder.Sdk.Model
 {
@@ -12,6 +12,14 @@ namespace Bynder.Sdk.Model
     /// </summary>
     public class Thumbnails
     {
+        #region Properties
+
+        /// <summary>
+        /// A dictionary representation of all other derivatives
+        /// </summary>
+        [JsonExtensionData]
+        public Dictionary<string, JToken> All { get; set; }
+
         /// <summary>
         /// Mini thumbnail Url
         /// </summary>
@@ -30,10 +38,6 @@ namespace Bynder.Sdk.Model
         [JsonProperty("webimage")]
         public string WebImage { get; set; }
 
-        /// <summary>
-        /// A dictionary representation of all other derivatives
-        /// </summary>
-        [JsonExtensionData]
-        public Dictionary<string, JToken> All { get; set; }
+        #endregion Properties
     }
 }

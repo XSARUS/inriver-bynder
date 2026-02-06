@@ -11,6 +11,8 @@ namespace Bynder.Sdk.Api.Converters
     /// </summary>
     public interface ITypeToStringConverter
     {
+        #region Methods
+
         /// <summary>
         /// Checks if the converter can convert a specific type
         /// </summary>
@@ -24,5 +26,7 @@ namespace Bynder.Sdk.Api.Converters
         /// <param name="value">value to be converted</param>
         /// <returns>converted string value</returns>
         string Convert(object value);
+
+        #endregion Methods
     }
 }

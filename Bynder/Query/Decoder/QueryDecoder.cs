@@ -1,11 +1,11 @@
 // Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using Bynder.Sdk.Api.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Bynder.Sdk.Api.Converters;
 
 namespace Bynder.Sdk.Query.Decoder
 {
@@ -14,6 +14,8 @@ namespace Bynder.Sdk.Query.Decoder
     /// </summary>
     internal class QueryDecoder
     {
+        #region Methods
+
         /// <summary>
         /// Given a query object it gets the parameters. The parameters are basically the properties
         /// of the object query that have <see cref="ApiField"/> attributes.
@@ -33,6 +35,11 @@ namespace Bynder.Sdk.Query.Decoder
             }
 
             return parameters;
+        }
+
+        private void AddParam(IDictionary<string, string> parameters, string key, string value)
+        {
+            parameters.Add(key, value);
         }
 
         /// <summary>
@@ -76,10 +83,6 @@ namespace Bynder.Sdk.Query.Decoder
             }
         }
 
-        private void AddParam(IDictionary<string, string> parameters, string key, string value)
-        {
-            parameters.Add(key, value);
-        }
-
+        #endregion Methods
     }
 }

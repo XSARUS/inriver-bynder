@@ -7,9 +7,10 @@ namespace Bynder.Extension
     using Api;
     using Utils.Helpers;
 
-    public abstract class AbstractBynderExtension: AbstractExtension
+    public abstract class AbstractBynderExtension : AbstractExtension
     {
         #region Properties
+
         public override Dictionary<string, string> DefaultSettings
         {
             get

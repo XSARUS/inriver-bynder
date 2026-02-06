@@ -11,11 +11,10 @@ namespace Bynder.Sdk.Model
     /// </summary>
     public class SaveMediaResponse
     {
+        #region Properties
+
         [JsonProperty("accessRequestId")]
         public string AccessRequestId { get; set; }
-
-        [JsonProperty("mediaid")]
-        public string MediaId { get; set; }
 
         [JsonProperty("batchId")]
         public string BatchId { get; set; }
@@ -23,7 +22,12 @@ namespace Bynder.Sdk.Model
         [JsonProperty("success")]
         public bool IsSuccessful { get; set; }
 
+        [JsonProperty("mediaid")]
+        public string MediaId { get; set; }
+
         [JsonProperty("mediaitems")]
         public MediaItem[] Mediaitems { get; set; }
+
+        #endregion Properties
     }
 }

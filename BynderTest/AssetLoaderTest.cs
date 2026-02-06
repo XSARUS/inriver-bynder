@@ -1,7 +1,5 @@
-﻿using Bynder.Config;
-using Bynder.Extension;
+﻿using Bynder.Extension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace BynderTest
@@ -9,9 +7,22 @@ namespace BynderTest
     [TestClass, Ignore("Only run manually")]
     public class AssetLoaderTest : TestBase
     {
+        #region Fields
+
         private AssetLoader _extension;
 
+        #endregion Fields
+
         #region Methods
+
+        [TestMethod, Ignore("Only use for debugging!")]
+        public void GetMediaTest()
+        {
+            var worker = _extension.GetWorker();
+            var media = worker.GetMedia("B8ED3B94-21A3-42C3-B10D254DE248795F");
+            Logger.Log($"Media found: {media.Id}");
+        }
+
         [TestInitialize]
         public void Init()
         {
@@ -19,8 +30,14 @@ namespace BynderTest
             {
                 Context = InRiverContext
             };
-            
+
             _extension.Context.Settings = TestSettings;
+        }
+
+        [TestMethod, Ignore("Only use for debugging!")]
+        public void TestAssetLoaderExecution()
+        {
+            _extension.Execute(true);
         }
 
         [TestMethod]
@@ -36,20 +53,6 @@ namespace BynderTest
             );
 
             Logger.Log($"Test result: {testResult}");
-        }
-
-        [TestMethod, Ignore("Only use for debugging!")]
-        public void TestAssetLoaderExecution()
-        {
-            _extension.Execute(true);
-        }
-
-        [TestMethod, Ignore("Only use for debugging!")]
-        public void GetMediaTest()
-        {
-            var worker = _extension.GetWorker();
-            var media = worker.GetMedia("B8ED3B94-21A3-42C3-B10D254DE248795F");
-            Logger.Log($"Media found: {media.Id}");
         }
 
         #endregion Methods

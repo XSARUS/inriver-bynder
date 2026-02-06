@@ -1,11 +1,8 @@
 // Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System.Collections.Generic;
-using Bynder.Sdk.Model;
-using Bynder.Sdk.Api.Converters;
-using Bynder.Sdk.Query.Decoder;
 using Bynder.Query.Asset;
+using Bynder.Sdk.Query.Decoder;
 
 namespace Bynder.Sdk.Query.Asset
 {
@@ -14,15 +11,23 @@ namespace Bynder.Sdk.Query.Asset
     /// </summary>
     public class MediaQuerySearch : MediaQueryFull, ICursorPaginatedRequest
     {
+        #region Properties
+
         [ApiField("count")]
         public bool Count { get; set; }
 
         [ApiField("cursor")]
         public string Cursor { get; private set; }
 
+        #endregion Properties
+
+        #region Methods
+
         public void SetCursor(string cursor)
         {
             Cursor = cursor;
         }
+
+        #endregion Methods
     }
 }

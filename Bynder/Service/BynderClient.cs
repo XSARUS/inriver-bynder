@@ -1,16 +1,16 @@
 // Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System;
 using Bynder.Sdk.Api.RequestSender;
 using Bynder.Sdk.Model;
-using Bynder.Sdk.Service.Profile;
 using Bynder.Sdk.Service.Asset;
 using Bynder.Sdk.Service.Collection;
 using Bynder.Sdk.Service.OAuth;
+using Bynder.Sdk.Service.Profile;
 using Bynder.Sdk.Service.User;
 using Bynder.Sdk.Settings;
 using Bynder.Sdk.Settings.Validators;
+using System;
 
 namespace Bynder.Sdk.Service
 {
@@ -19,14 +19,20 @@ namespace Bynder.Sdk.Service
     /// </summary>
     public class BynderClient : IBynderClient
     {
-        private readonly Configuration _configuration;
-        private readonly IApiRequestSender _requestSender;
-        private readonly ICredentials _credentials;
+        #region Fields
+
         private readonly IAssetService _assetService;
         private readonly ICollectionService _collectionService;
+        private readonly Configuration _configuration;
+        private readonly ICredentials _credentials;
         private readonly IOAuthService _oauthService;
         private readonly IProfileService _profileService;
+        private readonly IApiRequestSender _requestSender;
         private readonly IUserService _userService;
+
+        #endregion Fields
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Sdk.Service.Client"/> class.
@@ -45,21 +51,9 @@ namespace Bynder.Sdk.Service
             _userService = new UserService(_requestSender);
         }
 
-        /// <summary>
-        /// Check <see cref="t:Sdk.Service.IClient"/>
-        /// </summary>
-        public event EventHandler<Token> OnCredentialsChanged
-        {
-            add
-            {
-                _credentials.OnCredentialsChanged += value;
-            }
+        #endregion Constructors
 
-            remove
-            {
-                _credentials.OnCredentialsChanged -= value;
-            }
-        }
+        #region Methods
 
         /// <summary>
         /// Releases all resource used by the <see cref="T:Sdk.Service.Client"/> object.
@@ -109,5 +103,27 @@ namespace Bynder.Sdk.Service
         {
             return _userService;
         }
+
+        #endregion Methods
+
+        #region Events
+
+        /// <summary>
+        /// Check <see cref="t:Sdk.Service.IClient"/>
+        /// </summary>
+        public event EventHandler<Token> OnCredentialsChanged
+        {
+            add
+            {
+                _credentials.OnCredentialsChanged += value;
+            }
+
+            remove
+            {
+                _credentials.OnCredentialsChanged -= value;
+            }
+        }
+
+        #endregion Events
     }
 }

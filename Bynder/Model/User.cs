@@ -7,6 +7,14 @@ namespace Bynder.Sdk.Model
     /// </summary>
     public class User
     {
+        #region Properties
+
+        /// <summary>
+        /// Email
+        /// </summary>
+        [JsonProperty("email")]
+        public string Email { get; set; }
+
         /// <summary>
         /// Id
         /// </summary>
@@ -19,10 +27,6 @@ namespace Bynder.Sdk.Model
         [JsonProperty("profileId")]
         public string ProfileId { get; set; }
 
-        /// <summary>
-        /// Email
-        /// </summary>
-        [JsonProperty("email")]
-        public string Email { get; set; }
+        #endregion Properties
     }
 }

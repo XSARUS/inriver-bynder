@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-
 using Bynder.Sdk.Api.Requests;
 using Bynder.Sdk.Model;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Bynder.Sdk.Api.RequestSender
@@ -17,6 +15,15 @@ namespace Bynder.Sdk.Api.RequestSender
     /// </summary>
     internal interface IApiRequestSender : IDisposable
     {
+        #region Methods
+
+        Task<IReadOnlyList<Media>> SendCursorRequestAsync(Request<List<Media>> request);
+
+        Task<IReadOnlyList<TItem>> SendPagedRequestAsync<TItem>(
+                    Request<List<TItem>> request,
+                    int pageSize = 50,
+                    int maxPages = int.MaxValue);
+
         /// <summary>
         /// Sends the request async.
         /// </summary>
@@ -27,10 +34,6 @@ namespace Bynder.Sdk.Api.RequestSender
         /// such as network connectivity, DNS failure, server certificate validation or timeout.</exception>
         Task<T> SendRequestAsync<T>(Request<T> request);
 
-        Task<IReadOnlyList<Media>> SendCursorRequestAsync(Request<List<Media>> request);
-        Task<IReadOnlyList<TItem>> SendPagedRequestAsync<TItem>(
-            Request<List<TItem>> request,
-            int pageSize = 50,
-            int maxPages = int.MaxValue);
+        #endregion Methods
     }
 }

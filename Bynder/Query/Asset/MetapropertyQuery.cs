@@ -2,6 +2,17 @@
 {
     public class MetapropertyQuery
     {
+        #region Properties
+
+        /// <summary>
+        /// Id of the media to modify
+        /// </summary>
+        public string MetapropertyId { get; private set; }
+
+        #endregion Properties
+
+        #region Constructors
+
         /// <summary>
         /// Initializes the class with required information
         /// </summary>
@@ -11,9 +22,6 @@
             MetapropertyId = metapropertyId;
         }
 
-        /// <summary>
-        /// Id of the media to modify
-        /// </summary>
-        public string MetapropertyId { get; private set; }
+        #endregion Constructors
     }
 }

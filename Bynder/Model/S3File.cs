@@ -11,16 +11,20 @@ namespace Bynder.Sdk.Model
     /// </summary>
     public class S3File
     {
-        /// <summary>
-        /// Upload id
-        /// </summary>
-        [JsonProperty("uploadid")]
-        public string UploadId { get; set; }
+        #region Properties
 
         /// <summary>
         /// Target it
         /// </summary>
         [JsonProperty("targetid")]
         public string TargetId { get; set; }
+
+        /// <summary>
+        /// Upload id
+        /// </summary>
+        [JsonProperty("uploadid")]
+        public string UploadId { get; set; }
+
+        #endregion Properties
     }
 }

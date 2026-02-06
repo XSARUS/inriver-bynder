@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System;
 using Bynder.Sdk.Model;
+using System;
 
 namespace Bynder.Sdk.Settings
 {
@@ -11,12 +11,13 @@ namespace Bynder.Sdk.Settings
     /// </summary>
     internal class Credentials : ICredentials
     {
+        #region Fields
+
         private Token _token;
 
-        /// <summary>
-        /// Check <see cref="t:ICredentials"/>.
-        /// </summary>
-        public event EventHandler<Token> OnCredentialsChanged;
+        #endregion Fields
+
+        #region Properties
 
         /// <summary>
         /// Check <see cref="t:ICredentials"/>.
@@ -54,6 +55,10 @@ namespace Bynder.Sdk.Settings
             }
         }
 
+        #endregion Properties
+
+        #region Methods
+
         /// <summary>
         /// Check <see cref="t:ICredentials"/>.
         /// </summary>
@@ -84,5 +89,15 @@ namespace Bynder.Sdk.Settings
             Token = token;
         }
 
+        #endregion Methods
+
+        #region Events
+
+        /// <summary>
+        /// Check <see cref="t:ICredentials"/>.
+        /// </summary>
+        public event EventHandler<Token> OnCredentialsChanged;
+
+        #endregion Events
     }
 }

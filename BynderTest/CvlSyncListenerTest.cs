@@ -3,7 +3,6 @@ using Bynder.Extension;
 using inRiver.Remoting;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
-using inRiver.Remoting.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BynderTest
@@ -11,12 +10,51 @@ namespace BynderTest
     [TestClass, Ignore("Use for debugging")]
     public class CvlSyncListenerTest : TestBase
     {
+        #region Fields
+
+        private readonly string _localestringCvlId = "BynderTestCVL";
         private readonly string _stringCvlId = "InriverCvlOne"; // string CVL
-        private readonly string _localestringCvlId = "BynderTestCVL"; // localestring CVL
-        
+                                                                // localestring CVL
+
         private CvlSyncListener _extension;
         private IModelService _modelService;
         private IUtilityService _utilityService;
+
+        #endregion Fields
+
+        #region Methods
+
+        public void CVLValueCreatedTest()
+        {
+            _extension.CVLValueCreated(_localestringCvlId, "test");
+        }
+
+        public void CVLValueDeletedAllTest()
+        {
+            _extension.CVLValueDeletedAll(_localestringCvlId);
+        }
+
+        public void CVLValueDeletedTest()
+        {
+            _extension.CVLValueDeleted(_localestringCvlId, "test");
+        }
+
+        [TestMethod]
+        public void CVLValueLifeCycleFlowTest()
+        {
+            var CVLValue = CreateLocaleStringCVLValue();
+            Assert.IsGreaterThan(0, CVLValue.Id);
+            CVLValueCreatedTest();
+            UpdateLocaleStringCVLValue(CVLValue);
+            CVLValueUpdatedTest();
+            DeleteLocaleStringCVLValue(CVLValue.Id);
+            CVLValueDeletedTest();
+        }
+
+        public void CVLValueUpdatedTest()
+        {
+            _extension.CVLValueUpdated(_localestringCvlId, "test");
+        }
 
         [TestInitialize]
         public void Init()
@@ -45,26 +83,6 @@ namespace BynderTest
             Assert.DoesNotContain("exception", result);
         }
 
-        public void CVLValueCreatedTest()
-        {
-            _extension.CVLValueCreated(_localestringCvlId, "test");
-        }
-
-        public void CVLValueUpdatedTest()
-        {
-            _extension.CVLValueUpdated(_localestringCvlId, "test");
-        }
-
-        public void CVLValueDeletedTest()
-        {
-            _extension.CVLValueDeleted(_localestringCvlId, "test");
-        }
-
-        public void CVLValueDeletedAllTest()
-        {
-            _extension.CVLValueDeletedAll(_localestringCvlId);
-        }
-
         internal CVLValue CreateLocaleStringCVLValue()
         {
             var value = new LocaleString(_utilityService.GetAllLanguages());
@@ -85,6 +103,13 @@ namespace BynderTest
             return testCvlValue;
         }
 
+        internal void DeleteLocaleStringCVLValue(int cvlValueId)
+        {
+            var status = _modelService.DeleteCVLValue(cvlValueId);
+            Assert.IsTrue(status);
+            Logger.Log(LogLevel.Information, $"CVLValue with id {cvlValueId} deleted for CVL {_stringCvlId}");
+        }
+
         internal void UpdateLocaleStringCVLValue(CVLValue testCvlValue)
         {
             var value = testCvlValue.Value as LocaleString;
@@ -93,28 +118,11 @@ namespace BynderTest
                 value[language] = "updated__testvalue_" + language.ThreeLetterISOLanguageName;
             }
             testCvlValue.Value = value;
-            
+
             testCvlValue = _modelService.UpdateCVLValue(testCvlValue);
             Logger.Log(LogLevel.Information, $"CVLValue with id {testCvlValue.Id} updated for CVL {_stringCvlId}");
         }
 
-        internal void DeleteLocaleStringCVLValue(int cvlValueId)
-        {
-            var status = _modelService.DeleteCVLValue(cvlValueId);
-            Assert.IsTrue(status);
-            Logger.Log(LogLevel.Information, $"CVLValue with id {cvlValueId} deleted for CVL {_stringCvlId}");
-        }
-
-        [TestMethod]
-        public void CVLValueLifeCycleFlowTest()
-        {
-            var CVLValue = CreateLocaleStringCVLValue();
-            Assert.IsGreaterThan(0, CVLValue.Id);
-            CVLValueCreatedTest();
-            UpdateLocaleStringCVLValue(CVLValue);
-            CVLValueUpdatedTest();
-            DeleteLocaleStringCVLValue(CVLValue.Id);
-            CVLValueDeletedTest();
-        }
+        #endregion Methods
     }
 }

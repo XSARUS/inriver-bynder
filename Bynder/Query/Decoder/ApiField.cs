@@ -12,6 +12,27 @@ namespace Bynder.Sdk.Query.Decoder
     [AttributeUsage(AttributeTargets.Property)]
     public class ApiField : Attribute
     {
+        #region Properties
+
+        /// <summary>
+        /// Name of the property in the API documentation.
+        /// </summary>
+        public string ApiName { get; private set; }
+
+        /// <summary>
+        /// Converter to be used to convert the property
+        /// </summary>
+        public Type Converter { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not the separator (usually a dot) must be omitted when converting
+        /// </summary>
+        public bool OmitSeparator { get; set; }
+
+        #endregion Properties
+
+        #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the class
         /// </summary>
@@ -21,19 +42,6 @@ namespace Bynder.Sdk.Query.Decoder
             ApiName = name;
         }
 
-        /// <summary>
-        /// Converter to be used to convert the property
-        /// </summary>
-        public Type Converter { get; set; }
-
-        /// <summary>
-        /// Name of the property in the API documentation.
-        /// </summary>
-        public string ApiName { get; private set; }
-
-        /// <summary>
-        /// Indicates whether or not the separator (usually a dot) must be omitted when converting
-        /// </summary>
-        public bool OmitSeparator { get; set; }
+        #endregion Constructors
     }
 }

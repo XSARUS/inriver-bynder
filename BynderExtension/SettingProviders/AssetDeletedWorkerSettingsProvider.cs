@@ -4,6 +4,8 @@ namespace Bynder.SettingProviders
 {
     public static class AssetDeletedWorkerSettingsProvider
     {
+        #region Methods
+
         public static Dictionary<string, string> Create()
         {
             return new Dictionary<string, string>()
@@ -11,5 +13,7 @@ namespace Bynder.SettingProviders
                 { Config.Settings.DeleteResourceOnDeleteEvent, false.ToString() },
             };
         }
+
+        #endregion Methods
     }
 }

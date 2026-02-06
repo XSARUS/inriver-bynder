@@ -1,5 +1,5 @@
-using System;
 using Bynder.Sdk.Model;
+using System;
 
 namespace Bynder.Sdk.Settings
 {
@@ -10,10 +10,7 @@ namespace Bynder.Sdk.Settings
     /// </summary>
     internal interface ICredentials
     {
-        /// <summary>
-        /// Raised when login or when token is refreshed
-        /// </summary>
-        event EventHandler<Token> OnCredentialsChanged;
+        #region Properties
 
         /// <summary>
         /// Gets the access token.
@@ -22,16 +19,20 @@ namespace Bynder.Sdk.Settings
         string AccessToken { get; }
 
         /// <summary>
+        /// Gets the refresh token.
+        /// </summary>
+        /// <value>The refresh token.</value>
+        string RefreshToken { get; }
+
+        /// <summary>
         /// Gets the type of the token. In our case Bearer
         /// </summary>
         /// <value>The type of the token.</value>
         string TokenType { get; }
 
-        /// <summary>
-        /// Gets the refresh token.
-        /// </summary>
-        /// <value>The refresh token.</value>
-        string RefreshToken { get; }
+        #endregion Properties
+
+        #region Methods
 
         /// <summary>
         /// Checks if credentials are valid or expired
@@ -44,5 +45,16 @@ namespace Bynder.Sdk.Settings
         /// </summary>
         /// <param name="token">Token.</param>
         void Update(Token token);
+
+        #endregion Methods
+
+        #region Events
+
+        /// <summary>
+        /// Raised when login or when token is refreshed
+        /// </summary>
+        event EventHandler<Token> OnCredentialsChanged;
+
+        #endregion Events
     }
 }

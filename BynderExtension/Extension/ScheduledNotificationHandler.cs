@@ -10,10 +10,10 @@ namespace Bynder.Extension
 {
     using Api;
     using Config;
-    using Models;
-    using Utils.Helpers;
-    using SettingProviders;
     using Enums;
+    using Models;
+    using SettingProviders;
+    using Utils.Helpers;
     using Workers;
 
     public class ScheduledNotificationHandler : AbstractScheduledExtension
@@ -40,7 +40,7 @@ namespace Bynder.Extension
                 {
                     settings[setting.Key] = setting.Value;
                 }
-               
+
                 foreach (var setting in AssetDeletedWorkerSettingsProvider.Create())
                 {
                     settings[setting.Key] = setting.Value;
@@ -55,6 +55,24 @@ namespace Bynder.Extension
         #endregion Properties
 
         #region Methods
+
+        public override string Test()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(base.Test() ?? string.Empty);
+
+            try
+            {
+                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
+                sb.AppendLine($"Number of connectorstates found: {states.Count}");
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine(ex.ToString());
+            }
+
+            return sb.ToString();
+        }
 
         protected override void Execute()
         {
@@ -114,7 +132,6 @@ namespace Bynder.Extension
 
                         Context.Log(LogLevel.Verbose, $"Result for ConnectorState {state.Id}: {result}");
                         Context.Log(LogLevel.Debug, $"Handled Bynder Notifications of ConnectorState {state.Id} created at {state.Created}");
-                        
 
                         Context.ExtensionManager.UtilityService.DeleteConnectorState(state.Id);
                     }
@@ -146,24 +163,6 @@ namespace Bynder.Extension
             {
                 Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
-        }
-
-        public override string Test()
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine(base.Test() ?? string.Empty);
-
-            try
-            {
-                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
-                sb.AppendLine($"Number of connectorstates found: {states.Count}");
-            }
-            catch (Exception ex)
-            {
-                sb.AppendLine(ex.ToString());
-            }
-
-            return sb.ToString();
         }
 
         #endregion Methods

@@ -1,17 +1,16 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Bynder.Workers
 {
+    using Models;
+    using Names;
     using Sdk.Query.Asset;
     using Sdk.Service;
     using SettingProviders;
-    using Models;
-    using Names;
     using Utils.Extensions;
     using Utils.Helpers;
     using Utils.InRiver;
@@ -21,10 +20,11 @@ namespace Bynder.Workers
      */
     public class ResourceMetapropertyUpdateWorker : AbstractBynderWorker, IWorker
     {
+        #region Properties
 
-        #region Fields
         public override Dictionary<string, string> DefaultSettings => ResourceMetapropertyUpdateWorkerSettingsProvider.Create();
-        #endregion Fields
+
+        #endregion Properties
 
         #region Constructors
 
@@ -57,13 +57,13 @@ namespace Bynder.Workers
             if (string.IsNullOrWhiteSpace(bynderId))
             {
                 InRiverContext.Log(LogLevel.Warning, $"No BynderId found on resource {resourceEntity.Id}, skipping metaproperty update");
-                return; 
+                return;
             }
 
             // only update bynder asset if resource has been downloaded or uploaded
             string bynderDownloadStatus = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState)?.Data;
             string bynderUploadStatus = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState)?.Data;
-            
+
             if ((string.IsNullOrWhiteSpace(bynderDownloadStatus) && string.IsNullOrWhiteSpace(bynderUploadStatus))
                 || (bynderDownloadStatus != BynderStates.Done && bynderUploadStatus != BynderStates.Done))
             {
@@ -72,7 +72,7 @@ namespace Bynder.Workers
             }
 
             // check if it may export
-            if (!EntityAppliesToConditions(resourceEntity)) 
+            if (!EntityAppliesToConditions(resourceEntity))
             {
                 InRiverContext.Log(LogLevel.Information, $"Resource {resourceEntity.Id} does not apply to conditions, skipping metaproperty update");
                 return;
@@ -88,7 +88,7 @@ namespace Bynder.Workers
             {
                 // inform bynder of the changes:
                 InRiverContext.Log(LogLevel.Information, $"Update metaproperties {string.Join(";", newMetapropertyValues.Keys)}");
-                
+
                 var query = new ModifyMediaQuery(bynderId)
                 {
                     MetapropertyOptions = newMetapropertyValues.ToDictionary(

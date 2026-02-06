@@ -12,9 +12,13 @@ namespace Bynder.Workers
 
         #endregion Properties
 
+        #region Constructors
+
         public AbstractWorker(inRiverContext inRiverContext)
         {
             InRiverContext = inRiverContext;
         }
+
+        #endregion Constructors
     }
 }

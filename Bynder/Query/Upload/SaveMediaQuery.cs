@@ -1,9 +1,9 @@
 // Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System.Collections.Generic;
 using Bynder.Sdk.Api.Converters;
 using Bynder.Sdk.Query.Decoder;
+using System.Collections.Generic;
 
 namespace Bynder.Sdk.Query.Upload
 {
@@ -13,11 +13,25 @@ namespace Bynder.Sdk.Query.Upload
     /// </summary>
     internal class SaveMediaQuery
     {
+        #region Properties
+
         /// <summary>
         /// Brand id we want to save media to
         /// </summary>
         [ApiField("brandid")]
         public string BrandId { get; set; }
+
+        /// <summary>
+        /// Copyright information for the media
+        /// </summary>
+        [ApiField("copyright")]
+        public string Copyright { get; set; }
+
+        /// <summary>
+        /// Description of the media
+        /// </summary>
+        [ApiField("description")]
+        public string Description { get; set; }
 
         /// <summary>
         /// Name of the asset
@@ -31,24 +45,23 @@ namespace Bynder.Sdk.Query.Upload
         public string ImportId { get; set; }
 
         /// <summary>
+        /// Indicates if the media is public
+        /// </summary>
+        [ApiField("isPublic")]
+        public bool IsPublic { get; set; }
+
+        /// <summary>
         /// Media id. If specified it will add the asset as new version
-        /// of the specified media. Otherwise a new media will be added to 
+        /// of the specified media. Otherwise a new media will be added to
         /// the asset bank
         /// </summary>
         public string MediaId { get; set; }
 
         /// <summary>
-        /// Tags that will be added on the image
+        /// Metaproperty options to set on the asset.
         /// </summary>
-        [ApiField("tags", Converter = typeof(ListConverter))]
-        public IList<string> Tags { get; set; }
-
-
-        /// <summary>
-        /// Description of the media
-        /// </summary>
-        [ApiField("description")]
-        public string Description { get; set; }
+        [ApiField("metaproperty", Converter = typeof(MetapropertyOptionsConverter))]
+        public IDictionary<string, IList<string>> MetapropertyOptions { get; set; } = new Dictionary<string, IList<string>>();
 
         /// <summary>
         /// Published date of the media
@@ -57,22 +70,14 @@ namespace Bynder.Sdk.Query.Upload
         public string PublishedDate { get; set; }
 
         /// <summary>
-        /// Copyright information for the media
+        /// Tags that will be added on the image
         /// </summary>
-        [ApiField("copyright")]
-        public string Copyright { get; set; }
+        [ApiField("tags", Converter = typeof(ListConverter))]
+        public IList<string> Tags { get; set; }
 
-        /// <summary>
-        /// Indicates if the media is public
-        /// </summary>
-        [ApiField("isPublic")]
-        public bool IsPublic { get; set; }
+        #endregion Properties
 
-        /// <summary>
-        /// Metaproperty options to set on the asset.
-        /// </summary>
-        [ApiField("metaproperty", Converter = typeof(MetapropertyOptionsConverter))]
-        public IDictionary<string, IList<string>> MetapropertyOptions { get; set; } = new Dictionary<string, IList<string>>();
+        #region Methods
 
         /// <summary>
         /// Add a set of options to a metaproperty
@@ -84,5 +89,6 @@ namespace Bynder.Sdk.Query.Upload
             MetapropertyOptions.Add(metapropertyId, optionIds);
         }
 
+        #endregion Methods
     }
 }

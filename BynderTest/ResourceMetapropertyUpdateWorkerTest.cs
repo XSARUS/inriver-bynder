@@ -1,10 +1,9 @@
-﻿using Bynder.Api;
-using Bynder.Workers;
+﻿using Bynder.Workers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BynderTest
 {
-    [TestClass,Ignore("Only for debugging!")]
+    [TestClass, Ignore("Only for debugging!")]
     public class ResourceMetapropertyUpdateWorkerTest : TestBase
     {
         #region Fields

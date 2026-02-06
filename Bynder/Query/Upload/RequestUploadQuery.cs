@@ -11,10 +11,14 @@ namespace Bynder.Sdk.Query.Upload
     /// </summary>
     internal class RequestUploadQuery
     {
+        #region Properties
+
         /// <summary>
         /// Filename of the file we want to initialize the upload
         /// </summary>
         [ApiField("filename")]
         public string Filename { get; set; }
+
+        #endregion Properties
     }
 }

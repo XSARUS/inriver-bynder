@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 
 namespace Bynder.Api.Mappers
@@ -12,6 +11,8 @@ namespace Bynder.Api.Mappers
 
     public static class ApiQueryMapper
     {
+        #region Methods
+
         public static T FromDictionary<T>(IDictionary<string, string> values) where T : new()
         {
             var instance = new T();
@@ -58,7 +59,6 @@ namespace Bynder.Api.Mappers
             return instance;
         }
 
-
         private static object ConvertUsingConverter(Type converterType, string rawValue)
         {
             // Bynder converters zijn stateless
@@ -94,5 +94,7 @@ namespace Bynder.Api.Mappers
             throw new NotSupportedException(
                 $"Type '{targetType.FullName}' is not supported");
         }
+
+        #endregion Methods
     }
 }

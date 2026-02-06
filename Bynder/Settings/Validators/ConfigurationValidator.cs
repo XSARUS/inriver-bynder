@@ -10,6 +10,8 @@ namespace Bynder.Sdk.Settings.Validators
     /// </summary>
     internal class ConfigurationValidator
     {
+        #region Methods
+
         /// <summary>
         /// Validate the specified configuration has all the required information for the
         /// SDK to work.
@@ -33,5 +35,7 @@ namespace Bynder.Sdk.Settings.Validators
                 throw new InvalidConfigurationException("Missing Client Secret");
             }
         }
+
+        #endregion Methods
     }
 }

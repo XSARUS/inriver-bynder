@@ -1,23 +1,16 @@
-﻿using Bynder.Api;
-using Bynder.Extension;
+﻿using Bynder.Extension;
 using Bynder.Sdk.Enums;
 using Bynder.Sdk.Model;
 using Bynder.Sdk.Query.Asset;
-using Bynder.Sdk.Service;
-using Bynder.Sdk.Settings;
-using Bynder.Utils.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using BynderClient = Bynder.Sdk.Service.BynderClient;
 
 namespace BynderTest
 {
-    [TestClass,Ignore("Only run manually")]
+    [TestClass, Ignore("Only run manually")]
     public class ApiTest : TestBase
     {
         #region Fields
@@ -25,17 +18,20 @@ namespace BynderTest
         private const string _testAssetId = "***";
         private const string _testIntegrationId = "***";
 
-        Dictionary<string, string> createdObjects = new Dictionary<string, string>();
+        private Dictionary<string, string> createdObjects = new Dictionary<string, string>();
+
         #endregion Fields
 
         #region Methods
+
         /// <summary>
         /// You need to have an Integration Id.
         /// Get one at: https://{subdomain}.getbynder.com/pysettings/#integrations/all
         /// </summary>
         public void CreateAssetUsage()
         {
-            var query = new Bynder.Sdk.Query.Asset.AssetUsageQuery(_testIntegrationId, _testAssetId) {
+            var query = new Bynder.Sdk.Query.Asset.AssetUsageQuery(_testIntegrationId, _testAssetId)
+            {
                 Uri = "http://test.com/123"
             };
             var result = _bynderClient.GetAssetService().CreateAssetUsage(query).GetAwaiter().GetResult();
@@ -53,6 +49,24 @@ namespace BynderTest
             Logger.Log($"{result.StatusCode}: {result.Message}");
         }
 
+        [Ignore("Only manual!")]
+        [TestMethod]
+        [DataRow("5A9F4A52-1F5B-421A-94DF9249CA177926")]
+        public void DeleteMetaproperty(string metapropertyId)
+        {
+            var delResult = _bynderClient.GetAssetService().DeleteMetapropertyAsync(metapropertyId).GetAwaiter().GetResult();
+            Logger.Log($"Metaproperty {metapropertyId} deleted-status: " + delResult?.StatusCode.ToString());
+        }
+
+        [Ignore("Only manual!")]
+        [TestMethod]
+        [DataRow("5A9F4A52-1F5B-421A-94DF9249CA177926", "F8732D3E-7BF5-4F12-97D81570E019EDC2")]
+        public void DeleteMetapropertyOption(string metapropertyId, string optionId)
+        {
+            var delOptionResult = _bynderClient.GetAssetService().DeleteMetapropertyOptionAsync(metapropertyId, optionId).GetAwaiter().GetResult();
+            Logger.Log($"Metaproperty-option {optionId} for metaproperty {metapropertyId} deleted-status: " + delOptionResult?.StatusCode.ToString());
+        }
+
         public void GetAccount()
         {
             // Feedback from call in Postman: Insufficient scope, required: current.user:read
@@ -64,7 +78,7 @@ namespace BynderTest
             Logger.Log(user.Email);
         }
 
-        [TestMethod , Ignore("Do this manually if you want to test an asset on itself")]
+        [TestMethod, Ignore("Do this manually if you want to test an asset on itself")]
         public void GetAssetByAssetId()
         {
             Assert.IsNotEmpty(_testAssetId);
@@ -78,7 +92,8 @@ namespace BynderTest
 
         public void GetAssetCollection()
         {
-            var query = new Bynder.Sdk.Query.Collection.GetCollectionsQuery() {
+            var query = new Bynder.Sdk.Query.Collection.GetCollectionsQuery()
+            {
                 Limit = 1,
                 MinCount = 1,
             };
@@ -126,47 +141,6 @@ namespace BynderTest
         }
 
         [TestMethod]
-        public void UpsertMetaproperty()
-        {
-            var guid = Guid.NewGuid();
-            var metaproperty = new Bynder.Sdk.Model.Metaproperty()
-            {
-                Type = MetapropertyType.Text,
-                IsRequired = false,
-                IsFilterable = false,
-                Label = "API TEST metaproperty " + guid,
-                Name = "ApiTestMetaProperty" + guid,
-                ZIndex = 100,
-                IsEditable = false,
-                IsMainfilter = false,
-                IsMultiSelect = false,
-            };
-
-            var result = _bynderClient.GetAssetService().UpsertMetapropertyAsync(metaproperty).GetAwaiter().GetResult();
-            Assert.IsNotNull(result);
-            Assert.AreNotEqual(string.Empty, result.Id);
-            Assert.AreNotEqual("00000000-0000-0000-0000000000000000", result.Id);
-            Assert.AreEqual(201, result.StatusCode);
-            
-            var delResult = _bynderClient.GetAssetService().DeleteMetapropertyAsync(result.Id).GetAwaiter().GetResult();
-            Console.WriteLine(delResult?.StatusCode);
-        }
-
-        [TestMethod]
-        public void PostAssetMetaproperties()
-        {
-            var query = new ModifyMediaQuery(_testAssetId);
-            query.AddMetapropertyOptions("4F1C2956-01DC-415C-94BB1D770FEE5A98", new List<string> { "Hello" });
-            query.AddMetapropertyOptions("ABFC192D-A92B-47A0-9AFE96BBCBA3E79A", new List<string> { "bci", "gnr" });
-
-            var result = _bynderClient.GetAssetService().ModifyMediaAsync(query).GetAwaiter().GetResult();
-            
-            Assert.IsNotNull(result);
-            Assert.AreEqual(202, result.StatusCode);
-            Logger.Log($"Metaproperties and options set for asset / media {_testAssetId}");
-        }
-
-        [TestMethod]
         public void GetMetapropertyOptions()
         {
             var metaproperties = _bynderClient.GetAssetService().GetMetapropertiesAsync().GetAwaiter().GetResult();
@@ -182,6 +156,20 @@ namespace BynderTest
 
             var options = _bynderClient.GetAssetService().GetMetapropertyOptionsAsync(metaPropertyId, new MetapropertyOptionQuery());
             Assert.IsNotNull(options);
+        }
+
+        [TestMethod]
+        public void PostAssetMetaproperties()
+        {
+            var query = new ModifyMediaQuery(_testAssetId);
+            query.AddMetapropertyOptions("4F1C2956-01DC-415C-94BB1D770FEE5A98", new List<string> { "Hello" });
+            query.AddMetapropertyOptions("ABFC192D-A92B-47A0-9AFE96BBCBA3E79A", new List<string> { "bci", "gnr" });
+
+            var result = _bynderClient.GetAssetService().ModifyMediaAsync(query).GetAwaiter().GetResult();
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(202, result.StatusCode);
+            Logger.Log($"Metaproperties and options set for asset / media {_testAssetId}");
         }
 
         [TestMethod]
@@ -230,7 +218,7 @@ namespace BynderTest
             var optionResult = _bynderClient.GetAssetService().UpsertMetapropertyOptionAsync(result.Id, option).GetAwaiter().GetResult();
             Assert.IsNotNull(optionResult);
             Assert.AreEqual(201, optionResult.StatusCode);
-            
+
             if (internalCall) createdObjects.Add("option", optionResult.Id);
 
             // Remove the created metaproperty + option
@@ -238,29 +226,20 @@ namespace BynderTest
 
             var delOptionResult = _bynderClient.GetAssetService().DeleteMetapropertyOptionAsync(result.Id, optionResult.Id).GetAwaiter().GetResult();
             Logger.Log($"Metaproperty-option {optionResult.Id} deleted-status: " + delOptionResult?.StatusCode.ToString());
-     
+
             var delResult = _bynderClient.GetAssetService().DeleteMetapropertyAsync(result.Id).GetAwaiter().GetResult();
             Logger.Log($"Metaproperty {result.Id} deleted-status: " + delResult?.StatusCode.ToString());
         }
 
-        private async Task<IEnumerable<Bynder.Sdk.Model.MetapropertyOption>> GetOptionsWithRetryAsync(
-            IList<string> ids,
-            int maxAttempts = 5,
-            int delayMs = 500)
+        [TestMethod]
+        public void TestFlow()
         {
-            for (int attempt = 1; attempt <= maxAttempts; attempt++)
-            {
-                var options = await _bynderClient
-                    .GetAssetService()
-                    .GetMetapropertyOptionsByIdAsync(ids);
-
-                if (options != null && options.Any())
-                    return options;
-
-                await Task.Delay(delayMs);
-            }
-
-            return new List<Bynder.Sdk.Model.MetapropertyOption>();
+            GetAccount();
+            CreateAssetUsage();
+            GetAssetByAssetId();
+            PostAssetMetaproperties();
+            GetAssetCollection();
+            DeleteAssetUsage();
         }
 
         [TestMethod/*, Ignore("only manual")*/]
@@ -277,7 +256,7 @@ namespace BynderTest
             Assert.IsNotNull(createdObjects["option"]);
 
             /**
-             * In plain terms: the ID exists, but the backend system (Bynder, in this case) hasn’t finished making that object queryable when you ask for it. 
+             * In plain terms: the ID exists, but the backend system (Bynder, in this case) hasn’t finished making that object queryable when you ask for it.
              * Sometimes you hit the window where it’s ready, sometimes you don't.
              */
             var options = await GetOptionsWithRetryAsync(new List<string> { createdObjects["option"] });
@@ -300,35 +279,6 @@ namespace BynderTest
             DeleteMetaproperty(createdObjects["mp"]);
         }
 
-        [Ignore("Only manual!")]
-        [TestMethod]
-        [DataRow("5A9F4A52-1F5B-421A-94DF9249CA177926", "F8732D3E-7BF5-4F12-97D81570E019EDC2")]
-        public void DeleteMetapropertyOption(string metapropertyId, string optionId)
-        {
-            var delOptionResult = _bynderClient.GetAssetService().DeleteMetapropertyOptionAsync(metapropertyId, optionId).GetAwaiter().GetResult();
-            Logger.Log($"Metaproperty-option {optionId} for metaproperty {metapropertyId} deleted-status: " + delOptionResult?.StatusCode.ToString());
-        }
-
-        [Ignore("Only manual!")]
-        [TestMethod]
-        [DataRow("5A9F4A52-1F5B-421A-94DF9249CA177926")]
-        public void DeleteMetaproperty(string metapropertyId)
-        {
-            var delResult = _bynderClient.GetAssetService().DeleteMetapropertyAsync(metapropertyId).GetAwaiter().GetResult();
-            Logger.Log($"Metaproperty {metapropertyId} deleted-status: " + delResult?.StatusCode.ToString());
-        }
-
-        [TestMethod]
-        public void TestFlow()
-        {
-            GetAccount();
-            CreateAssetUsage();
-            GetAssetByAssetId();
-            PostAssetMetaproperties();
-            GetAssetCollection();
-            DeleteAssetUsage();
-        }
-
         [DataRow(123)]
         [Ignore("Add valid entity id here")]
         [TestMethod]
@@ -337,6 +287,53 @@ namespace BynderTest
             Uploader uploader = new Uploader() { Context = InRiverContext };
             uploader.Context.Settings = TestSettings;
             uploader.EntityUpdated(entityId, null);
+        }
+
+        [TestMethod]
+        public void UpsertMetaproperty()
+        {
+            var guid = Guid.NewGuid();
+            var metaproperty = new Bynder.Sdk.Model.Metaproperty()
+            {
+                Type = MetapropertyType.Text,
+                IsRequired = false,
+                IsFilterable = false,
+                Label = "API TEST metaproperty " + guid,
+                Name = "ApiTestMetaProperty" + guid,
+                ZIndex = 100,
+                IsEditable = false,
+                IsMainfilter = false,
+                IsMultiSelect = false,
+            };
+
+            var result = _bynderClient.GetAssetService().UpsertMetapropertyAsync(metaproperty).GetAwaiter().GetResult();
+            Assert.IsNotNull(result);
+            Assert.AreNotEqual(string.Empty, result.Id);
+            Assert.AreNotEqual("00000000-0000-0000-0000000000000000", result.Id);
+            Assert.AreEqual(201, result.StatusCode);
+
+            var delResult = _bynderClient.GetAssetService().DeleteMetapropertyAsync(result.Id).GetAwaiter().GetResult();
+            Console.WriteLine(delResult?.StatusCode);
+        }
+
+        private async Task<IEnumerable<Bynder.Sdk.Model.MetapropertyOption>> GetOptionsWithRetryAsync(
+            IList<string> ids,
+            int maxAttempts = 5,
+            int delayMs = 500)
+        {
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                var options = await _bynderClient
+                    .GetAssetService()
+                    .GetMetapropertyOptionsByIdAsync(ids);
+
+                if (options != null && options.Any())
+                    return options;
+
+                await Task.Delay(delayMs);
+            }
+
+            return new List<Bynder.Sdk.Model.MetapropertyOption>();
         }
 
         #endregion Methods

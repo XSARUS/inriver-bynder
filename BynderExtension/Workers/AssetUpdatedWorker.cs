@@ -10,48 +10,44 @@ using System.Text.RegularExpressions;
 
 namespace Bynder.Workers
 {
-    using Sdk.Model;
-    using SettingProviders;
     using Config;
     using Enums;
     using Models;
     using Names;
+    using Sdk.Model;
+    using SettingProviders;
     using Utils;
     using Utils.Extensions;
     using Utils.Helpers;
     using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
 
     public class AssetUpdatedWorker : AbstractBynderWorker, IWorker
-    {      
-        public override Dictionary<string, string> DefaultSettings => AssetUpdatedWorkerSettingsProvider.Create();
-
+    {
         #region Fields
-        private readonly FilenameEvaluator _fileNameEvaluator;       
-        private EntityType ResourceEntityType => InRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
+
         private const string FieldTypeSettingsRegExKey = "RegExp";
+        private readonly FilenameEvaluator _fileNameEvaluator;
         private Regex ResourceFilenameRegEx;
+
         #endregion Fields
 
+        #region Properties
+
+        public override Dictionary<string, string> DefaultSettings => AssetUpdatedWorkerSettingsProvider.Create();
+        private EntityType ResourceEntityType => InRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
+
+        #endregion Properties
+
         #region Constructors
+
         public AssetUpdatedWorker(inRiverContext inRiverContext, FilenameEvaluator fileNameEvaluator, SdkIBynderClient bynderClient = null) : base(inRiverContext, bynderClient)
         {
             _fileNameEvaluator = fileNameEvaluator;
         }
+
         #endregion Constructors
 
         #region Methods
-        public Media GetMedia(string bynderAssetId)
-        {
-            var media = _bynderClient.GetAssetService().GetAssetByMediaQuery(bynderAssetId).GetAwaiter().GetResult();
-            var metaProperties = _bynderClient.GetAssetService().GetMetapropertiesAsync().GetAwaiter().GetResult();
-            
-            foreach (var mp in media.MetaProperties)
-            {
-                mp.Id = metaProperties[mp.Name].Id;
-            }
-
-            return media;
-        }
 
         /// <summary>
         /// Main method of the worker
@@ -94,7 +90,6 @@ namespace Bynder.Workers
             var resourceSearchType = SettingHelper.GetResourceSearchType(InRiverContext.Settings, InRiverContext.Logger);
             Entity resourceEntity = EntityHelper.GetResourceByAsset(media, resourceSearchType, InRiverContext.ExtensionManager.DataService, LoadLevel.DataAndLinks);
 
-
             // handle notification logic
             switch (notificationType)
             {
@@ -129,6 +124,60 @@ namespace Bynder.Workers
                     result.Messages.Add($"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
 
                     return result;
+            }
+        }
+
+        public Media GetMedia(string bynderAssetId)
+        {
+            var media = _bynderClient.GetAssetService().GetAssetByMediaQuery(bynderAssetId).GetAwaiter().GetResult();
+            var metaProperties = _bynderClient.GetAssetService().GetMetapropertiesAsync().GetAwaiter().GetResult();
+
+            foreach (var mp in media.MetaProperties)
+            {
+                mp.Id = metaProperties[mp.Name].Id;
+            }
+
+            return media;
+        }
+
+        private static bool GetConditionResult(Media asset, ImportCondition condition)
+        {
+            var metaproperty = asset.MetaProperties.FirstOrDefault(mp => mp.Name.Equals(condition.PropertyName)) ?? null;
+
+            if (metaproperty == null)
+            {
+                return false;
+            }
+
+            var metapropertyValues = metaproperty.Values;
+
+            // metaproperty is not included in asset, when the value is null
+            if (metapropertyValues == null)
+            {
+                // check if there are conditions or if the only condition value is null
+                if (condition.Values.Count == 0 || (condition.Values.Count == 1 && string.IsNullOrEmpty(condition.Values[0]))) return true;
+
+                // return false, because the metaproperty does not have a value, but the condition does
+                return false;
+            }
+
+            return ConditionHelper.ValuesApplyToCondition(metapropertyValues, condition);
+        }
+
+        private static void LogMessageIfMultipleValuesForSingleField(WorkerResult result, string propertyName, Field field, List<string> values, string firstVal, string mergedVal)
+        {
+            if (values != null && values.Count > 1)
+            {
+                result.Messages.Add($"Property '{propertyName}' contains multiple values, while the Field '{field.FieldType.Id}' and datatype {field.FieldType.DataType} only needs one. Taking the value '{firstVal}' of the list of values '{mergedVal}'.");
+            }
+        }
+
+        private static void SetResourceFilenameData(Entity resourceEntity, Dictionary<FieldType, string> filenameData)
+        {
+            // resource fields from regular expression created from filename
+            foreach (var keyValuePair in filenameData)
+            {
+                resourceEntity.GetField(keyValuePair.Key.Id).Data = keyValuePair.Value;
             }
         }
 
@@ -204,10 +253,10 @@ namespace Bynder.Workers
             var conditions = SettingHelper.GetImportConditions(InRiverContext.Settings, InRiverContext.Logger);
 
             // return true if no conditions found. Conditions are optional.
-            if (conditions == null || conditions.Count == 0) 
+            if (conditions == null || conditions.Count == 0)
             {
                 InRiverContext.Log(LogLevel.Debug, $"Import conditions are empty > {asset.Id} applies to conditions immediately!");
-                return true; 
+                return true;
             }
 
             foreach (var condition in conditions)
@@ -232,11 +281,11 @@ namespace Bynder.Workers
             }
 
             // get current fieldvalues so we can check the updated fields later on
-            var oldFieldValues = resourceEntity.Fields.Select(x=> (Field)x.Clone()).ToList();
+            var oldFieldValues = resourceEntity.Fields.Select(x => (Field)x.Clone()).ToList();
 
             // always set the asset id
             resourceEntity.GetField(FieldTypeIds.ResourceBynderId).Data = asset.Id;
-            
+
             // save IdHash for re-creation of public CDN Urls in inRiver
             resourceEntity.GetField(FieldTypeIds.ResourceBynderIdHash).Data = asset.IdHash;
 
@@ -307,7 +356,7 @@ namespace Bynder.Workers
             }
 
             resourceEntity.GetField(FieldTypeIds.ResourceFilename).Data = filename;
-            
+
             return resourceEntity;
         }
 
@@ -398,31 +447,6 @@ namespace Bynder.Workers
             return null;
         }
 
-        private static bool GetConditionResult(Media asset, ImportCondition condition)
-        {
-            var metaproperty = asset.MetaProperties.FirstOrDefault(mp => mp.Name.Equals(condition.PropertyName)) ?? null;
-            
-            if (metaproperty == null)
-            {
-                return false;
-            }
-
-            var metapropertyValues = metaproperty.Values;
-
-            // metaproperty is not included in asset, when the value is null
-            if (metapropertyValues == null)
-            {
-                // check if there are conditions or if the only condition value is null
-                if (condition.Values.Count == 0 || (condition.Values.Count == 1 && string.IsNullOrEmpty(condition.Values[0]))) return true;
-
-                // return false, because the metaproperty does not have a value, but the condition does
-                return false;
-            }
-
-            return ConditionHelper.ValuesApplyToCondition(metapropertyValues, condition);
-        }
-
-
         private object GetParsedValueForField(WorkerResult result, string propertyName, List<string> values, Field field)
         {
             var mergedVal = values == null ? null : string.Join(SettingHelper.GetMultivalueSeparator(InRiverContext.Settings, InRiverContext.Logger), values);
@@ -479,14 +503,6 @@ namespace Bynder.Workers
                 default:
                     LogMessageIfMultipleValuesForSingleField(result, propertyName, field, values, singleVal, mergedVal);
                     return singleVal.ConvertTo(field.FieldType.DataType);
-            }
-        }
-
-        private static void LogMessageIfMultipleValuesForSingleField(WorkerResult result, string propertyName, Field field, List<string> values, string firstVal, string mergedVal)
-        {
-            if (values != null && values.Count > 1)
-            {
-                result.Messages.Add($"Property '{propertyName}' contains multiple values, while the Field '{field.FieldType.Id}' and datatype {field.FieldType.DataType} only needs one. Taking the value '{firstVal}' of the list of values '{mergedVal}'.");
             }
         }
 
@@ -572,15 +588,6 @@ namespace Bynder.Workers
                 }
 
                 field.Data = GetParsedValueForField(result, match.property.Name, match.property.Values, field);
-            }
-        }
-
-        private static void SetResourceFilenameData(Entity resourceEntity, Dictionary<FieldType, string> filenameData)
-        {
-            // resource fields from regular expression created from filename
-            foreach (var keyValuePair in filenameData)
-            {
-                resourceEntity.GetField(keyValuePair.Key.Id).Data = keyValuePair.Value;
             }
         }
 

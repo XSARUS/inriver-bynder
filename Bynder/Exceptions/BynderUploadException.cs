@@ -6,12 +6,14 @@ using System;
 namespace Bynder.Sdk.Exceptions
 {
     /// <summary>
-    /// Exception thrown when Upload does not finish 
+    /// Exception thrown when Upload does not finish
     /// within the expected time
     /// </summary>
     [Serializable]
     public class BynderUploadException : Exception
     {
+        #region Constructors
+
         /// <summary>
         /// Creates a new instance of the class
         /// </summary>
@@ -20,5 +22,7 @@ namespace Bynder.Sdk.Exceptions
             : base(message)
         {
         }
+
+        #endregion Constructors
     }
 }

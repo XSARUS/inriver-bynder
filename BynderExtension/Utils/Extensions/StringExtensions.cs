@@ -51,6 +51,18 @@ namespace Bynder.Utils.Extensions
 
         #region Methods
 
+        public static string RemoveControlCharacters(this string input)
+        {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            IEnumerable<char> filtered = input.Where(currentChar => !ControlChars.Contains(currentChar));
+
+            return new string(filtered.ToArray());
+        }
+
         /// <summary>
         /// Replace symbols, special characters, letters with accent
         /// for an underscore.
@@ -88,18 +100,6 @@ namespace Bynder.Utils.Extensions
             }
 
             return sb.ToString();
-        }
-
-        public static string RemoveControlCharacters(this string input)
-        {
-            if (input == null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-
-            IEnumerable<char> filtered = input.Where(currentChar => !ControlChars.Contains(currentChar));
-
-            return new string(filtered.ToArray());
         }
 
         public static string ToCamelCase(this string value)

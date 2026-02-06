@@ -4,6 +4,8 @@ namespace Bynder.Sdk.Extensions
 {
     public static class UriBuilderExtensions
     {
+        #region Methods
+
         /// <summary>
         /// Allows to append a path to a url without overriding the existing path
         /// (which happens when you would set the Path property).
@@ -24,5 +26,7 @@ namespace Bynder.Sdk.Extensions
             uriBuilder.Path = $"{uriBuilder.Path.TrimEnd('/')}/{path.TrimStart('/')}";
             return uriBuilder;
         }
+
+        #endregion Methods
     }
 }

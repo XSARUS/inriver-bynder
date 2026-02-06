@@ -14,11 +14,14 @@ namespace Bynder.Workers
 
     internal class AssetUsageUpdateWorker : AbstractBynderWorker, IWorker
     {
-        #region Fields
+        #region Properties
+
         public override Dictionary<string, string> DefaultSettings => AssetUsageUpdateWorkerSettingsProvider.Create();
-        #endregion Fields
+
+        #endregion Properties
 
         #region Constructors
+
         public AssetUsageUpdateWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null) :
             base(inRiverContext, bynderClient)
         {

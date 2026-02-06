@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Bynder.Sdk.Query.Collection;
 using Bynder.Sdk.Api.Requests;
 using Bynder.Sdk.Api.RequestSender;
 using Bynder.Sdk.Model;
+using Bynder.Sdk.Query.Collection;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bynder.Sdk.Service.Collection
 {
@@ -16,10 +16,16 @@ namespace Bynder.Sdk.Service.Collection
     /// </summary>
     internal class CollectionService : ICollectionService
     {
+        #region Fields
+
         /// <summary>
         /// Request sender to communicate with the Bynder API
         /// </summary>
         private IApiRequestSender _requestSender;
+
+        #endregion Fields
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the class
@@ -28,6 +34,25 @@ namespace Bynder.Sdk.Service.Collection
         public CollectionService(IApiRequestSender requestSender)
         {
             _requestSender = requestSender;
+        }
+
+        #endregion Constructors
+
+        #region Methods
+
+        /// <summary>
+        /// Check <see cref="ICollectionService"/> for more information
+        /// </summary>
+        /// <param name="query">Check <see cref="ICollectionService"/> for more information</param>
+        /// <returns>Check <see cref="ICollectionService"/> for more information</returns>
+        public async Task<Status> AddMediaAsync(AddMediaQuery query)
+        {
+            return await _requestSender.SendRequestAsync(new ApiRequest
+            {
+                Path = $"/api/v4/collections/{query.CollectionId}/media/",
+                HTTPMethod = HttpMethod.Post,
+                Query = query,
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -107,21 +132,6 @@ namespace Bynder.Sdk.Service.Collection
         /// </summary>
         /// <param name="query">Check <see cref="ICollectionService"/> for more information</param>
         /// <returns>Check <see cref="ICollectionService"/> for more information</returns>
-        public async Task<Status> AddMediaAsync(AddMediaQuery query)
-        {
-            return await _requestSender.SendRequestAsync(new ApiRequest
-            {
-                Path = $"/api/v4/collections/{query.CollectionId}/media/",
-                HTTPMethod = HttpMethod.Post,
-                Query = query,
-            }).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Check <see cref="ICollectionService"/> for more information
-        /// </summary>
-        /// <param name="query">Check <see cref="ICollectionService"/> for more information</param>
-        /// <returns>Check <see cref="ICollectionService"/> for more information</returns>
         public async Task<Status> RemoveMediaAsync(RemoveMediaQuery query)
         {
             return await _requestSender.SendRequestAsync(new ApiRequest
@@ -146,5 +156,7 @@ namespace Bynder.Sdk.Service.Collection
                 Query = query,
             }).ConfigureAwait(false);
         }
+
+        #endregion Methods
     }
 }

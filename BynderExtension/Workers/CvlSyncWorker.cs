@@ -6,11 +6,11 @@ using System.Linq;
 
 namespace Bynder.Workers
 {
-    using Models;
-    using SettingProviders;
     using Enums;
+    using Models;
     using Sdk.Model;
     using Sdk.Query.Asset;
+    using SettingProviders;
     using Utils.Extensions;
     using Utils.Helpers;
     using SdkIBynderClient = Sdk.Service.IBynderClient;
@@ -20,12 +20,18 @@ namespace Bynder.Workers
     /// </summary>
     public class CvlSyncWorker : AbstractBynderWorker, IWorker
     {
+        #region Properties
+
         public override Dictionary<string, string> DefaultSettings => CvlSyncWorkerSettingsProvider.Create();
 
+        #endregion Properties
+
         #region Constructors
+
         public CvlSyncWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null) : base(inRiverContext, bynderClient)
         {
         }
+
         #endregion Constructors
 
         #region Methods
@@ -65,12 +71,16 @@ namespace Bynder.Workers
                 {
                     case CvlAction.Created:
                         return ProcessCreation(cvlId, cvlKey, metaproperties, localeMapping);
+
                     case CvlAction.Updated:
                         return ProcessUpdate(cvlId, cvlKey, metaproperties, localeMapping);
+
                     case CvlAction.Deleted:
                         return ProcessDeletion(cvlId, cvlKey, metaproperties);
+
                     case CvlAction.DeletedAll:
                         return ProcessCvlDeletion(cvlId, metaproperties);
+
                     default:
                         result.Messages.Add($"Action '{action}' not yet supported!");
                         return result;
@@ -125,8 +135,8 @@ namespace Bynder.Workers
             }
 
             var labelLocale = SettingHelper.GetBynderLocaleForMetapropertyOptionLabel(InRiverContext.Settings, InRiverContext.Logger);
-            if (!string.IsNullOrEmpty(labelLocale) && 
-                obj.Labels.ContainsKey(labelLocale) && 
+            if (!string.IsNullOrEmpty(labelLocale) &&
+                obj.Labels.ContainsKey(labelLocale) &&
                 !string.IsNullOrWhiteSpace(obj.Labels[labelLocale]))
             {
                 obj.Label = obj.Labels[labelLocale];

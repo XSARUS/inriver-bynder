@@ -26,7 +26,8 @@ namespace Bynder.Extension
             For<BynderClientSettings>().Use(BynderClientSettings.Create(inRiverContext.Settings));
 
             // Bynder API Client configuration
-            For<Configuration>().Use(new Configuration { 
+            For<Configuration>().Use(new Configuration
+            {
                 BaseUrl = new Uri(inRiverContext.Settings[SettingNames.BynderClientUrl]),
                 ClientId = inRiverContext.Settings[SettingNames.BynderClientId],
                 ClientSecret = inRiverContext.Settings[SettingNames.BynderSecretId]

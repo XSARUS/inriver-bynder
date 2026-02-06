@@ -7,6 +7,8 @@ namespace Bynder.Sdk.Model
     /// </summary>
     public class MetapropertyOptionStatus
     {
+        #region Properties
+
         /// <summary>
         /// Id from API
         /// </summary>
@@ -24,5 +26,7 @@ namespace Bynder.Sdk.Model
         /// </summary>
         [JsonProperty("statuscode")]
         public int StatusCode { get; set; }
+
+        #endregion Properties
     }
 }

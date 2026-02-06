@@ -7,9 +7,10 @@ namespace Bynder.SettingProviders
 
     public static class AssetUpdatedWorkerSettingsProvider
     {
+        #region Methods
+
         public static Dictionary<string, string> Create()
         {
-
             var settings = new Dictionary<string, string>()
             {
                 { Settings.ResourceSearchType, ResourceSearchType.AssetId.ToString() },
@@ -31,5 +32,7 @@ namespace Bynder.SettingProviders
 
             return settings;
         }
+
+        #endregion Methods
     }
 }

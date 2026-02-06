@@ -44,6 +44,8 @@ namespace Bynder.Utils.Helpers
             }
         }
 
+        public static string GetValueAsString(JProperty property) => GetValueAsString(property.Value);
+
         public static List<string> GetValueAsStringList(JToken token)
         {
             if (token == null) return new List<string>();
@@ -66,8 +68,6 @@ namespace Bynder.Utils.Helpers
                     return new List<string> { token.Value<string>() };
             }
         }
-
-        public static string GetValueAsString(JProperty property) => GetValueAsString(property.Value);
 
         private static string GetBooleanString(JToken token, bool forceType = true)
         {

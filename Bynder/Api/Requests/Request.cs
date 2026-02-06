@@ -11,12 +11,19 @@ namespace Bynder.Sdk.Api.Requests
     /// <typeparam name="T">Type to which the response will be deserialized</typeparam>
     internal abstract class Request<T>
     {
+        #region Fields
+
         protected bool _authenticated = true;
+
+        #endregion Fields
+
+        #region Properties
 
         /// <summary>
         /// Indicates whether the request needs to be authenticated.
         /// </summary>
-        internal bool Authenticated { get { return _authenticated; } }
+        internal bool Authenticated
+        { get { return _authenticated; } }
 
         /// <summary>
         /// HttpMethod to use.
@@ -32,5 +39,7 @@ namespace Bynder.Sdk.Api.Requests
         /// Optional: Object with information about the API parameters to send.
         /// </summary>
         internal object Query { get; set; }
+
+        #endregion Properties
     }
 }

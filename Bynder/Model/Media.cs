@@ -1,11 +1,11 @@
 // Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System.Collections.Generic;
+using Bynder.Sdk.Api.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Bynder.Sdk.Api.Converters;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Bynder.Sdk.Model
@@ -15,27 +15,18 @@ namespace Bynder.Sdk.Model
     /// </summary>
     public class Media
     {
-        /// <summary>
-        /// Property options assigned to media
-        /// </summary>
-        [JsonProperty("propertyOptions")]
-        public IList<string> PropertyOptions { get; set; }
+        #region Fields
 
-        /// <summary>
-        /// Property asset types assigned to media
-        /// </summary>
-        [JsonProperty("property_assettype")]
-        [JsonIgnore]
-        [Obsolete("Use PropertyOptionsDictionary?[\"property_assettype\"] instead")]
-        public IList<string> PropertyAssetType
-        {
-            get
-            {
-                if (PropertyOptionsDictionary == null || !PropertyOptionsDictionary.ContainsKey("property_assettype")) { return null; }
+        /////////////////////////////////////////////////
+        /// EXTRA XSARUS PROPERTIES, FIELDS & METHODS ///
+        /////////////////////////////////////////////////
+        private const string _propertyPrefix = "property_";
 
-                return PropertyOptionsDictionary["property_assettype"].Values().Select(v => v.ToString()).ToList();
-            }
-        }
+        private AssetMetapropertyList _metaProperties;
+
+        #endregion Fields
+
+        #region Properties
 
         /// <summary>
         /// Active focus point in the original media item, defined
@@ -45,16 +36,10 @@ namespace Bynder.Sdk.Model
         public IDictionary<string, int> ActiveOriginalFocusPoint { get; set; }
 
         /// <summary>
-        /// Number of times the media has been downloaded
+        /// Current active version
         /// </summary>
-        [JsonProperty("downloads")]
-        public int NumberOfDownloads { get; set; }
-
-        /// <summary>
-        /// Number of times the media has been viewed
-        /// </summary>
-        [JsonProperty("views")]
-        public int NumberOfViews { get; set; }
+        [JsonProperty("activeVersion")]
+        public int ActiveVersion { get; set; }
 
         /// <summary>
         /// Id of the brand the media belongs to
@@ -63,10 +48,10 @@ namespace Bynder.Sdk.Model
         public string BrandId { get; set; }
 
         /// <summary>
-        /// Id of the Subbrand the media belongs to
+        /// Copyright of the media
         /// </summary>
-        [JsonProperty("subBrandId")]
-        public string SubBrandId { get; set; }
+        [JsonProperty("copyright")]
+        public string Copyright { get; set; }
 
         /// <summary>
         /// Full name of the user who created the media
@@ -93,22 +78,28 @@ namespace Bynder.Sdk.Model
         public string DatePublished { get; set; }
 
         /// <summary>
+        /// Description
+        /// </summary>
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        /// <summary>
         /// Extension of the file
         /// </summary>
         [JsonProperty("extension")]
         public IList<string> Extension { get; set; }
 
         /// <summary>
+        /// File size of the original in bytes
+        /// </summary>
+        [JsonProperty("fileSize")]
+        public long FileSize { get; set; }
+
+        /// <summary>
         /// Height
         /// </summary>
         [JsonProperty("height")]
         public int Height { get; set; }
-
-        /// <summary>
-        /// Width
-        /// </summary>
-        [JsonProperty("width")]
-        public int Width { get; set; }
 
         /// <summary>
         /// Media id
@@ -121,73 +112,6 @@ namespace Bynder.Sdk.Model
         /// </summary>
         [JsonProperty("idHash")]
         public string IdHash { get; set; }
-
-        /// <summary>
-        /// Media name
-        /// </summary>
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Orientation
-        /// </summary>
-        [JsonProperty("orientation")]
-        public string Orientation { get; set; }
-
-        /// <summary>
-        /// Media type. Possible values are image, document, audio, video
-        /// </summary>
-        [JsonProperty("type")]
-        public string Type { get; set; }
-
-        /// <summary>
-        /// Generated thumbnails for the media
-        /// </summary>
-        [JsonProperty("thumbnails")]
-        public Thumbnails Thumbnails { get; set; }
-
-        /// <summary>
-        /// Video preview Urls
-        /// </summary>
-        [JsonProperty("videoPreviewURLs")]
-        public IList<string> VideoPreviewURLs { get; set; }
-
-        /// <summary>
-        /// Multiple media items for a media. Including derivatives, additional and original.
-        /// To get this information we have to call <see cref="RequestMediaInfoAsync"/> with the media id.
-        /// </summary>
-        [JsonProperty("mediaItems")]
-        public IList<MediaItem> MediaItems { get; set; }
-
-        /// <summary>
-        /// Current active version
-        /// </summary>
-        [JsonProperty("activeVersion")]
-        public int ActiveVersion { get; set; }
-
-        /// <summary>
-        /// Copyright of the media
-        /// </summary>
-        [JsonProperty("copyright")]
-        public string Copyright { get; set; }
-
-        /// <summary>
-        /// Description
-        /// </summary>
-        [JsonProperty("description")]
-        public string Description { get; set; }
-
-        /// <summary>
-        /// File size of the original in bytes
-        /// </summary>
-        [JsonProperty("fileSize")]
-        public long FileSize { get; set; }
-
-        /// <summary>
-        /// Tags of the media item
-        /// </summary>
-        [JsonProperty("tags")]
-        public IList<string> Tags { get; set; }
 
         /// <summary>
         /// Indicates if the media item is archived
@@ -214,28 +138,11 @@ namespace Bynder.Sdk.Model
         public bool IsWatermarked { get; set; }
 
         /// <summary>
-        /// URL to Bynder CDN for the original
+        /// Multiple media items for a media. Including derivatives, additional and original.
+        /// To get this information we have to call <see cref="RequestMediaInfoAsync"/> with the media id.
         /// </summary>
-        [JsonProperty("original")]
-        public string Original { get; set; }
-
-        /// <summary>
-        /// Dynamic Asset Transformation base URL.
-        /// </summary>
-        [JsonProperty("transformBaseUrl")]
-        public string TransformBaseUrl { get; set; }
-
-        /// <summary>
-        /// A dictionary representation of properties
-        /// </summary>
-        [JsonExtensionData]
-        public Dictionary<string, JToken> PropertyOptionsDictionary { get; set; }
-
-        /////////////////////////////////////////////////
-        /// EXTRA XSARUS PROPERTIES, FIELDS & METHODS ///
-        /////////////////////////////////////////////////
-        private const string _propertyPrefix = "property_";
-        private AssetMetapropertyList _metaProperties;
+        [JsonProperty("mediaItems")]
+        public IList<MediaItem> MediaItems { get; set; }
 
         /// <summary>
         /// Additional Dictionary with (metaproperty) options to set on the asset.
@@ -243,8 +150,10 @@ namespace Bynder.Sdk.Model
         /// Note that the list of (metaproperty) options should include all the (metaproperty) options available in the lower hierarchy;
         /// meaning it should include the (metaproperty) options of the (metaproperty) options etc.
         /// </summary>
-        public AssetMetapropertyList MetaProperties { 
-            get {
+        public AssetMetapropertyList MetaProperties
+        {
+            get
+            {
                 if (_metaProperties == null)
                 {
                     _metaProperties = SetMetapropertyList(PropertyOptionsDictionary);
@@ -254,18 +163,109 @@ namespace Bynder.Sdk.Model
             }
         }
 
-        public static AssetMetapropertyList SetMetapropertyList(Dictionary<string, JToken> properties)
+        /// <summary>
+        /// Media name
+        /// </summary>
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Number of times the media has been downloaded
+        /// </summary>
+        [JsonProperty("downloads")]
+        public int NumberOfDownloads { get; set; }
+
+        /// <summary>
+        /// Number of times the media has been viewed
+        /// </summary>
+        [JsonProperty("views")]
+        public int NumberOfViews { get; set; }
+
+        /// <summary>
+        /// Orientation
+        /// </summary>
+        [JsonProperty("orientation")]
+        public string Orientation { get; set; }
+
+        /// <summary>
+        /// URL to Bynder CDN for the original
+        /// </summary>
+        [JsonProperty("original")]
+        public string Original { get; set; }
+
+        /// <summary>
+        /// Property asset types assigned to media
+        /// </summary>
+        [JsonProperty("property_assettype")]
+        [JsonIgnore]
+        [Obsolete("Use PropertyOptionsDictionary?[\"property_assettype\"] instead")]
+        public IList<string> PropertyAssetType
         {
-            var propertyTokens = properties.Where(x => x.Key.StartsWith(_propertyPrefix));
-            var metaProperties = propertyTokens.Select(jProperty =>
-                 // property values are always send as array
-                 new AssetMetaproperty
-                 {
-                     Name = jProperty.Key.Substring(jProperty.Key.IndexOf(_propertyPrefix) + _propertyPrefix.Length),
-                     Values = GetValueAsStringList(jProperty.Value)
-                 });
-            return new AssetMetapropertyList(metaProperties);
+            get
+            {
+                if (PropertyOptionsDictionary == null || !PropertyOptionsDictionary.ContainsKey("property_assettype")) { return null; }
+
+                return PropertyOptionsDictionary["property_assettype"].Values().Select(v => v.ToString()).ToList();
+            }
         }
+
+        /// <summary>
+        /// Property options assigned to media
+        /// </summary>
+        [JsonProperty("propertyOptions")]
+        public IList<string> PropertyOptions { get; set; }
+
+        /// <summary>
+        /// A dictionary representation of properties
+        /// </summary>
+        [JsonExtensionData]
+        public Dictionary<string, JToken> PropertyOptionsDictionary { get; set; }
+
+        /// <summary>
+        /// Id of the Subbrand the media belongs to
+        /// </summary>
+        [JsonProperty("subBrandId")]
+        public string SubBrandId { get; set; }
+
+        /// <summary>
+        /// Tags of the media item
+        /// </summary>
+        [JsonProperty("tags")]
+        public IList<string> Tags { get; set; }
+
+        /// <summary>
+        /// Generated thumbnails for the media
+        /// </summary>
+        [JsonProperty("thumbnails")]
+        public Thumbnails Thumbnails { get; set; }
+
+        /// <summary>
+        /// Dynamic Asset Transformation base URL.
+        /// </summary>
+        [JsonProperty("transformBaseUrl")]
+        public string TransformBaseUrl { get; set; }
+
+        /// <summary>
+        /// Media type. Possible values are image, document, audio, video
+        /// </summary>
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
+        /// <summary>
+        /// Video preview Urls
+        /// </summary>
+        [JsonProperty("videoPreviewURLs")]
+        public IList<string> VideoPreviewURLs { get; set; }
+
+        /// <summary>
+        /// Width
+        /// </summary>
+        [JsonProperty("width")]
+        public int Width { get; set; }
+
+        #endregion Properties
+
+        #region Methods
 
         public static List<string> GetValueAsStringList(JToken token)
         {
@@ -290,6 +290,28 @@ namespace Bynder.Sdk.Model
             }
         }
 
+        public static AssetMetapropertyList SetMetapropertyList(Dictionary<string, JToken> properties)
+        {
+            var propertyTokens = properties.Where(x => x.Key.StartsWith(_propertyPrefix));
+            var metaProperties = propertyTokens.Select(jProperty =>
+                 // property values are always send as array
+                 new AssetMetaproperty
+                 {
+                     Name = jProperty.Key.Substring(jProperty.Key.IndexOf(_propertyPrefix) + _propertyPrefix.Length),
+                     Values = GetValueAsStringList(jProperty.Value)
+                 });
+            return new AssetMetapropertyList(metaProperties);
+        }
+
+        /// <summary>
+        /// Additional method to get the original filename
+        /// </summary>
+        /// <returns></returns>
+        public string GetOriginalFileName()
+        {
+            return MediaItems.FirstOrDefault(x => x.Type.Equals("original"))?.Name;
+        }
+
         /// <summary>
         /// Additional method to get the original mimetype
         /// </summary>
@@ -310,13 +332,6 @@ namespace Bynder.Sdk.Model
             return mimeType;
         }
 
-        /// <summary>
-        /// Additional method to get the original filename
-        /// </summary>
-        /// <returns></returns>
-        public string GetOriginalFileName()
-        {
-            return MediaItems.FirstOrDefault(x => x.Type.Equals("original"))?.Name;
-        }
+        #endregion Methods
     }
 }

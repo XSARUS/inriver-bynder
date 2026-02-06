@@ -11,27 +11,36 @@ using System.Threading.Tasks;
 
 namespace Bynder.Workers
 {
+    using Names;
     using Sdk.Model;
     using Sdk.Query.Asset;
     using SettingProviders;
-    using Names;
     using Utils.Helpers;
     using SdkIBynderClient = Sdk.Service.IBynderClient;
 
     public class AssetDownloadWorker : AbstractBynderWorker, IWorker
     {
+        #region Properties
+
         public override Dictionary<string, string> DefaultSettings => AssetDownloadWorkerSettingsProvider.Create();
 
-        #region Methods
-        public AssetDownloadWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null) : 
+        #endregion Properties
+
+        #region Constructors
+
+        public AssetDownloadWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null) :
             base(inRiverContext, bynderClient)
         {
         }
 
+        #endregion Constructors
+
+        #region Methods
+
         public void Execute(Entity resourceEntity)
         {
             if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
-            
+
             if (resourceEntity.LoadLevel < LoadLevel.DataOnly)
             {
                 resourceEntity = InRiverContext.ExtensionManager.DataService.GetEntity(resourceEntity.Id, LoadLevel.DataOnly);
@@ -110,7 +119,7 @@ namespace Bynder.Workers
             bynderDownloadStateField.Data = BynderStates.Done;
             resourceFilenameField.Data = fileHandlingDetails.Item2;
 
-            var fieldList = new List<Field> {   
+            var fieldList = new List<Field> {
                     resourceFilenameField,
                     bynderDownloadStateField,
                     resourceFileIdField,
@@ -124,7 +133,7 @@ namespace Bynder.Workers
             }
             catch (Exception ex)
             {
-                InRiverContext.Log(LogLevel.Error, "Could not update fields (" + string.Join(",", fieldList.Select(f => f.FieldType.Id))  + $") for  resource entity {resourceEntity.Id}: {ex.Message}", ex);
+                InRiverContext.Log(LogLevel.Error, "Could not update fields (" + string.Join(",", fieldList.Select(f => f.FieldType.Id)) + $") for  resource entity {resourceEntity.Id}: {ex.Message}", ex);
             }
         }
 
@@ -141,8 +150,9 @@ namespace Bynder.Workers
             //InRiverContext.Log(LogLevel.Verbose, $"Got {mappings.Count} filename-ext mappings!");
 
             // Loop through all mappings if the file-extension has any mappings configured.
-            // Use the first mapping which applies and skip the rest 
-            if (mappings.ContainsKey(originalFileExtension)) {
+            // Use the first mapping which applies and skip the rest
+            if (mappings.ContainsKey(originalFileExtension))
+            {
                 //InRiverContext.Log(LogLevel.Verbose, $"Mapping(s) found for filename-ext '{originalFileExtension}'!");
                 foreach (var mapping in mappings[originalFileExtension])
                 {
@@ -156,9 +166,10 @@ namespace Bynder.Workers
 
                         //InRiverContext.Log(LogLevel.Verbose, $"For mediatype '{mapping.MediaType}' for mapping with filename-ext '{originalFileExtension}' got url '{downloadUrl}', formatted filename '{formattedFilename}' and extension '{extension}'!");
 
-                        if (string.IsNullOrWhiteSpace(extension)) {
+                        if (string.IsNullOrWhiteSpace(extension))
+                        {
                             formattedFilename = asset.GetOriginalFileName();
-                        }                      
+                        }
 
                         if (!string.IsNullOrWhiteSpace(mapping.FilenameRegex?.Trim()))
                         {
@@ -195,7 +206,7 @@ namespace Bynder.Workers
             {
                 InRiverContext.Log(LogLevel.Verbose, $"Use the thumbnail for the configured download-mediatype '{downloadMediaType}'!");
                 return new Tuple<string, string>(
-                    asset.Thumbnails.All[downloadMediaType].Value<string>(), 
+                    asset.Thumbnails.All[downloadMediaType].Value<string>(),
                     asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(downloadMediaType, StringComparison.OrdinalIgnoreCase))?.Name ?? asset.GetOriginalFileName()
                 );
             }

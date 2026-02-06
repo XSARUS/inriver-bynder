@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System;
 using Newtonsoft.Json;
+using System;
 
 namespace Bynder.Sdk.Api.Converters
 {
@@ -12,6 +12,8 @@ namespace Bynder.Sdk.Api.Converters
     /// </summary>
     internal class BooleanJsonConverter : Newtonsoft.Json.JsonConverter
     {
+        #region Methods
+
         /// <summary>
         /// Checks if this converter can convert to a specific type.
         /// </summary>
@@ -46,5 +48,7 @@ namespace Bynder.Sdk.Api.Converters
         {
             // Not implemented. Just need to serialize to json
         }
+
+        #endregion Methods
     }
 }

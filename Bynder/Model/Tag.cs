@@ -7,6 +7,8 @@ namespace Bynder.Sdk.Model
     /// </summary>
     public class Tag
     {
+        #region Properties
+
         /// <summary>
         /// Tag ID
         /// </summary>
@@ -14,15 +16,17 @@ namespace Bynder.Sdk.Model
         public string ID { get; set; }
 
         /// <summary>
+        /// Number of media that are used by tag
+        /// </summary>
+        [JsonProperty("mediaCount")]
+        public int MediaCount { get; set; }
+
+        /// <summary>
         /// Tag Name
         /// </summary>
         [JsonProperty("tag")]
         public string TagName { get; set; }
 
-        /// <summary>
-        /// Number of media that are used by tag
-        /// </summary>
-        [JsonProperty("mediaCount")]
-        public int MediaCount { get; set; }
+        #endregion Properties
     }
 }

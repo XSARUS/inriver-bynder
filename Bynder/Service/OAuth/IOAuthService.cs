@@ -10,12 +10,7 @@ namespace Bynder.Sdk.Service.OAuth
     /// </summary>
     public interface IOAuthService
     {
-        /// <summary>
-        /// Gets the authorisation URL.
-        /// </summary>
-        /// <returns>The authorisation URL.</returns>
-        /// <param name="state">State string to be checked to avoid CSRF. https://auth0.com/docs/protocols/oauth2/oauth-state</param>
-        string GetAuthorisationUrl(string state);
+        #region Methods
 
         /// <summary>
         /// Gets an access token using client credentials.
@@ -31,9 +26,18 @@ namespace Bynder.Sdk.Service.OAuth
         Task GetAccessTokenAsync(string code);
 
         /// <summary>
+        /// Gets the authorisation URL.
+        /// </summary>
+        /// <returns>The authorisation URL.</returns>
+        /// <param name="state">State string to be checked to avoid CSRF. https://auth0.com/docs/protocols/oauth2/oauth-state</param>
+        string GetAuthorisationUrl(string state);
+
+        /// <summary>
         /// Gets a refresh token.
         /// </summary>
         /// <returns>The task to get the refresh token</returns>
         Task GetRefreshTokenAsync();
+
+        #endregion Methods
     }
 }

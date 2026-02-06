@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System.Threading.Tasks;
 using Bynder.Sdk.Model;
+using System.Threading.Tasks;
 
 namespace Bynder.Sdk.Service.Upload
 {
@@ -11,8 +11,10 @@ namespace Bynder.Sdk.Service.Upload
     /// </summary>
     internal interface IAmazonApi
     {
+        #region Methods
+
         /// <summary>
-        /// Uploads a file part to Amazon 
+        /// Uploads a file part to Amazon
         /// </summary>
         /// <param name="filename">file name</param>
         /// <param name="awsBucket">AWS bucket with the Url to upload the part to</param>
@@ -23,5 +25,7 @@ namespace Bynder.Sdk.Service.Upload
         /// <param name="numberOfChunks">total number of chunks</param>
         /// <returns>Task to represent the upload</returns>
         Task UploadPartToAmazon(string filename, string awsBucket, UploadRequest uploadRequest, uint chunkNumber, byte[] fileContent, int numberOfBytes, uint numberOfChunks);
+
+        #endregion Methods
     }
 }

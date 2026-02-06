@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Bynder. All rights reserved.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System;
 using Newtonsoft.Json;
+using System;
 
 namespace Bynder.Sdk.Api.Converters
 {
@@ -11,6 +11,8 @@ namespace Bynder.Sdk.Api.Converters
     /// </summary>
     public class JsonConverter : ITypeToStringConverter
     {
+        #region Methods
+
         /// <summary>
         /// Returns always true since it is possible to convert objects to Json strings
         /// </summary>
@@ -30,5 +32,7 @@ namespace Bynder.Sdk.Api.Converters
         {
             return JsonConvert.SerializeObject(value);
         }
+
+        #endregion Methods
     }
 }

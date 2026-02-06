@@ -10,6 +10,20 @@ namespace Bynder.Sdk.Model
     /// </summary>
     public class Brand
     {
+        #region Properties
+
+        /// <summary>
+        /// Description
+        /// </summary>
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Id
+        /// </summary>
+        [JsonProperty("id")]
+        public string Id { get; set; }
+
         /// <summary>
         /// Url for the image/logo
         /// </summary>
@@ -22,16 +36,6 @@ namespace Bynder.Sdk.Model
         [JsonProperty("name")]
         public string Name { get; set; }
 
-        /// <summary>
-        /// Id
-        /// </summary>
-        [JsonProperty("id")]
-        public string Id { get; set; }
-
-        /// <summary>
-        /// Description
-        /// </summary>
-        [JsonProperty("description")]
-        public string Description { get; set; }
+        #endregion Properties
     }
 }

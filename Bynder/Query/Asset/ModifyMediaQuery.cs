@@ -1,14 +1,73 @@
-using System.Collections.Generic;
 using Bynder.Sdk.Api.Converters;
 using Bynder.Sdk.Query.Decoder;
+using System.Collections.Generic;
 
 namespace Bynder.Sdk.Query.Asset
 {
     /// <summary>
-    /// Query to modify a media with 
+    /// Query to modify a media with
     /// </summary>
     public class ModifyMediaQuery
     {
+        #region Properties
+
+        /// <summary>
+        /// Indicates if the media is archived
+        /// </summary>
+        [ApiField("archive")]
+        public bool? Archive { get; set; }
+
+        /// <summary>
+        /// Copyright information for the media
+        /// </summary>
+        [ApiField("copyright")]
+        public string Copyright { get; set; }
+
+        /// <summary>
+        /// Description of the media
+        /// </summary>
+        [ApiField("description")]
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Indicates if the media is public
+        /// </summary>
+        [ApiField("isPublic")]
+        public bool? IsPublic { get; set; }
+
+        /// <summary>
+        /// Id of the media to modify
+        /// </summary>
+        public string MediaId { get; private set; }
+
+        /// <summary>
+        /// Metaproperty options to set on the asset.
+        /// </summary>
+        [ApiField("metaproperty", Converter = typeof(MetapropertyOptionsConverter))]
+        public IDictionary<string, IList<string>> MetapropertyOptions { get; set; }
+
+        /// <summary>
+        /// Name of the media
+        /// </summary>
+        [ApiField("name")]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Published date for the media
+        /// </summary>
+        [ApiField("datePublished")]
+        public string PublishedDate { get; set; }
+
+        /// <summary>
+        /// Tags that will be added to the asset
+        /// </summary>
+        [ApiField("tags", Converter = typeof(ListConverter))]
+        public IList<string> Tags { get; set; }
+
+        #endregion Properties
+
+        #region Constructors
+
         /// <summary>
         /// Initializes the class with required information
         /// </summary>
@@ -18,52 +77,9 @@ namespace Bynder.Sdk.Query.Asset
             MediaId = mediaId;
         }
 
-        /// <summary>
-        /// Id of the media to modify
-        /// </summary>
-        public string MediaId { get; private set; }
+        #endregion Constructors
 
-        /// <summary>
-        /// Name of the media
-        /// </summary>
-        [ApiField("name")]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Description of the media
-        /// </summary>
-        [ApiField("description")]
-        public string Description { get; set; }
-
-        /// <summary>
-        /// Copyright information for the media
-        /// </summary>
-        [ApiField("copyright")]
-        public string Copyright { get; set; }
-
-        /// <summary>
-        /// Published date for the media
-        /// </summary>
-        [ApiField("datePublished")]
-        public string PublishedDate { get; set; }
-
-        /// <summary>
-        /// Indicates if the media is archived
-        /// </summary>
-        [ApiField("archive")]
-        public bool? Archive { get; set; }
-
-        /// <summary>
-        /// Indicates if the media is public
-        /// </summary>
-        [ApiField("isPublic")]
-        public bool? IsPublic { get; set; }
-
-        /// <summary>
-        /// Metaproperty options to set on the asset.
-        /// </summary>
-        [ApiField("metaproperty", Converter = typeof(MetapropertyOptionsConverter))]
-        public IDictionary<string, IList<string>> MetapropertyOptions { get; set; }
+        #region Methods
 
         /// <summary>
         /// Add a set of options to a metaproperty
@@ -75,12 +91,6 @@ namespace Bynder.Sdk.Query.Asset
             MetapropertyOptions.Add(metapropertyId, optionIds);
         }
 
-        /// <summary>
-        /// Tags that will be added to the asset
-        /// </summary>
-        [ApiField("tags", Converter = typeof(ListConverter))]
-        public IList<string> Tags { get; set; }
-
+        #endregion Methods
     }
 }
-

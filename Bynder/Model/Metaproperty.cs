@@ -14,6 +14,8 @@ namespace Bynder.Sdk.Model
     /// </summary>
     public class Metaproperty
     {
+        #region Properties
+
         /// <summary>
         /// Id of metaproperty
         /// </summary>
@@ -21,37 +23,10 @@ namespace Bynder.Sdk.Model
         public string Id { get; set; }
 
         /// <summary>
-        /// Name of metaproperty
+        /// Returns true if Editable is selected for the metaproperty
         /// </summary>
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
-        [JsonProperty("type", ItemConverterType = typeof(StringEnumConverter))]
-        public MetapropertyType Type { get; set; }
-
-        /// <summary>
-        /// Label of metaproperty
-        /// </summary>
-        [JsonProperty("label")]
-        public string Label { get; set; }
-
-        /// <summary>
-        /// Child metaproperty options
-        /// </summary>
-        [JsonProperty("options")]
-        public List<MetapropertyOption> Options { get; set; }
-
-        /// <summary>
-        /// Returns true if Multiselect is selected for the metaproperty
-        /// </summary>
-        [JsonProperty("isMultiSelect", ItemConverterType = typeof(BooleanJsonConverter))]
-        public bool IsMultiSelect { get; set; }
-
-        /// <summary>
-        /// Returns true if Required is selected for the metaproperty
-        /// </summary>
-        [JsonProperty("isRequired", ItemConverterType = typeof(BooleanJsonConverter))]
-        public bool IsRequired { get; set; }
+        [JsonProperty("isEditable", ItemConverterType = typeof(BooleanJsonConverter))]
+        public bool IsEditable { get; set; }
 
         /// <summary>
         /// Returns true if Filterable is selected for the metaproperty
@@ -66,15 +41,44 @@ namespace Bynder.Sdk.Model
         public bool IsMainfilter { get; set; }
 
         /// <summary>
-        /// Returns true if Editable is selected for the metaproperty
+        /// Returns true if Multiselect is selected for the metaproperty
         /// </summary>
-        [JsonProperty("isEditable", ItemConverterType = typeof(BooleanJsonConverter))]
-        public bool IsEditable { get; set; }
+        [JsonProperty("isMultiSelect", ItemConverterType = typeof(BooleanJsonConverter))]
+        public bool IsMultiSelect { get; set; }
+
+        /// <summary>
+        /// Returns true if Required is selected for the metaproperty
+        /// </summary>
+        [JsonProperty("isRequired", ItemConverterType = typeof(BooleanJsonConverter))]
+        public bool IsRequired { get; set; }
+
+        /// <summary>
+        /// Label of metaproperty
+        /// </summary>
+        [JsonProperty("label")]
+        public string Label { get; set; }
+
+        /// <summary>
+        /// Name of metaproperty
+        /// </summary>
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Child metaproperty options
+        /// </summary>
+        [JsonProperty("options")]
+        public List<MetapropertyOption> Options { get; set; }
+
+        [JsonProperty("type", ItemConverterType = typeof(StringEnumConverter))]
+        public MetapropertyType Type { get; set; }
 
         /// <summary>
         /// Order in which metaproperty should appear
         /// </summary>
         [JsonProperty("zindex")]
         public int ZIndex { get; set; }
+
+        #endregion Properties
     }
 }

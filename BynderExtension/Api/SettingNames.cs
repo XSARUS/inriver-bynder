@@ -7,8 +7,8 @@ namespace Bynder.Api
         #region Fields
 
         public const string BynderClientId = "BYNDER_CLIENT_ID";
-        public const string BynderSecretId = "BYNDER_CLIENT_SECRET";
         public const string BynderClientUrl = "BYNDER_CLIENT_URL";
+        public const string BynderSecretId = "BYNDER_CLIENT_SECRET";
 
         #endregion Fields
 

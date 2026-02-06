@@ -10,6 +10,8 @@ namespace Bynder.Sdk.Query.Asset
     /// </summary>
     public class MediaInformationQuery
     {
+        #region Properties
+
         /// <summary>
         /// Id of the media from which we want to retrieve information
         /// </summary>
@@ -20,5 +22,7 @@ namespace Bynder.Sdk.Query.Asset
         /// </summary>
         [ApiField("versions")]
         public int Versions { get; set; } = 1;
+
+        #endregion Properties
     }
 }

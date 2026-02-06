@@ -7,6 +7,8 @@ namespace Bynder.Sdk.Model
     /// </summary>
     public class Status
     {
+        #region Properties
+
         /// <summary>
         /// Message from API
         /// </summary>
@@ -18,5 +20,7 @@ namespace Bynder.Sdk.Model
         /// </summary>
         [JsonProperty("statuscode")]
         public int StatusCode { get; set; }
+
+        #endregion Properties
     }
 }

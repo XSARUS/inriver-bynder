@@ -1,15 +1,11 @@
-﻿using Bynder.Sdk.Model;
-using Bynder.Sdk.Query.Decoder;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Bynder.Sdk.Query.Decoder;
 
 namespace Bynder.Query.User
 {
     public class UsersQuery
     {
+        #region Properties
+
         [ApiField("includeInActive")]
         public string IncludeInActive { get; set; } = false.ToString();
 
@@ -24,5 +20,7 @@ namespace Bynder.Query.User
         /// </summary>
         [ApiField("page")]
         public int Page { get; set; } = 1;
+
+        #endregion Properties
     }
 }

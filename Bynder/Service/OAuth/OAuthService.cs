@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Bynder.Sdk.Api.Requests;
 using Bynder.Sdk.Api.RequestSender;
 using Bynder.Sdk.Exceptions;
@@ -9,20 +5,30 @@ using Bynder.Sdk.Extensions;
 using Bynder.Sdk.Model;
 using Bynder.Sdk.Query;
 using Bynder.Sdk.Settings;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bynder.Sdk.Service.OAuth
 {
     internal class OAuthService : IOAuthService
     {
+        #region Fields
+
+        public const string AuthPath = "/v6/authentication/oauth2/auth";
+        public const string TokenPath = "/v6/authentication/oauth2/token";
         private readonly Configuration _configuration;
         private readonly ICredentials _credentials;
+
         /// <summary>
         /// Request sender to communicate with the Bynder API
         /// </summary>
         private readonly IApiRequestSender _requestSender;
 
-        public const string AuthPath = "/v6/authentication/oauth2/auth";
-        public const string TokenPath = "/v6/authentication/oauth2/token";
+        #endregion Fields
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the class
@@ -35,32 +41,9 @@ namespace Bynder.Sdk.Service.OAuth
             _requestSender = requestSender;
         }
 
-        /// <summary>
-        /// Check <see cref="IOAuthService"/>.
-        /// </summary>
-        /// <returns>Check <see cref="IOAuthService"/>.</returns>
-        /// <param name="state">Check <see cref="IOAuthService"/>.</param>
-        public string GetAuthorisationUrl(string state)
-        {
-            if (string.IsNullOrEmpty(state))
-            {
-                throw new ArgumentNullException(state);
-            }
+        #endregion Constructors
 
-            return new UriBuilder(_configuration.BaseUrl)
-            {
-                Query = Utils.Url.ConvertToQuery(
-                    new Dictionary<string, string>
-                    {
-                        { "client_id", _configuration.ClientId },
-                        { "redirect_uri", _configuration.RedirectUri },
-                        { "scope", _configuration.Scopes },
-                        { "response_type", "code" },
-                        { "state", state },
-                    }
-                )
-            }.AppendPath(AuthPath).ToString();
-        }
+        #region Methods
 
         /// <summary>
         /// Check <see cref="IOAuthService"/>.
@@ -118,6 +101,33 @@ namespace Bynder.Sdk.Service.OAuth
         /// Check <see cref="IOAuthService"/>.
         /// </summary>
         /// <returns>Check <see cref="IOAuthService"/>.</returns>
+        /// <param name="state">Check <see cref="IOAuthService"/>.</param>
+        public string GetAuthorisationUrl(string state)
+        {
+            if (string.IsNullOrEmpty(state))
+            {
+                throw new ArgumentNullException(state);
+            }
+
+            return new UriBuilder(_configuration.BaseUrl)
+            {
+                Query = Utils.Url.ConvertToQuery(
+                    new Dictionary<string, string>
+                    {
+                        { "client_id", _configuration.ClientId },
+                        { "redirect_uri", _configuration.RedirectUri },
+                        { "scope", _configuration.Scopes },
+                        { "response_type", "code" },
+                        { "state", state },
+                    }
+                )
+            }.AppendPath(AuthPath).ToString();
+        }
+
+        /// <summary>
+        /// Check <see cref="IOAuthService"/>.
+        /// </summary>
+        /// <returns>Check <see cref="IOAuthService"/>.</returns>
         public async Task GetRefreshTokenAsync()
         {
             if (_configuration.RedirectUri == null)
@@ -151,5 +161,6 @@ namespace Bynder.Sdk.Service.OAuth
             }
         }
 
+        #endregion Methods
     }
 }

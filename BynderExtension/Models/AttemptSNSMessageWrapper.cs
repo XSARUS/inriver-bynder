@@ -8,10 +8,11 @@ namespace Bynder.Models
         #region Properties
 
         public int Attempt { get; set; }
-        public string OriginalMessageJson { get; set; }
 
         [JsonIgnore]
         public Message OriginalMessage => Message.ParseMessage(OriginalMessageJson);
+
+        public string OriginalMessageJson { get; set; }
 
         #endregion Properties
     }

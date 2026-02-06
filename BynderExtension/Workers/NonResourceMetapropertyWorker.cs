@@ -5,21 +5,26 @@ using System.Linq;
 
 namespace Bynder.Workers
 {
-    using SettingProviders;
     using Names;
+    using SettingProviders;
     using Utils.Helpers;
 
     public class NonResourceMetapropertyWorker : AbstractWorker, IWorker
     {
-        public override Dictionary<string, string> DefaultSettings => NonResourceMetapropertyWorkerSettingsProvider.Create();
-
         #region Fields
 
         private readonly ResourceMetapropertyUpdateWorker _resourceMetapropertyUpdateWorker;
 
         #endregion Fields
 
+        #region Properties
+
+        public override Dictionary<string, string> DefaultSettings => NonResourceMetapropertyWorkerSettingsProvider.Create();
+
+        #endregion Properties
+
         #region Constructors
+
         public NonResourceMetapropertyWorker(inRiverContext inRiverContext, ResourceMetapropertyUpdateWorker resourceMetapropertyUpdateWorker) : base(inRiverContext)
         {
             _resourceMetapropertyUpdateWorker = resourceMetapropertyUpdateWorker;

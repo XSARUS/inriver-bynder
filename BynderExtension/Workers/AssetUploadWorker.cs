@@ -8,23 +8,29 @@ using System.Linq;
 
 namespace Bynder.Workers
 {
-    using SettingProviders;
     using Exceptions;
     using Models;
     using Names;
     using Sdk.Model;
+    using SettingProviders;
     using Utils.Helpers;
     using SdkIBynderClient = Sdk.Service.IBynderClient;
     using SdkUploadQuery = Sdk.Query.Upload.UploadQuery;
 
     public class AssetUploadWorker : AbstractBynderWorker, IWorker
     {
+        #region Properties
+
         public override Dictionary<string, string> DefaultSettings => AssetUploadWorkerSettingsProvider.Create();
 
+        #endregion Properties
+
         #region Constructors
+
         public AssetUploadWorker(inRiverContext inRiverContext, SdkIBynderClient bynderClient = null) : base(inRiverContext, bynderClient)
         {
         }
+
         #endregion Constructors
 
         #region Methods
@@ -42,6 +48,22 @@ namespace Bynder.Workers
             if (string.IsNullOrWhiteSpace(bynderUploadState) || bynderUploadState != BynderStates.Todo) return;
 
             UploadResourceForEntity(resourceEntity);
+        }
+
+        private static string GetBynderUploadStateFromEntity(Entity resourceEntity)
+        {
+            return (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState)?.Data;
+        }
+
+        private static int GetFileIdFromEntity(Entity resourceEntity)
+        {
+            var resourceFileId = resourceEntity.GetField(FieldTypeIds.ResourceFileId)?.Data;
+            return resourceFileId != null ? (int)resourceFileId : 0;
+        }
+
+        private static string GetFileNameFromEntity(Entity resourceEntity)
+        {
+            return (string)resourceEntity.GetField(FieldTypeIds.ResourceFilename)?.Data;
         }
 
         private string GetBrandIdBasedOnSettingKey()
@@ -63,19 +85,14 @@ namespace Bynder.Workers
             return brand;
         }
 
-        private static string GetBynderUploadStateFromEntity(Entity resourceEntity)
-        {
-            return (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState)?.Data;
-        }
-
         private ResourceUploadData GetDataForUpload(Entity resourceEntity)
         {
-            string brandId = GetBrandIdBasedOnSettingKey() ?? 
+            string brandId = GetBrandIdBasedOnSettingKey() ??
                 throw new MissingDataException($"Upload resource entity {resourceEntity.Id} failed, because the brandname within settings is not correctly configurated!");
-            
-            string filename = GetFileNameFromEntity(resourceEntity) ?? 
+
+            string filename = GetFileNameFromEntity(resourceEntity) ??
                 throw new MissingDataException($"Upload resource entity {resourceEntity.Id} failed, because the filename within the entity is not set!");
-            
+
             int fileId = GetFileIdFromEntity(resourceEntity);
 
             byte[] bytes = GetResourceByteArrayFromEntity(fileId);
@@ -91,17 +108,6 @@ namespace Bynder.Workers
                 FileId = fileId,
                 Bytes = bytes
             };
-        }
-
-        private static int GetFileIdFromEntity(Entity resourceEntity)
-        {
-            var resourceFileId = resourceEntity.GetField(FieldTypeIds.ResourceFileId)?.Data;
-            return resourceFileId != null ? (int)resourceFileId : 0;
-        }
-
-        private static string GetFileNameFromEntity(Entity resourceEntity)
-        {
-            return (string)resourceEntity.GetField(FieldTypeIds.ResourceFilename)?.Data;
         }
 
         private byte[] GetResourceByteArrayFromEntity(int fileId)
@@ -134,7 +140,7 @@ namespace Bynder.Workers
                     OriginalFileName = resourceUploadData.Filename,
                     Filepath = resourceUploadData.Filename,
                 }).GetAwaiter().GetResult();
-                
+
                 if (uploadResult.IsSuccessful)
                 {
                     var bynderAssetIdField = resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId);

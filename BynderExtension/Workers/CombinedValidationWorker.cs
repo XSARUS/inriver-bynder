@@ -8,14 +8,17 @@
     internal class CombinedValidationWorker : AbstractBynderWorker, IWorker
     {
         #region Fields
+
         private readonly BynderSettingsValidationWorker _bynderSettingsValidationWorker;
         private readonly ModelValidationWorker _modelValidationWorker;
+
         #endregion Fields
 
         #region Constructors
+
         public CombinedValidationWorker(
-            inRiverContext inRiverContext, 
-            SdkIBynderClient bynderClient, 
+            inRiverContext inRiverContext,
+            SdkIBynderClient bynderClient,
             ModelValidationWorker modelValidationWorker,
             BynderSettingsValidationWorker bynderSettingsValidationWorker) : base(inRiverContext, bynderClient)
         {
@@ -41,7 +44,7 @@
             {
                 result.Messages.Add($"Got access to current user '{currentUser.Email}'");
                 Profile profile = _bynderClient.GetProfileService().GetProfileAsync(new Query.Profile.ProfileQuery() { Id = currentUser.ProfileId }).GetAwaiter().GetResult();
-                result.Messages.Add(profile == null? $"No access to the current user's profile!" : $"Got access to current user's profile '{profile.Id}'");
+                result.Messages.Add(profile == null ? $"No access to the current user's profile!" : $"Got access to current user's profile '{profile.Id}'");
             }
             else
             {
