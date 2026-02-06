@@ -4,14 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Bynder.Extension
 {
     using SettingProviders;
-    using Config;
     using Names;
-    using Sdk.Query.Asset;
     using Utils.Helpers;
     using Utils.InRiver;
     using Workers;
@@ -56,7 +53,7 @@ namespace Bynder.Extension
         }
 
         /// <summary>
-        /// when a resource entity is created in inRiver, we should process it as it is possible originated from bynder
+        /// when a Resource-Entity is created in inRiver, we should process it as it is possible originated from Bynder
         /// </summary>
         /// <param name="entityId"></param>
         public void EntityCreated(int entityId)

@@ -11,7 +11,6 @@ namespace Bynder.Extension
     using Api.Mappers;
     using Config;
     using Enums;
-    using Sdk;
     using Sdk.Model;
     using Sdk.Query.Asset;
     using Sdk.Service;

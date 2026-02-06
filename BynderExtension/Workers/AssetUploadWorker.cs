@@ -5,18 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 
 namespace Bynder.Workers
 {
-    using Api;
     using SettingProviders;
-    using Enums;
     using Exceptions;
     using Models;
     using Names;
     using Sdk.Model;
-    using Utils;
     using Utils.Helpers;
     using SdkIBynderClient = Sdk.Service.IBynderClient;
     using SdkUploadQuery = Sdk.Query.Upload.UploadQuery;

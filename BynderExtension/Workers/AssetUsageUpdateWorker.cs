@@ -5,14 +5,12 @@ using System.Collections.Generic;
 
 namespace Bynder.Workers
 {
-    using Api;
     using Bynder.SettingProviders;
     using Names;
     using Sdk.Query.Asset;
     using Utils.Helpers;
     using Utils.InRiver;
     using SdkIBynderClient = Sdk.Service.IBynderClient;
-    using SdkUploadQuery = Sdk.Query.Upload.UploadQuery;
 
     internal class AssetUsageUpdateWorker : AbstractBynderWorker, IWorker
     {

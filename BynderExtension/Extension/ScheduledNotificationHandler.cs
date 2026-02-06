@@ -1,5 +1,4 @@
-﻿using Amazon.SimpleNotificationService.Util;
-using inRiver.Remoting.Log;
+﻿using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using Newtonsoft.Json;
 using System;
@@ -12,7 +11,6 @@ namespace Bynder.Extension
     using Api;
     using Config;
     using Models;
-    using Sdk.Model;
     using Utils.Helpers;
     using SettingProviders;
     using Enums;

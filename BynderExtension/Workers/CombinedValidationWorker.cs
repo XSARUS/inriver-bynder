@@ -1,6 +1,5 @@
 ﻿namespace Bynder.Workers
 {
-    using Api;
     using inRiver.Remoting.Extension;
     using Models;
     using Sdk.Model;

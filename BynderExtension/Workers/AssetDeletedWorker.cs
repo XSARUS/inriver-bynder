@@ -5,9 +5,7 @@ using System.Collections.Generic;
 
 namespace Bynder.Workers
 {
-    using Api;
     using SettingProviders;
-    using Enums;
     using Models;
     using Names;
     using Utils.Helpers;
