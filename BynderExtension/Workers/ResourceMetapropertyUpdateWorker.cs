@@ -1,14 +1,12 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Bynder.Workers
 {
-    using Api;
     using Sdk.Query.Asset;
     using Sdk.Service;
     using SettingProviders;
@@ -17,6 +15,9 @@ namespace Bynder.Workers
     using Utils.Helpers;
     using Utils.InRiver;
 
+    /**
+     * Updates metaproperties on asses in Bynder if Entity applies to EXPORT_CONDITIONS
+     */
     public class ResourceMetapropertyUpdateWorker : AbstractBynderWorker, IWorker
     {
 

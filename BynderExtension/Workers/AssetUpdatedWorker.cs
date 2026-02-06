@@ -1,7 +1,6 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,7 +10,6 @@ using System.Text.RegularExpressions;
 
 namespace Bynder.Workers
 {
-    using Api;
     using Sdk.Model;
     using SettingProviders;
     using Config;

@@ -1,7 +1,6 @@
 ﻿using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Log;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +11,6 @@ namespace Bynder.Extension
     using Api.Mappers;
     using Config;
     using Enums;
-    using Sdk;
     using Sdk.Model;
     using Sdk.Query.Asset;
     using Sdk.Service;

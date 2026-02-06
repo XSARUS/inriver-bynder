@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Bynder.Workers
+﻿namespace Bynder.Workers
 {
     public interface IWorker
     {

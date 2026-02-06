@@ -1,17 +1,11 @@
-﻿using inRiver.Remoting.Extension;
-using inRiver.Remoting.Log;
-using StructureMap;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Linq;
 
 namespace Bynder.Extension
 {
     using Api;
     using Utils.Helpers;
-    using Enums;
-    using Workers;
 
     public abstract class AbstractBynderExtension: AbstractExtension
     {

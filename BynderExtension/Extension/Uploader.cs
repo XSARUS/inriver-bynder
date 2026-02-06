@@ -6,9 +6,7 @@ using System.Text;
 
 namespace Bynder.Extension
 {
-    using Api;
     using SettingProviders;
-    using Config;
     using Names;
     using Utils.Helpers;
     using Utils.InRiver;

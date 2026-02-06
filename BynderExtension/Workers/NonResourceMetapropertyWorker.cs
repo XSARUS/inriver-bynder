@@ -5,8 +5,7 @@ using System.Linq;
 
 namespace Bynder.Workers
 {
-    using Bynder.Enums;
-    using Bynder.SettingProviders;
+    using SettingProviders;
     using Names;
     using Utils.Helpers;
 

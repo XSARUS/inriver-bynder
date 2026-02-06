@@ -1,13 +1,11 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Objects;
-using inRiver.Remoting.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Bynder.Workers
 {
-    using Api;
     using Models;
     using SettingProviders;
     using Enums;

@@ -11,12 +11,9 @@ using System.Threading.Tasks;
 
 namespace Bynder.Workers
 {
-    using Api;
-    using Models;
     using Sdk.Model;
     using Sdk.Query.Asset;
     using SettingProviders;
-    using Model;
     using Names;
     using Utils.Helpers;
     using SdkIBynderClient = Sdk.Service.IBynderClient;
@@ -141,11 +138,15 @@ namespace Bynder.Workers
             var originalFileExtension = Path.GetExtension(asset.GetOriginalFileName()).Replace(".", "").ToLower();
             var mappings = SettingHelper.GetFilenameExtensionMediaTypeMapping(InRiverContext.Settings, InRiverContext.Logger);
 
+            InRiverContext.Log(LogLevel.Verbose, $"Got {mappings.Count} filename-ext mappings!");
+
             // Loop through all mappings if the file-extension has any mappings configured.
             // Use the first mapping which applies and skip the rest 
             if (mappings.ContainsKey(originalFileExtension)) {
+                InRiverContext.Log(LogLevel.Verbose, $"Mapping(s) found for filename-ext '{originalFileExtension}'!");
                 foreach (var mapping in mappings[originalFileExtension])
                 {
+                    InRiverContext.Log(LogLevel.Verbose, $"Processing mapping for filename-ext '{originalFileExtension}'!");
                     if (asset.Thumbnails.All.ContainsKey(mapping.MediaType))
                     {
                         string downloadUrl = asset.Thumbnails.All[mapping.MediaType].Value<string>();
@@ -153,23 +154,35 @@ namespace Bynder.Workers
                         string formattedFilename = Path.GetFileName(uri.LocalPath);
                         string extension = Path.GetExtension(formattedFilename);
 
+                        InRiverContext.Log(LogLevel.Verbose, $"For mediatype '{mapping.MediaType}' for mapping with filename-ext '{originalFileExtension}' got url '{downloadUrl}', formatted filename '{formattedFilename}' and extension '{extension}'!");
+
                         if (string.IsNullOrWhiteSpace(extension)) {
                             formattedFilename = asset.GetOriginalFileName();
                         }                      
 
                         if (!string.IsNullOrWhiteSpace(mapping.FilenameRegex?.Trim()))
                         {
-                            string regexPattern = mapping.FilenameRegex?.Replace(@"\\", @"\");
+                            string regexPattern = mapping.FilenameRegex;
                             formattedFilename = Regex.Replace(formattedFilename, regexPattern, "");
                         }
 
+                        InRiverContext.Log(LogLevel.Verbose, $"For mediatype '{mapping.MediaType}' for mapping with filename-ext '{originalFileExtension}' got eventually formatted filename '{formattedFilename}'!");
                         return new Tuple<string, string>(downloadUrl, formattedFilename);
                     }
+                    else
+                    {
+                        InRiverContext.Log(LogLevel.Verbose, $"Asset thumbnails do not contain a key for '{mapping.MediaType}' for mapping with filename-ext '{originalFileExtension}'!");
+                    }
                 }
+            }
+            else
+            {
+                InRiverContext.Log(LogLevel.Verbose, $"No mappings found for filename-ext '{originalFileExtension}'!");
             }
 
             // Default to original when no mapping is found
             string downloadMediaType = SettingHelper.GetDownloadMediaType(InRiverContext.Settings, InRiverContext.Logger);
+            InRiverContext.Log(LogLevel.Verbose, $"Fall back to configured download-mediatype '{downloadMediaType}'!");
 
             if (downloadMediaType.Equals("original"))
             {
@@ -179,6 +192,7 @@ namespace Bynder.Workers
 
             if (asset.Thumbnails.All.ContainsKey(downloadMediaType))
             {
+                InRiverContext.Log(LogLevel.Verbose, $"Use the thumbnail for the configured download-mediatype '{downloadMediaType}'!");
                 return new Tuple<string, string>(
                     asset.Thumbnails.All[downloadMediaType].Value<string>(), 
                     asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(downloadMediaType, StringComparison.OrdinalIgnoreCase))?.Name ?? asset.GetOriginalFileName()
