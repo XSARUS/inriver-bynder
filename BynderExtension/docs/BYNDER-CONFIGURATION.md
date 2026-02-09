@@ -1,7 +1,7 @@
 
 # Bynder configuration
 
-These instructions help you configure your Bynder account for intergration with inRiver.
+These instructions help you configure your Bynder account for intergration with Inriver.
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ The URL should look something like this: https://inbound.productmarketingcloud.c
 
 - [CUSTOMERNAME] = the name of your customer
 - [ENVIRONMENT] = one of your configured environments production/test
-- [EXTENSIONID] = we wil use 'BynderAssetNotify' later on in the inRiver documentation. 
+- [EXTENSIONID] = we wil use 'BynderAssetNotify' later on in the Inriver documentation. 
   So that one we will use. But you're free to use your own extension Id.
 
 ## Oauth 2
@@ -31,7 +31,7 @@ This requires an Oauth app from your Bynder environment instead of a consumer ke
 - Go to "advanced settings" and click on "portal-settings"
 - At the left click on "Oauth apps" and at the right click on "Add new app".
 - Select grant type > "Client Credentials"
-- Set HTTP access control (CORS) > add at least "inriver.com"
+- Set HTTP access control (CORS) > add at least "Inriver.com"
 - Set HTTP access control (CORS) > also add "productmarketingcloud.com"
 - Select scopes: at least select all "Assets", "Collections", "Metaproperties" and "User"
 - Select scopes: at least select "admin.profile:read" and "admin.user:read" for "Admin"
@@ -39,7 +39,7 @@ This requires an Oauth app from your Bynder environment instead of a consumer ke
 - Store the client_id and client_secret someware safe. We need this later!
 
 ## Add metaproperties
-If you want to update a Bynder asset with information from inRiver,
+If you want to update a Bynder asset with information from Inriver,
 you can add metaproperties to store values on a asset. 
 
 To create a metaproperty:
@@ -53,7 +53,7 @@ To create a metaproperty:
   - Type = Text
 - Press Save
 
-It's good practice to use metaproperty names similar to fieldTypeId's in your inRiver model.
-For this demonstration 'ResourceDescription' will be added in our inRiver model later.
+It's good practice to use metaproperty names similar to fieldTypeId's in your Inriver model.
+For this demonstration 'ResourceDescription' will be added in our Inriver model later.
 
 In the URL you wil find the Id of the metaproperty. Write it down for later use!
