@@ -5,7 +5,7 @@ The Bynder - inRiver integration, allows assets to be transfered from Bynder to 
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your
-inRiver IPMC enviroment.
+inRiver iPMC enviroment.
 
 ## Table of Contents
 
