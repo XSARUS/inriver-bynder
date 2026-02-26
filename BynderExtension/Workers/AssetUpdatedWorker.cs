@@ -86,9 +86,12 @@ namespace Bynder.Workers
             }
 
             InRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} applies to conditions; handling notification-type: {notificationType}");
+            result.Messages.Add($"Asset {media.Id} applies to conditions; handling notification-type: {notificationType}");
 
             var resourceSearchType = SettingHelper.GetResourceSearchType(InRiverContext.Settings, InRiverContext.Logger);
             Entity resourceEntity = EntityHelper.GetResourceByAsset(media, resourceSearchType, InRiverContext.ExtensionManager.DataService, LoadLevel.DataAndLinks);
+
+            result.Messages.Add($"Asset {media.Id} (notification-type: {notificationType}) belongs to Resource-Entity with id: '{resourceEntity?.Id}' (empty or 0 means that a new Entity should be created!)");
 
             // handle notification logic
             switch (notificationType)
@@ -188,12 +191,14 @@ namespace Bynder.Workers
         /// <param name="evaluatorResult"></param>
         /// <param name="resourceEntity"></param>
         /// <param name="resultString"></param>
-        private void AddRelations(Dictionary<FieldType, string> relatedEntityData, Entity resourceEntity, StringBuilder resultString)
+        private string AddRelations(Dictionary<FieldType, string> relatedEntityData, Entity resourceEntity)
         {
+            StringBuilder resultString = new StringBuilder();
+
             if (relatedEntityData.Count == 0)
             {
                 resultString.Append($"; Empty relatedEntityData for ResourceEntity {resourceEntity.Id}");
-                return;
+                return resultString.ToString();
             }
 
             // get all *inbound* linktypes towards the Resource entitytype in the model(e.g.ProductResource, ItemResource NOT ResourceOtherEntity)
@@ -238,6 +243,8 @@ namespace Bynder.Workers
 
                 resultString.Append($"; {sourceEntity.EntityType.Id} entity {sourceEntity.Id} found and linked");
             }
+
+            return resultString.ToString();
         }
 
         /// <summary>
@@ -272,12 +279,14 @@ namespace Bynder.Workers
 
         private WorkerResult CreateOrUpdateEntityAndRelations(WorkerResult result, Media asset, FilenameEvaluator.Result evaluatorResult, Entity resourceEntity)
         {
+            StringBuilder resultString = new StringBuilder();
             string action = resourceEntity == null ? "Create Entity" : $"Update Entity {resourceEntity.Id}";
             InRiverContext.Log(LogLevel.Verbose, $"{action}, metadata and relations for Bynder asset {asset.Id}");
 
             if (resourceEntity == null)
             {
                 resourceEntity = CreateResourceEntity(asset);
+                result.Messages.Add($"Resource entity creation initialized (not added to inriver yet!) for asset {asset.Id}");
             }
 
             // get current fieldvalues so we can check the updated fields later on
@@ -297,8 +306,6 @@ namespace Bynder.Workers
 
             var filenameData = evaluatorResult.GetResourceDataInFilename();
             SetResourceFilenameData(resourceEntity, filenameData);
-
-            var resultString = new StringBuilder();
 
             if (resourceEntity.Id == 0)
             {
@@ -321,7 +328,7 @@ namespace Bynder.Workers
             }
 
             var relatedEntityData = evaluatorResult.GetRelatedEntityDataInFilename();
-            AddRelations(relatedEntityData, resourceEntity, resultString);
+            resultString.Append(AddRelations(relatedEntityData, resourceEntity));
 
             result.Messages.Add(resultString.ToString());
             return result;
