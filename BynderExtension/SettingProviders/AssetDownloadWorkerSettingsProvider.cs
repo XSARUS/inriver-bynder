@@ -13,6 +13,7 @@ namespace Bynder.SettingProviders
             var settings = new Dictionary<string, string>()
             {
                 { Settings.FilenameExtensionMediaTypeMapping, string.Empty },
+                { Settings.AddAssetIdPrefixToFilenameOfNewResource, true.ToString() },
                 { Settings.DownloadMediaType, "original" },
             };
 

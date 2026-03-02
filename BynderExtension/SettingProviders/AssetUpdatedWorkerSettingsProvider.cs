@@ -15,7 +15,9 @@ namespace Bynder.SettingProviders
             {
                 { Settings.ResourceSearchType, ResourceSearchType.AssetId.ToString() },
                 { Settings.ImportConditions, "[{\"propertyName\":\"SyncToInriver\",\"values\":[\"True\"], \"matchType\":\"Equal\"}]" },
+                { Settings.FilenameExtensionMediaTypeMapping, string.Empty },
                 { Settings.AddAssetIdPrefixToFilenameOfNewResource, true.ToString() },
+                { Settings.DownloadMediaType, "original" },
                 { Settings.CreateMissingCvlKeys, true.ToString() },
                 { Settings.MultivalueSeparator, "," },
                 { Settings.LocaleStringLanguagesToSet, string.Empty },

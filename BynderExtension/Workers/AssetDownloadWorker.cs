@@ -1,21 +1,16 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Bynder.Workers
 {
+    using Utils.Helpers;
     using Names;
     using Sdk.Model;
-    using Sdk.Query.Asset;
     using SettingProviders;
-    using Utils.Helpers;
     using SdkIBynderClient = Sdk.Service.IBynderClient;
 
     public class AssetDownloadWorker : AbstractBynderWorker, IWorker
@@ -50,7 +45,7 @@ namespace Bynder.Workers
             Field bynderDownloadStateField = resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState);
             var bynderDownloadState = (string)bynderDownloadStateField?.Data;
 
-            // stop when state is not todo
+            // stop when state is not equal to `todo`
             if (string.IsNullOrWhiteSpace(bynderDownloadState) || bynderDownloadState != BynderStates.Todo) return;
 
             string bynderId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderId)?.Data;
@@ -85,9 +80,8 @@ namespace Bynder.Workers
                 return;
             }
 
-            /** 1 = download url, 2 = formatted filename */
-            Tuple<string, string> fileHandlingDetails = GetDownloadUrlAndFilename(media).GetAwaiter().GetResult();
-            if (string.IsNullOrWhiteSpace(fileHandlingDetails.Item1))
+            var (url, filename) = MediaHelper.GetDownloadUrlAndFilename(InRiverContext, _bynderClient, media).GetAwaiter().GetResult();
+            if (string.IsNullOrWhiteSpace(url))
             {
                 InRiverContext.Log(LogLevel.Error, "File url is empty");
 
@@ -97,7 +91,7 @@ namespace Bynder.Workers
                 return;
             }
 
-            int newFileId = InRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(fileHandlingDetails.Item2, fileHandlingDetails.Item1);
+            int newFileId = InRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(filename, url);
 
             // delete older asset file
             if (existingFileId > 0)
@@ -117,10 +111,10 @@ namespace Bynder.Workers
             resourceMimeTypeField.Data = media.GetOriginalMimeType();
 
             bynderDownloadStateField.Data = BynderStates.Done;
-            resourceFilenameField.Data = fileHandlingDetails.Item2;
+            // We do NOT overwrite the filename because that leads to sync issues; it should be the same unless you change the download media-type
+            // resourceFilenameField.Data = Filename;
 
             var fieldList = new List<Field> {
-                    resourceFilenameField,
                     bynderDownloadStateField,
                     resourceFileIdField,
                     resourceMimeTypeField
@@ -137,83 +131,7 @@ namespace Bynder.Workers
             }
         }
 
-        /// <summary>
-        /// Returns the download URL and filename to use
-        /// </summary>
-        /// <param name="asset"></param>
-        /// <returns></returns>
-        public async Task<Tuple<string, string>> GetDownloadUrlAndFilename(Media asset)
-        {
-            var originalFileExtension = Path.GetExtension(asset.GetOriginalFileName()).Replace(".", "").ToLower();
-            var mappings = SettingHelper.GetFilenameExtensionMediaTypeMapping(InRiverContext.Settings, InRiverContext.Logger);
-
-            //InRiverContext.Log(LogLevel.Verbose, $"Got {mappings.Count} filename-ext mappings!");
-
-            // Loop through all mappings if the file-extension has any mappings configured.
-            // Use the first mapping which applies and skip the rest
-            if (mappings.ContainsKey(originalFileExtension))
-            {
-                //InRiverContext.Log(LogLevel.Verbose, $"Mapping(s) found for filename-ext '{originalFileExtension}'!");
-                foreach (var mapping in mappings[originalFileExtension])
-                {
-                    //InRiverContext.Log(LogLevel.Verbose, $"Processing mapping for filename-ext '{originalFileExtension}'!");
-                    if (asset.Thumbnails.All.ContainsKey(mapping.MediaType))
-                    {
-                        string downloadUrl = asset.Thumbnails.All[mapping.MediaType].Value<string>();
-                        var uri = new Uri(downloadUrl);
-                        string formattedFilename = Path.GetFileName(uri.LocalPath);
-                        string extension = Path.GetExtension(formattedFilename);
-
-                        //InRiverContext.Log(LogLevel.Verbose, $"For mediatype '{mapping.MediaType}' for mapping with filename-ext '{originalFileExtension}' got url '{downloadUrl}', formatted filename '{formattedFilename}' and extension '{extension}'!");
-
-                        if (string.IsNullOrWhiteSpace(extension))
-                        {
-                            formattedFilename = asset.GetOriginalFileName();
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(mapping.FilenameRegex?.Trim()))
-                        {
-                            //InRiverContext.Log(LogLevel.Verbose, $"For mediatype '{mapping.MediaType}' for mapping with filename-ext '{originalFileExtension}' applying regex: '{mapping.FilenameRegex}'!");
-                            string regexPattern = mapping.FilenameRegex;
-                            formattedFilename = Regex.Replace(formattedFilename, regexPattern, string.Empty, RegexOptions.IgnoreCase);
-                        }
-
-                        InRiverContext.Log(LogLevel.Verbose, $"For mediatype '{mapping.MediaType}' for mapping with filename-ext '{originalFileExtension}' got eventually formatted filename '{formattedFilename}'!");
-                        return new Tuple<string, string>(downloadUrl, formattedFilename);
-                    }
-                    else
-                    {
-                        InRiverContext.Log(LogLevel.Verbose, $"Asset thumbnails do not contain a key for '{mapping.MediaType}' for mapping with filename-ext '{originalFileExtension}'!");
-                    }
-                }
-            }
-            else
-            {
-                // InRiverContext.Log(LogLevel.Verbose, $"No mappings found for filename-ext '{originalFileExtension}'!");
-            }
-
-            // Default to original when no mapping is found
-            string downloadMediaType = SettingHelper.GetDownloadMediaType(InRiverContext.Settings, InRiverContext.Logger);
-            InRiverContext.Log(LogLevel.Verbose, $"Fall back to configured download-mediatype '{downloadMediaType}'!");
-
-            if (downloadMediaType.Equals("original"))
-            {
-                Uri assetDownloadLocation = await _bynderClient.GetAssetService().GetDownloadFileUrlAsync(new DownloadMediaQuery() { MediaId = asset.Id });
-                return new Tuple<string, string>(assetDownloadLocation.ToString(), asset.GetOriginalFileName());
-            }
-
-            if (asset.Thumbnails.All.ContainsKey(downloadMediaType))
-            {
-                InRiverContext.Log(LogLevel.Verbose, $"Use the thumbnail for the configured download-mediatype '{downloadMediaType}'!");
-                return new Tuple<string, string>(
-                    asset.Thumbnails.All[downloadMediaType].Value<string>(),
-                    asset.MediaItems.FirstOrDefault(mi => mi.Type.Equals(downloadMediaType, StringComparison.OrdinalIgnoreCase))?.Name ?? asset.GetOriginalFileName()
-                );
-            }
-
-            InRiverContext.Log(LogLevel.Warning, $"Download media type (original or a derivative/thumbnail) '{downloadMediaType}' not found!");
-            return null;
-        }
+        
 
         #endregion Methods
     }

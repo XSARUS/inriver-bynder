@@ -338,16 +338,11 @@ namespace Bynder.Workers
         {
             Entity resourceEntity = Entity.CreateEntity(ResourceEntityType);
 
-            // set filename (only for *new* resource)
-            string filename = asset.GetOriginalFileName();
+            var (url, filename) = MediaHelper.GetDownloadUrlAndFilename(InRiverContext, _bynderClient, asset).GetAwaiter().GetResult();
             if (string.IsNullOrEmpty(filename))
             {
                 InRiverContext.Log(LogLevel.Debug, $"Filename for asset {asset.Id} is empty");
                 filename = asset.Id;
-            }
-            else if (SettingHelper.ShouldAddAssetIdPrefixToFilename(InRiverContext.Settings, InRiverContext.Logger))
-            {
-                filename = $"{asset.Id}_{filename}";
             }
 
             var fieldTypeSettings = resourceEntity.GetField(FieldTypeIds.ResourceFilename).FieldType.Settings;

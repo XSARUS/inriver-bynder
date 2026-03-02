@@ -19,7 +19,7 @@ namespace BynderTest
         public void GetMediaTest()
         {
             var worker = _extension.GetWorker();
-            var media = worker.GetMedia("B8ED3B94-21A3-42C3-B10D254DE248795F");
+            var media = worker.GetMedia("3BB22965-BCE6-4F95-ADAC0D48BFB38BAC"); // fpp
             Logger.Log($"Media found: {media.Id}");
         }
 
