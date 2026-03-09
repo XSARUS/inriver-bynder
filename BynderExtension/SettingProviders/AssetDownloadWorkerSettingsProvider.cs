@@ -15,6 +15,7 @@ namespace Bynder.SettingProviders
                 { Settings.FilenameExtensionMediaTypeMapping, string.Empty },
                 { Settings.AddAssetIdPrefixToFilenameOfNewResource, true.ToString() },
                 { Settings.DownloadMediaType, "original" },
+                { Settings.FieldTypeThumbnailMapping, string.Empty  }
             };
 
             return settings;
