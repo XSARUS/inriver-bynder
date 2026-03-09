@@ -67,6 +67,7 @@
     <Compile Include="Extension\ScheduledNotificationHandler.cs" />
     <Compile Include="Extension\Uploader.cs" />
     <Compile Include="Models\Condition.cs" />
+    <Compile Include="Models\FieldTypeThumbnailMapping.cs" />
     <Compile Include="Models\FieldValueCombination.cs" />
     <Compile Include="Models\ExportCondition.cs" />
     <Compile Include="Models\FilenameExtensionMediaTypeMapping.cs" />

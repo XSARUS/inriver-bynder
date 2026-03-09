@@ -388,6 +388,17 @@ namespace Bynder.Utils.Helpers
             return true;
         }
 
+        public static List<FieldTypeThumbnailMapping> GetFieldTypeThumbnailMappings(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.FieldTypeThumbnailMapping) && !string.IsNullOrWhiteSpace(settings[Settings.FieldTypeThumbnailMapping]))
+            {
+                return JsonConvert.DeserializeObject<List<FieldTypeThumbnailMapping>>(settings[Settings.FieldTypeThumbnailMapping]);
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.FieldTypeThumbnailMapping}'");
+            return new List<FieldTypeThumbnailMapping>();
+        }
+
         #endregion Methods
     }
 }

@@ -172,5 +172,27 @@ namespace Bynder.Utils.Helpers
             throw new InvalidOperationException(
                 $"Download media type '{downloadMediaType}' could not be resolved for asset '{asset.Id}'.");
         }
+
+        internal static string GetThumbnailUrlFromAsset(Media asset, string thumbnailType)
+        {
+            if (asset?.Thumbnails?.All != null &&
+                asset.Thumbnails.All.TryGetValue(thumbnailType, out JToken token))
+            {
+                return token.Value<string>();
+            }
+
+            return null;
+        }
+
+        internal static string GetThumbnailUrl(inRiverContext context, Media asset, FieldTypeThumbnailMapping thumbnailMapping)
+        {
+            string url = GetThumbnailUrlFromAsset(asset, thumbnailMapping.ThumbnailType);
+            if (string.IsNullOrEmpty(url))
+            {
+                url = GetThumbnailUrlFromAsset(asset, thumbnailMapping.FallBackThumbnailType);
+            }
+
+            return url;
+        }
     }
 }

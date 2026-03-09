@@ -551,6 +551,28 @@ namespace Bynder.Workers
 
                 field.Data = GetParsedValueForField(result, assetProperty.Name, values, field);
             }
+
+            // thumbnails | ticket #208787
+            var thumbnailMappings = SettingHelper.GetFieldTypeThumbnailMappings(InRiverContext.Settings, InRiverContext.Logger);
+            foreach (var thumbnailMapping in thumbnailMappings)
+            {
+                var thumbnailField = resourceEntity.GetField(thumbnailMapping.FieldTypeId);
+                if (thumbnailField == null)
+                {
+                    InRiverContext.Log(LogLevel.Warning, $"Thumbnail field with fieldtype {thumbnailMapping.FieldTypeId} not found on resource entity {resourceEntity.Id}!");
+                    continue;
+                }
+
+                var thumbnailUrl = GetThumbnailUrl(asset, thumbnailMapping);
+
+                if (thumbnailUrl == null)
+                {
+                    InRiverContext.Log(LogLevel.Warning, $"Thumbnail url for type '{thumbnailMapping.ThumbnailType}' or fallback-type '{thumbnailMapping.FallBackThumbnailType}' is not available on resource entity {resourceEntity.Id}!");
+                    continue;
+                }
+
+                thumbnailField.Data = thumbnailUrl;
+            }
         }
 
         private void SetMetapropertyData(Entity resourceEntity, Media asset, WorkerResult result)
@@ -688,6 +710,9 @@ namespace Bynder.Workers
 
             return result;
         }
+
+        protected string GetThumbnailUrl(Media media, FieldTypeThumbnailMapping thumbnailMapping) =>
+            MediaHelper.GetThumbnailUrl(InRiverContext, media, thumbnailMapping);
 
         #endregion Methods
     }

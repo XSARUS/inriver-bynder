@@ -25,6 +25,7 @@ namespace Bynder.SettingProviders
                 { Settings.MetapropertyMap, "metapropertyguid1=inriverfield1,metapropertyguid2=inriverfield2" },
                 { Settings.FieldValuesToSetOnArchiveEvent, string.Empty },
                 { Settings.TimestampSettings, string.Empty },
+                { Settings.FieldTypeThumbnailMapping, string.Empty  }
             };
 
             foreach (var setting in FilenameEvaluatorSettingsProvider.Create())

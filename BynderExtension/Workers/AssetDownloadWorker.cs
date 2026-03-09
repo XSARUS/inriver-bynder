@@ -120,6 +120,33 @@ namespace Bynder.Workers
                     resourceMimeTypeField
                 };
 
+            // thumbnails | ticket #208787
+            var thumbnailMappings = SettingHelper.GetFieldTypeThumbnailMappings(InRiverContext.Settings, InRiverContext.Logger);
+            foreach (var thumbnailMapping in thumbnailMappings)
+            {
+                var thumbnailField = resourceEntity.GetField(thumbnailMapping.FieldTypeId);
+                if (thumbnailField == null)
+                {
+                    InRiverContext.Log(LogLevel.Warning, $"Thumbnail field with fieldtype {thumbnailMapping.FieldTypeId} not found on resource entity {resourceEntity.Id}!");
+                    continue;
+                }
+
+                var thumbnailUrl = GetThumbnailUrl(media, thumbnailMapping);
+
+                if (thumbnailUrl == null)
+                {
+                    InRiverContext.Log(LogLevel.Warning, $"Thumbnail url for type '{thumbnailMapping.ThumbnailType}' or fallback-type '{thumbnailMapping.FallBackThumbnailType}' is not available on resource entity {resourceEntity.Id}!");
+                    continue;
+                }
+
+                var clonedThumbnailField = thumbnailField.Clone() as Field;
+                thumbnailField.Data = thumbnailUrl;
+                if (thumbnailField.ValueHasBeenModified(clonedThumbnailField.Data))
+                {
+                    fieldList.Add(thumbnailField);
+                }
+            }
+
             try
             {
                 resourceEntity = InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldList);
@@ -131,7 +158,8 @@ namespace Bynder.Workers
             }
         }
 
-        
+        protected string GetThumbnailUrl(Media media, Models.FieldTypeThumbnailMapping thumbnailMapping) =>
+            MediaHelper.GetThumbnailUrl(InRiverContext, media, thumbnailMapping);
 
         #endregion Methods
     }

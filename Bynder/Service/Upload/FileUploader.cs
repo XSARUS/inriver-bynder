@@ -101,10 +101,8 @@ namespace Bynder.Sdk.Service.Upload
         {
             var filename = !string.IsNullOrEmpty(query.OriginalFileName) ? query.OriginalFileName : Path.GetFileName(query.Filepath);
             var uploadRequest = await RequestUploadInformationAsync(new RequestUploadQuery { Filename = filename }).ConfigureAwait(false);
-
-            uint chunkNumber = 0;
-
             var fileStream = File.Open(query.Filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+           
             return await UploadFileAsync(fileStream, query, filename);
         }
 
