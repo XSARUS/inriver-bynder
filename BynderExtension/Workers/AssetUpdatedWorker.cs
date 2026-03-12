@@ -7,20 +7,19 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Bynder.Config;
+using Bynder.Enums;
+using Bynder.Models;
+using Bynder.Names;
+using Bynder.Sdk.Model;
+using Bynder.SettingProviders;
+using Bynder.Utils;
+using Bynder.Utils.Extensions;
+using Bynder.Utils.Helpers;
+using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
 
 namespace Bynder.Workers
 {
-    using Config;
-    using Enums;
-    using Models;
-    using Names;
-    using Sdk.Model;
-    using SettingProviders;
-    using Utils;
-    using Utils.Extensions;
-    using Utils.Helpers;
-    using SdkIBynderClient = Bynder.Sdk.Service.IBynderClient;
-
     public class AssetUpdatedWorker : AbstractBynderWorker, IWorker
     {
         #region Fields
