@@ -110,8 +110,10 @@ namespace Bynder.Utils.Helpers
             var uri = new Uri(downloadUrl);
             string filename = Path.GetFileName(uri.LocalPath);
 
-            if (string.IsNullOrWhiteSpace(filename))
+            // Sometimes the downloadurl does not contain the filename-extension, in that case we fallback to the original filename from Bynder
+            if (string.IsNullOrWhiteSpace(filename) || string.IsNullOrWhiteSpace(Path.GetExtension(filename))) {
                 filename = asset.GetOriginalFileName();
+            }
 
             if (!string.IsNullOrWhiteSpace(regexPattern))
             {

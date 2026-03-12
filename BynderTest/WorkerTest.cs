@@ -1,13 +1,15 @@
 ﻿using Bynder.Api;
 using Bynder.Extension;
+using Bynder.Sdk.Model;
 using Bynder.Sdk.Settings;
+using Bynder.Utils.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using SdkIBynderClient = Bynder.Sdk.Service.BynderClient;
 
 namespace BynderTest
 {
-    [Ignore("Only use for debugging!")]
+    //[Ignore("Only use for debugging!")]
     [TestClass]
     public class WorkerTest : TestBase
     {
@@ -62,6 +64,25 @@ namespace BynderTest
             };
             worker.EntityUpdated(entityId, fields);
             Logger.Log("Done!");
+        }
+
+        [Ignore()]
+        [TestMethod, DataRow("A4DDC8EC-C6FA-44FE-9AEC98D4B4C7A9A9" /* PON */)]
+        public void TestEntityFilename(string bynderAssetId)
+        {
+            InRiverContext.Settings = TestSettings;
+
+            var worker = new Bynder.Workers.AssetUpdatedWorker(
+                InRiverContext,
+                new Bynder.Utils.FilenameEvaluator(InRiverContext),
+                _bynderClient
+            );
+
+            Media media = worker.GetMedia(bynderAssetId);
+            Console.WriteLine($"Filename: {media.GetOriginalFileName()}");
+
+            var (url, filename) = MediaHelper.GetDownloadUrlAndFilename(InRiverContext, _bynderClient, media).GetAwaiter().GetResult();
+            Console.WriteLine($"Url: {url} >> Filename: {filename}");
         }
 
         #endregion Methods
