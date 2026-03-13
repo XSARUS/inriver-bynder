@@ -77,6 +77,7 @@
     <Compile Include="Models\MediaTypeTransformConfig.cs" />
     <Compile Include="Models\MetapropertyMap.cs" />
     <Compile Include="Models\AttemptSNSMessageWrapper.cs" />
+    <Compile Include="Models\MetaPropertyMapTraverseConfig.cs" />
     <Compile Include="Models\NotificationWorkerResult.cs" />
     <Compile Include="Models\ResourceUploadData.cs" />
     <Compile Include="Names\ConnectorStateIds.cs" />

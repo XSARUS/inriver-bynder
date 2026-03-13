@@ -79,6 +79,10 @@ namespace Bynder.Workers
             }
 
             // enrich metaproperties (metapropertyId => resourcefieldValue)
+
+            //TODO call processor here and return dictionary
+            Dictionary<string, List<string>> processorResult = new Dictionary<string, List<string>>();
+
             var newMetapropertyValues = new Dictionary<string, List<string>>();
             AddMetapropertyValuesForEntity(resourceEntity, configuredMetaPropertyMap, newMetapropertyValues);
             AddMetapropertyValuesForLinks(resourceEntity, configuredMetaPropertyMap, newMetapropertyValues);
