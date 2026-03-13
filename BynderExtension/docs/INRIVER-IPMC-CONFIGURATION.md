@@ -106,6 +106,7 @@ Unfortunately you have to configure 4 extensions to make the integration complet
 | CVL_METAPROPERTY_MAPPING |{"cvl1":["metapropertyguid1","metapropertyguid2"], "cvl2":["metapropertyguid3","metapropertyguid4"]}|Mapping of CVL Id to Bynder MetaProperties. Option lists in Bynder a coupled to the metaproperty, thats why you could have multiple metaproperties for one cvl in the mapping. Setting is used in the MetapropertyOptionExportListener.
 | FILENAME_EXTENSION_MEDIA_TYPE_MAPPING |{"tif":[{"mediaType":"Ecommerce","filenameRegex":"-tif(?=\\.[^.]+$)"}],"jpg":[{"mediaType":"webimage","filenameRegex":"-jpg(?=\\.[^.]+$)"}]}|If you don't want to download the original file you can supply the derivative-type also you can specify a regex to apply on the filename which is being substracted from te download-url for the choosen derivative-type. If no mapping could be found it falls back to `DOWNLOAD_MEDIA_TYPE`|
 | EXECUTE_BASE_TESTMETHOD|true/false|Each extension extends a base extension. This is the case for Bynder connection settins. False prevents the test-method from the base-extension to be executed. This will make te result of the actual test-result message much clearer. Once you know Bynder works and all model requirements are met, you can set it to false|
+| FIELDTYPE_THUMBNAIL_MAPPING|[{"FieldTypeId":"ResourceBynderURLMedium","ThumbnailType":"webimage","FallBackThumbnailType":"Thumbnail"}]|Write thumbnail url to inriver fieldtypes|
 
 Press the Test button on each extension to see if the extension works and your settings are valid.
 
