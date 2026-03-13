@@ -67,11 +67,11 @@ namespace Bynder.Workers
             }
 
             // evaluate filename
-            string originalFileName = media.GetOriginalFileName();
-            var evaluatorResult = _fileNameEvaluator.Evaluate(originalFileName);
+            var (url, filename) = MediaHelper.GetDownloadUrlAndFilename(InRiverContext, _bynderClient, media).GetAwaiter().GetResult();
+            var evaluatorResult = _fileNameEvaluator.Evaluate(filename);
             if (!evaluatorResult.Match.Success)
             {
-                result.Messages.Add($"Not processing '{originalFileName}'; does not match regex.");
+                result.Messages.Add($"Not processing '{filename}'; does not match regex.");
                 return result;
             }
 
@@ -80,23 +80,24 @@ namespace Bynder.Workers
             {
                 InRiverContext.Log(LogLevel.Debug, $"Asset {bynderAssetId} does not apply to the conditions");
 
-                result.Messages.Add($"Not processing '{originalFileName}'; does not apply to import conditions.");
+                result.Messages.Add($"Not processing '{filename}'; does not apply to import conditions.");
                 return result;
             }
 
-            InRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} applies to conditions; handling notification-type: {notificationType}");
+            InRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} with filename {filename}, applies to conditions; handling notification-type: {notificationType}");
             result.Messages.Add($"Asset {media.Id} applies to conditions; handling notification-type: {notificationType}");
 
             var resourceSearchType = SettingHelper.GetResourceSearchType(InRiverContext.Settings, InRiverContext.Logger);
-            Entity resourceEntity = EntityHelper.GetResourceByAsset(media, resourceSearchType, InRiverContext.ExtensionManager.DataService, LoadLevel.DataAndLinks);
-
-            result.Messages.Add($"Asset {media.Id} (notification-type: {notificationType}) belongs to Resource-Entity with id: '{resourceEntity?.Id}' (empty or 0 means that a new Entity should be created!)");
+            InRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} search by '{resourceSearchType}'");
+            
+            Entity resourceEntity = EntityHelper.GetResourceByAsset(media, resourceSearchType, InRiverContext, LoadLevel.DataAndLinks);
+            InRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} (notification-type: {notificationType}) belongs to Resource-Entity with id: '{resourceEntity?.Id}' (empty or 0 means that a new Entity should be created!)");
 
             // handle notification logic
             switch (notificationType)
             {
                 case NotificationType.DataUpsert:
-                    return CreateOrUpdateEntityAndRelations(result, media, evaluatorResult, resourceEntity);
+                    return CreateOrUpdateEntityAndRelations(result, media, evaluatorResult, resourceEntity, url, filename);
 
                 case NotificationType.MetadataUpdated:
                     if (resourceEntity != null)
@@ -105,7 +106,7 @@ namespace Bynder.Workers
                     }
                     else
                     {
-                        return CreateOrUpdateEntityAndRelations(result, media, evaluatorResult, resourceEntity);
+                        return CreateOrUpdateEntityAndRelations(result, media, evaluatorResult, resourceEntity, url, filename);
                     }
 
                 case NotificationType.IsArchived:
@@ -276,7 +277,7 @@ namespace Bynder.Workers
             return true;
         }
 
-        private WorkerResult CreateOrUpdateEntityAndRelations(WorkerResult result, Media asset, FilenameEvaluator.Result evaluatorResult, Entity resourceEntity)
+        private WorkerResult CreateOrUpdateEntityAndRelations(WorkerResult result, Media asset, FilenameEvaluator.Result evaluatorResult, Entity resourceEntity, string url, string filename)
         {
             StringBuilder resultString = new StringBuilder();
             string action = resourceEntity == null ? "Create Entity" : $"Update Entity {resourceEntity.Id}";
@@ -284,7 +285,7 @@ namespace Bynder.Workers
 
             if (resourceEntity == null)
             {
-                resourceEntity = CreateResourceEntity(asset);
+                resourceEntity = CreateResourceEntity(asset, url, filename);
                 result.Messages.Add($"Resource entity creation initialized (not added to inriver yet!) for asset {asset.Id}");
             }
 
@@ -333,11 +334,11 @@ namespace Bynder.Workers
             return result;
         }
 
-        private Entity CreateResourceEntity(Media asset)
+        private Entity CreateResourceEntity(Media asset, string url, string filename)
         {
             Entity resourceEntity = Entity.CreateEntity(ResourceEntityType);
 
-            var (url, filename) = MediaHelper.GetDownloadUrlAndFilename(InRiverContext, _bynderClient, asset).GetAwaiter().GetResult();
+            // var (url, filename) = MediaHelper.GetDownloadUrlAndFilename(InRiverContext, _bynderClient, asset).GetAwaiter().GetResult();
             if (string.IsNullOrEmpty(filename))
             {
                 InRiverContext.Log(LogLevel.Debug, $"Filename for asset {asset.Id} is empty");

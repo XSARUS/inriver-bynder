@@ -78,8 +78,8 @@ namespace Bynder.Extension
                 OriginalMessageJson = value // the raw string
             };
 
-            Context.Log(LogLevel.Verbose, $"Original SNS Message in JSON: {value}");
-            Context.Log(LogLevel.Verbose, $"Original SNS Message value-test: {data.OriginalMessage.MessageId} -> {data.OriginalMessage.MessageText}");
+            // Context.Log(LogLevel.Verbose, $"Original SNS Message in JSON: {value}");
+            // Context.Log(LogLevel.Verbose, $"Original SNS Message value-test: {data.OriginalMessage.MessageId} -> {data.OriginalMessage.MessageText}");
 
             ConnectorState state = new ConnectorState
             {
@@ -87,7 +87,7 @@ namespace Bynder.Extension
                 Data = JsonConvert.SerializeObject(data)
             };
 
-            Context.Log(LogLevel.Verbose, $"Wrapped SNS Message in JSON: {state.Data}");
+            // Context.Log(LogLevel.Verbose, $"Wrapped SNS Message in JSON: {state.Data}");
 
             state = Context.ExtensionManager.UtilityService.AddConnectorState(state);
 

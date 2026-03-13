@@ -100,13 +100,14 @@ namespace Bynder.Extension
 
                     var stateData = JsonConvert.DeserializeObject<AttemptSNSMessageWrapper>(state.Data);
                     var notificationMessage = stateData.OriginalMessageJson;
+                    List<string> resultMessages = new List<string>(8);
 
                     try
                     {
                         Context.Log(LogLevel.Debug, $"Handling Bynder Notifications of ConnectorState {state.Id} created at {state.Created} attempt {stateData.Attempt}/{maxRetryAttempts}");
 
                         var notificationResult = notificationWorker.Execute(notificationMessage);
-                        var resultMessages = notificationResult.Messages;
+                        resultMessages = notificationResult.Messages;
 
                         if (!string.IsNullOrEmpty(notificationResult.MediaId))
                         {
@@ -130,7 +131,7 @@ namespace Bynder.Extension
 
                         result = string.Join(Environment.NewLine, resultMessages);
 
-                        Context.Log(LogLevel.Verbose, $"Result for ConnectorState {state.Id}: {result}");
+                        Context.Log(LogLevel.Verbose, $"Result-messages for ConnectorState {state.Id}: {result}");
                         Context.Log(LogLevel.Debug, $"Handled Bynder Notifications of ConnectorState {state.Id} created at {state.Created}");
 
                         Context.ExtensionManager.UtilityService.DeleteConnectorState(state.Id);
@@ -139,6 +140,9 @@ namespace Bynder.Extension
                     {
                         Context.Log(LogLevel.Error, $"Failed handling Bynder Notifications of ConnectorState {state.Id} created at {state.Created} [attempt {stateData.Attempt}/{maxRetryAttempts}]: {e.Message}", e);
                         Context.Log(LogLevel.Verbose, state.Data);
+
+                        result = string.Join(Environment.NewLine, resultMessages);
+                        Context.Log(LogLevel.Verbose, $"Result-messages for ConnectorState {state.Id}: {result}");
 
                         if (stateData.Attempt < maxRetryAttempts)
                         {
