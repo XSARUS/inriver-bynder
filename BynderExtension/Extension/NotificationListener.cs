@@ -52,7 +52,7 @@ namespace Bynder.Extension
 
             try
             {
-                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
+                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(ConnectorStateIds.BynderNotificationListener);
                 sb.AppendLine($"Number of connectorstates currently: {states.Count}");
             }
             catch (Exception ex)

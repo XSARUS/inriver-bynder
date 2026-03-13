@@ -39,8 +39,7 @@ namespace Bynder.Workers
         {
             var result = new NotificationWorkerResult();
 
-            var snsMessage = Message.ParseMessage(requestBody);
-            if (snsMessage == null) throw new ArgumentException("Cannot parse Request Body as AWS SNS message");
+            var snsMessage = Message.ParseMessage(requestBody) ?? throw new ArgumentException("Cannot parse Request Body as AWS SNS message");
 
             // check if (initial) subscription type
             if (snsMessage.IsSubscriptionType && snsMessage.IsMessageSignatureValid())
