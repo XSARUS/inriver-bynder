@@ -1,4 +1,5 @@
-﻿using inRiver.Remoting;
+﻿using inRiver.Remoting.Extension;
+using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 
 namespace Bynder.Utils.Helpers
@@ -11,19 +12,22 @@ namespace Bynder.Utils.Helpers
     {
         #region Methods
 
-        public static Entity GetResourceByAsset(Media asset, ResourceSearchType resourceSearchType, IDataService dataService, LoadLevel loadLevel)
+        public static Entity GetResourceByAsset(Media asset, ResourceSearchType resourceSearchType, inRiverContext context, LoadLevel loadLevel)
         {
             switch (resourceSearchType)
             {
                 case ResourceSearchType.Filename:
-                    return dataService.GetEntityByUniqueValue(FieldTypeIds.ResourceFilename, asset.GetOriginalFileName(), loadLevel);
+                    context.Log(LogLevel.Debug, $"Search by 'Filename' (enum-value {ResourceSearchType.Filename}) for asset {asset.Id} on FieldTypeId '{FieldTypeIds.ResourceFilename}' and value '{asset.GetOriginalFileName()}'");
+                    return context.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeIds.ResourceFilename, asset.GetOriginalFileName(), loadLevel);
 
                 case ResourceSearchType.PrefixedFilename:
-                    return dataService.GetEntityByUniqueValue(FieldTypeIds.ResourceFilename, asset.Id + '_' + asset.GetOriginalFileName(), loadLevel);
+                    context.Log(LogLevel.Debug, $"Search by 'PrefixedFilename' (enum-value {ResourceSearchType.PrefixedFilename}) for asset {asset.Id} on FieldTypeId '{FieldTypeIds.ResourceFilename}' and value '{asset.Id}_{asset.GetOriginalFileName()}'");
+                    return context.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeIds.ResourceFilename, asset.Id + '_' + asset.GetOriginalFileName(), loadLevel);
 
                 case ResourceSearchType.AssetId:
                 default:
-                    return dataService.GetEntityByUniqueValue(FieldTypeIds.ResourceBynderId, asset.Id, loadLevel);
+                    context.Log(LogLevel.Debug, $"Search by 'AssetId' (enum-value {ResourceSearchType.AssetId}) for asset {asset.Id} on FieldTypeId '{FieldTypeIds.ResourceBynderId}' and value '{asset.Id}'");
+                    return context.ExtensionManager.DataService.GetEntityByUniqueValue(FieldTypeIds.ResourceBynderId, asset.Id, loadLevel);
             }
         }
 
