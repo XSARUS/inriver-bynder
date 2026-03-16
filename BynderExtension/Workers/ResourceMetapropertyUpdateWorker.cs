@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace Bynder.Workers
 {
+    using Bynder.Utils.Traverser;
     using Models;
     using Names;
     using Sdk.Query.Asset;
@@ -42,10 +43,10 @@ namespace Bynder.Workers
             if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
 
             // parse setting map in dictionary
-            var configuredMetaPropertyMap = SettingHelper.GetConfiguredMetaPropertyMap(InRiverContext.Settings, InRiverContext.Logger);
-            if (configuredMetaPropertyMap.Count == 0)
+            var configuredMetaPropertyMap = SettingHelper.GetConfiguredMetaPropertyMapToBynder(InRiverContext.Settings, InRiverContext.Logger);
+            if (configuredMetaPropertyMap == null)
             {
-                InRiverContext.Log(LogLevel.Warning, "No metaproperty mappings configured, skipping metaproperty update");
+                InRiverContext.Log(LogLevel.Warning, "No metaproperty mapping configured, skipping metaproperty update");
                 return;
             }
 
@@ -78,24 +79,18 @@ namespace Bynder.Workers
                 return;
             }
 
-            // enrich metaproperties (metapropertyId => resourcefieldValue)
+            // update metaproperties in Bynder
+            var traverser = new MetaPropertyTraverser(InRiverContext);
+            var metapropertyValues = traverser.GetMappedMetaPropertyValues(configuredMetaPropertyMap);
 
-            //TODO call processor here and return dictionary
-            Dictionary<string, List<string>> processorResult = new Dictionary<string, List<string>>();
-
-            var newMetapropertyValues = new Dictionary<string, List<string>>();
-            AddMetapropertyValuesForEntity(resourceEntity, configuredMetaPropertyMap, newMetapropertyValues);
-            AddMetapropertyValuesForLinks(resourceEntity, configuredMetaPropertyMap, newMetapropertyValues);
-            FilterMetapropertyValues(configuredMetaPropertyMap, newMetapropertyValues);
-
-            if (newMetapropertyValues.Count > 0)
+            if (metapropertyValues.Count > 0)
             {
                 // inform bynder of the changes:
-                InRiverContext.Log(LogLevel.Information, $"Update metaproperties {string.Join(";", newMetapropertyValues.Keys)}");
+                InRiverContext.Log(LogLevel.Information, $"Update metaproperties {string.Join(";", metapropertyValues.Keys)}");
 
                 var query = new ModifyMediaQuery(bynderId)
                 {
-                    MetapropertyOptions = newMetapropertyValues.ToDictionary(
+                    MetapropertyOptions = metapropertyValues.ToDictionary(
                         kvp => kvp.Key,
                         kvp => (IList<string>)kvp.Value
                     )
@@ -106,20 +101,6 @@ namespace Bynder.Workers
             else
             {
                 InRiverContext.Log(LogLevel.Verbose, $"No metaproperties mapped or found");
-            }
-        }
-
-        protected static void FilterMetapropertyValues(List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
-        {
-            foreach (var map in configuredMetaPropertyMap)
-            {
-                if (!newMetapropertyValues.ContainsKey(map.BynderMetaProperty)) continue;
-
-                var values = newMetapropertyValues[map.BynderMetaProperty];
-                if (!map.IsMultiValue && values.Count > 1)
-                {
-                    newMetapropertyValues[map.BynderMetaProperty] = new List<string> { values[0] };
-                }
             }
         }
 
@@ -147,60 +128,7 @@ namespace Bynder.Workers
 
             return values;
         }
-
-        protected void AddMetapropertyValuesForEntity(Entity resourceEntity, List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
-        {
-            foreach (var map in configuredMetaPropertyMap)
-            {
-                // check if configured fieldtype is on entity
-                var field = resourceEntity.GetField(map.InriverFieldTypeId);
-                var values = GetValuesForField(field);
-
-                InRiverContext.Log(LogLevel.Debug, $"Checking value(s) for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}): {values.Count} values");
-
-                if (values.Count == 0)
-                {
-                    continue;
-                }
-
-                InRiverContext.Log(LogLevel.Debug, $"Saving value for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}) (R)");
-                newMetapropertyValues.Add(map.BynderMetaProperty, values);
-            }
-        }
-
-        protected void AddMetapropertyValuesForLinks(Entity resourceEntity, List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
-        {
-            var inboundLinks =
-                InRiverContext.ExtensionManager.DataService.GetInboundLinksForEntity(resourceEntity.Id);
-
-            // only process when inbound links are found
-            if (inboundLinks.Count == 0)
-            {
-                return;
-            }
-
-            // skip resource metaproperties
-            var filteredMapping = configuredMetaPropertyMap.Where(x => !x.InriverFieldTypeId.StartsWith(EntityTypeIds.Resource));
-
-            // iterate over configured metaproperties
-            foreach (var mapping in filteredMapping)
-            {
-                // save metaproperty values in a list so we can combine multiple occurences to a single string
-                var values = new List<string>();
-
-                // check if configured fieldtype is on one of the inbound entities
-                foreach (var inboundLink in inboundLinks)
-                {
-                    Field field = InRiverContext.ExtensionManager.DataService.GetField(inboundLink.Source.Id, mapping.InriverFieldTypeId);
-                    var fieldValues = GetValuesForField(field);
-                    values.AddRange(fieldValues);
-                }
-
-                InRiverContext.Log(LogLevel.Debug, $"Saving value for metaproperty {mapping.BynderMetaProperty} ({mapping.InriverFieldTypeId}) (L)");
-                newMetapropertyValues.Add(mapping.BynderMetaProperty, values);
-            }
-        }
-
+      
         private static bool GetConditionResult(Entity entity, ExportCondition condition)
         {
             var field = entity.GetField(condition.InRiverFieldTypeId);

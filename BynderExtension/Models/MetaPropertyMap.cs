@@ -1,4 +1,7 @@
-﻿namespace Bynder.Models
+﻿using Bynder.Utils.Extensions;
+using System.Text;
+
+namespace Bynder.Models
 {
     public class MetaPropertyMap
     {
@@ -13,5 +16,19 @@
         public bool IsMultiValue { get; set; } = true;
 
         #endregion Properties
+
+        /// <summary>
+        /// Return a generated hash for specific properties so it can be used in a Comparer
+        /// </summary>
+        public virtual string Hash()
+        {
+            var input = new StringBuilder();
+
+            input.Append(BynderMetaProperty ?? string.Empty);
+            input.Append(InriverFieldTypeId ?? string.Empty);
+            input.Append(IsMultiValue.ToString());
+
+            return input.ToString().ToMd5Hash();
+        }
     }
 }

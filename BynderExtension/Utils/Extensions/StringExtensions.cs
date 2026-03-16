@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -50,6 +51,27 @@ namespace Bynder.Utils.Extensions
         #endregion Fields
 
         #region Methods
+
+        /// <summary>
+        /// Returns MD5 hash
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string ToMd5Hash(this string input)
+        {
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] inputBytes = Encoding.UTF8.GetBytes(input.ToString());
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < hashBytes.Length; i++)
+                {
+                    sb.Append(hashBytes[i].ToString("x2"));
+                }
+                return sb.ToString();
+            }
+        }
 
         public static string RemoveControlCharacters(this string input)
         {

@@ -124,6 +124,21 @@ namespace Bynder.Utils.Helpers
             return new List<MetaPropertyMap>();
         }
 
+        /// <summary>
+        /// Optional setting. Default is an empty dictionary.
+        /// </summary>
+        /// <returns></returns>
+        public static MetaPropertyMapTraverseConfig GetConfiguredMetaPropertyMapToBynder(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.MetapropertyMapToBynder) || string.IsNullOrWhiteSpace(settings[Settings.MetapropertyMapToBynder]))
+            {
+                return JsonConvert.DeserializeObject<MetaPropertyMapTraverseConfig>(settings[Settings.MetapropertyMapToBynder]);
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.MetapropertyMapToBynder}'");
+            return null;
+        }
+
         public static string GetCronExpression(Dictionary<string, string> settings, IExtensionLog logger)
         {
             if (settings.ContainsKey(Settings.CronExpression))

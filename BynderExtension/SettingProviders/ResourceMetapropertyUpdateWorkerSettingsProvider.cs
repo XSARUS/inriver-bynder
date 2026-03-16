@@ -12,7 +12,7 @@ namespace Bynder.SettingProviders
         {
             var settings = new Dictionary<string, string>()
             {
-                { Settings.MetapropertyMap, "metapropertyguid1=inriverfield1,metapropertyguid2=inriverfield2" },
+                { Settings.MetapropertyMapToBynder, "" },
                 { Settings.ExportConditions, "[{\"inRiverFieldTypeId\":\"ResourceSyncToBynder\",\"values\":[\"True\"], \"matchType\":\"Equal\"}]" },
             };
 
