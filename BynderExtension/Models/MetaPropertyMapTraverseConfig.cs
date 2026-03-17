@@ -30,7 +30,7 @@ namespace Bynder.Models
         public string LinkTypeId { get; set; } = string.Empty;
 
         [JsonProperty("metaPropertyMapping")]
-        public List<MetaPropertyMap> MetaPropertyMapping { get; set; }
+        public List<MetaPropertyMap> MetaPropertyMapping { get; set; } = new List<MetaPropertyMap>();
 
         [JsonProperty("outbound")]
         public List<MetaPropertyMapTraverseConfig> Outbound { get; set; } = new List<MetaPropertyMapTraverseConfig>();

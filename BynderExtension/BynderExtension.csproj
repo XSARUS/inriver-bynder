@@ -100,6 +100,7 @@
     <Compile Include="Utils\Helpers\SettingHelper.cs" />
     <Compile Include="Utils\InRiver\DataServiceExtensions.cs" />
     <Compile Include="Utils\Traverser\MetaPropertyTraverser.cs" />
+    <Compile Include="Utils\Traverser\Processor.cs" />
     <Compile Include="Workers\AbstractBynderWorker.cs" />
     <Compile Include="Workers\AbstractWorker.cs" />
     <Compile Include="Workers\AssetDeletedWorker.cs" />

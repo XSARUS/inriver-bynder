@@ -85,6 +85,7 @@ namespace Bynder.Utils.Traverser
             {
                 if (!newMetapropertyValues.ContainsKey(map.BynderMetaProperty)) continue;
 
+                // if the bynder property is not multivalue but we have multiple values then only grab the first
                 var values = newMetapropertyValues[map.BynderMetaProperty];
                 if (!map.IsMultiValue && values.Count > 1)
                 {
@@ -112,6 +113,7 @@ namespace Bynder.Utils.Traverser
             }
             else
             {
+                // should everything be string?
                 values.Add(field.Data.ToString());
             }
 
