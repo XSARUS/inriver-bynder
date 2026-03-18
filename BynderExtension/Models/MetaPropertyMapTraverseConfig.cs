@@ -1,12 +1,12 @@
-﻿using Bynder.Utils.Extensions;
-using inRiver.Remoting.Query;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace Bynder.Models
 {
+    using Utils.Extensions;
+
     public class MetaPropertyMapTraverseConfig
     {
         #region Properties
@@ -14,17 +14,14 @@ namespace Bynder.Models
         [JsonProperty("entityTypeId")]
         public string EntityTypeId { get; set; } = string.Empty;
 
+        /// <summary>
+        /// If null then all fieldsets, if empty then no fieldset, if filled then that fieldset
+        /// </summary>
         [JsonProperty("fieldSet")]
         public string FieldSet { get; set; }
 
-        [JsonIgnore]
-        public int Id { get; set; }
-
         [JsonProperty("inbound")]
         public List<MetaPropertyMapTraverseConfig> Inbound { get; set; } = new List<MetaPropertyMapTraverseConfig>();
-
-        [JsonIgnore]
-        public LinkDirection? LinkDirectionToParent { get; set; }
 
         [JsonProperty("linkTypeId")]
         public string LinkTypeId { get; set; } = string.Empty;
@@ -34,9 +31,6 @@ namespace Bynder.Models
 
         [JsonProperty("outbound")]
         public List<MetaPropertyMapTraverseConfig> Outbound { get; set; } = new List<MetaPropertyMapTraverseConfig>();
-
-        [JsonIgnore]
-        public int ParentId { get; set; }
 
         #endregion Properties
 

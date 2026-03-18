@@ -81,7 +81,7 @@ namespace Bynder.Workers
 
             // update metaproperties in Bynder
             var traverser = new MetaPropertyTraverser(InRiverContext);
-            var metapropertyValues = traverser.GetMappedMetaPropertyValues(configuredMetaPropertyMap);
+            var metapropertyValues = traverser.GetMappedMetaPropertyValues(resourceEntity, configuredMetaPropertyMap);
 
             if (metapropertyValues.Count > 0)
             {
