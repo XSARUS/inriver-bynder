@@ -33,6 +33,8 @@
         public const string ResourceSearchType = "RESOURCE_SEARCH_TYPE";
         public const string TimestampSettings = "TIMESTAMP_SETTINGS";
         public const string FieldTypeThumbnailMapping = "FIELDTYPE_THUMBNAIL_MAPPING";
+        public const string MaxUpdatesToHandle = "MAX_UPDATES_TO_HANDLE";
+        public const int DefaultMaxUpdatesToHandle = 1000;
 
         #endregion Fields
     }

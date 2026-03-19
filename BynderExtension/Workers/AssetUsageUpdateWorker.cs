@@ -9,7 +9,6 @@ namespace Bynder.Workers
     using Names;
     using Sdk.Query.Asset;
     using Utils.Helpers;
-    using Utils.InRiver;
     using SdkIBynderClient = Sdk.Service.IBynderClient;
 
     internal class AssetUsageUpdateWorker : AbstractBynderWorker, IWorker
@@ -39,9 +38,6 @@ namespace Bynder.Workers
 
             if (string.IsNullOrWhiteSpace(integrationId) || string.IsNullOrWhiteSpace(inriverEntityUrl)) return;
 
-            // get resource entity with fields
-            resourceEntity =
-                InRiverContext.ExtensionManager.DataService.EntityLoadLevel(resourceEntity, LoadLevel.DataOnly);
             string assetId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderId)?.Data;
 
             // check if empty - nothing to do

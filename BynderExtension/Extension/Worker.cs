@@ -7,6 +7,7 @@ using System.Text;
 
 namespace Bynder.Extension
 {
+    using inRiver.Remoting.Extension;
     using Names;
     using SettingProviders;
     using Utils.Helpers;
@@ -64,8 +65,10 @@ namespace Bynder.Extension
         {
             try
             {
-                if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
-                    EntityTypeIds.Resource, out var entity)) return;
+                if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly, EntityTypeIds.Resource, out var entity))
+                {
+                    return;
+                }
 
                 Container.GetInstance<AssetDownloadWorker>().Execute(entity);
                 Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
@@ -134,6 +137,7 @@ namespace Bynder.Extension
                 var entity = Context.ExtensionManager.DataService.GetEntity(entityId, LoadLevel.Shallow);
                 if (entity.EntityType.Id == EntityTypeIds.Resource)
                 {
+                    entity = Context.ExtensionManager.DataService.GetEntity(entityId, LoadLevel.DataOnly);
                     Container.GetInstance<AssetDownloadWorker>().Execute(entity);
                     Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
                     Container.GetInstance<AssetUsageUpdateWorker>().Execute(entity);
