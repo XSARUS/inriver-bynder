@@ -183,18 +183,18 @@ namespace Bynder.Utils.Traverser
             Dictionary<string, List<string>> target,
             Dictionary<string, List<string>> incoming)
         {
-            foreach (var kvp in incoming)
+            foreach (var incomingKvp in incoming)
             {
-                if (!target.TryGetValue(kvp.Key, out var existing))
+                if (!target.TryGetValue(incomingKvp.Key, out var existing))
                 {
-                    target[kvp.Key] = kvp.Value ?? new List<string>();
+                    target[incomingKvp.Key] = incomingKvp.Value ?? new List<string>();
                     continue;
                 }
 
-                if (kvp.Value == null || kvp.Value.Count == 0)
+                if (incomingKvp.Value == null || incomingKvp.Value.Count == 0)
                     continue;
 
-                existing.AddRange(kvp.Value);
+                existing.AddRange(incomingKvp.Value);
             }
         }
 
@@ -217,12 +217,12 @@ namespace Bynder.Utils.Traverser
             }
         }
 
-        protected void AddMetapropertyValuesForEntity(Entity resourceEntity, List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
+        protected void AddMetapropertyValuesForEntity(Entity entity, List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
         {
             foreach (var map in configuredMetaPropertyMap)
             {
                 // check if configured fieldtype is on entity
-                var field = resourceEntity.GetField(map.InriverFieldTypeId);
+                var field = entity.GetField(map.InriverFieldTypeId);
                 var values = GetValuesForField(field);
 
                 _context.Log(LogLevel.Debug, $"Checking value(s) for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}): {values.Count} values");

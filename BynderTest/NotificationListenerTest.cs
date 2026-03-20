@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace BynderTest
 {
     [TestClass]
-    public class ListenerTest : TestBase
+    public class NotificationListenerTest : TestBase
     {
         #region Methods
 
