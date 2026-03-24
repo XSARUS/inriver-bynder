@@ -39,11 +39,13 @@ namespace Bynder.Workers
             if (entity.EntityType.Id == EntityTypeIds.Resource) return;
 
             // create metaproperty dictionary
-            var metapropertyMap = SettingHelper.GetConfiguredMetaPropertyMap(InRiverContext.Settings, InRiverContext.Logger);
-            if (metapropertyMap.Count == 0) return;
+            var configuredMetaPropertyMap = SettingHelper.GetConfiguredMetaPropertyMap(InRiverContext.Settings, InRiverContext.Logger);
+            if (configuredMetaPropertyMap.Count == 0) return;
+
+            // TODO get start entities and pass them to the _resourceMetapropertyUpdateWorker
 
             // check if any of the updated fields is in the mapping
-            if (fields.Any(field => metapropertyMap.Any(map => Equals(field, map.InriverFieldTypeId))))
+            if (fields.Any(field => configuredMetaPropertyMap.Any(map => Equals(field, map.InriverFieldTypeId))))
             {
                 var resourceIds = InRiverContext.ExtensionManager.DataService.GetOutboundLinksForEntity(entity.Id)
                     .Where(l => l.LinkType.TargetEntityTypeId.Equals(EntityTypeIds.Resource))
