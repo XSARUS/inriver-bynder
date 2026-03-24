@@ -1,13 +1,13 @@
 ﻿using inRiver.Remoting.Extension;
 using inRiver.Remoting.Objects;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Bynder.Workers
 {
     using Names;
     using SettingProviders;
     using Utils.Helpers;
+    using Utils.Traverser;
 
     public class NonResourceMetapropertyWorker : AbstractWorker, IWorker
     {
@@ -39,26 +39,21 @@ namespace Bynder.Workers
             if (entity.EntityType.Id == EntityTypeIds.Resource) return;
 
             // create metaproperty dictionary
-            var configuredMetaPropertyMap = SettingHelper.GetConfiguredMetaPropertyMap(InRiverContext.Settings, InRiverContext.Logger);
-            if (configuredMetaPropertyMap.Count == 0) return;
-
-            // TODO get start entities and pass them to the _resourceMetapropertyUpdateWorker
+            var configuredMetaPropertyMap = SettingHelper.GetConfiguredMetaPropertyMapToBynder(InRiverContext.Settings, InRiverContext.Logger);
+            if (configuredMetaPropertyMap == null) return;
 
             // check if any of the updated fields is in the mapping
-            if (fields.Any(field => configuredMetaPropertyMap.Any(map => Equals(field, map.InriverFieldTypeId))))
+            if (!MetaPropertyTraverseConfigHelper.HasAnyConfiguredField(fields, configuredMetaPropertyMap)) return;
+
+            // get start entities 
+            var entityTraverser = new EntityTraverser(InRiverContext);
+            var startEntityIds = entityTraverser.GetStartEntityIds(entity,configuredMetaPropertyMap);
+
+            // pass resource to the resource Metaproperty Update Worker so we can export the metaproperties
+            var resources = InRiverContext.ExtensionManager.DataService.GetEntities(startEntityIds, LoadLevel.DataOnly);
+            foreach (var resource in resources)
             {
-                var resourceIds = InRiverContext.ExtensionManager.DataService.GetOutboundLinksForEntity(entity.Id)
-                    .Where(l => l.LinkType.TargetEntityTypeId.Equals(EntityTypeIds.Resource))
-                    .Select(l => l.Target.Id);
-
-                foreach (var resourceId in resourceIds)
-                {
-                    var targetResourceEntity =
-                        InRiverContext.ExtensionManager.DataService.GetEntity(resourceId, LoadLevel.DataOnly);
-
-                    // use the other worker for processing this resource
-                    _resourceMetapropertyUpdateWorker.Execute(targetResourceEntity);
-                }
+                _resourceMetapropertyUpdateWorker.Execute(resource);
             }
         }
 

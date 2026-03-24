@@ -12,7 +12,7 @@ namespace Bynder.SettingProviders
         {
             var settings = new Dictionary<string, string>()
             {
-                 { Settings.MetapropertyMap, "" },
+                 { Settings.MetapropertyMapToBynder, "" },
             };
 
             return settings;

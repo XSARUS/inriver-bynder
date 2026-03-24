@@ -97,8 +97,10 @@
     <Compile Include="Utils\Helpers\EntityHelper.cs" />
     <Compile Include="Utils\Helpers\JsonHelper.cs" />
     <Compile Include="Utils\Helpers\MediaHelper.cs" />
+    <Compile Include="Utils\Helpers\MetaPropertyTraverseConfigHelper.cs" />
     <Compile Include="Utils\Helpers\SettingHelper.cs" />
     <Compile Include="Utils\InRiver\DataServiceExtensions.cs" />
+    <Compile Include="Utils\Traverser\EntityTraverser.cs" />
     <Compile Include="Utils\Traverser\MetaPropertyTraverser.cs" />
     <Compile Include="Workers\AbstractBynderWorker.cs" />
     <Compile Include="Workers\AbstractWorker.cs" />
