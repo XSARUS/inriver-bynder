@@ -170,16 +170,16 @@ namespace Bynder.Utils.Traverser
             node.ParentId = parentId;
             node.LinkDirectionToParent = directionToParent;
 
-            // inbound in config = outbound at runtime → parent direction: InBound
+            // inbound in config = outbound at runtime
             foreach (var child in node.Inbound)
             {
-                AddTraversalMetadata(child, ref idCounter, node.Id, LinkDirection.InBound);
+                AddTraversalMetadata(child, ref idCounter, node.Id, LinkDirection.OutBound);
             }
 
-            // outbound in config = inbound at runtime → parent direction: OutBound
+            // outbound in config = inbound at runtime
             foreach (var child in node.Outbound)
             {
-                AddTraversalMetadata(child, ref idCounter, node.Id, LinkDirection.OutBound);
+                AddTraversalMetadata(child, ref idCounter, node.Id, LinkDirection.InBound);
             }
         }
 

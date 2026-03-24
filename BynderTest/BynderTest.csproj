@@ -53,6 +53,7 @@
     <Compile Include="NotificationListenerTest.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="NonResourceMetapropertyWorkerTest.cs" />
     <Compile Include="ResourceMetapropertyUpdateWorkerTest.cs" />
     <Compile Include="ApiTest.cs" />
     <Compile Include="TestBase.cs" />

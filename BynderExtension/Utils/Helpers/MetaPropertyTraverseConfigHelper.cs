@@ -79,4 +79,3 @@ namespace Bynder.Utils.Helpers
     }
 
 }
-}
