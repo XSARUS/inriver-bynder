@@ -414,6 +414,18 @@ namespace Bynder.Utils.Helpers
             return new List<FieldTypeThumbnailMapping>();
         }
 
+        public static int GetMaxUpdatedWorkerCalledCount(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.MaxUpdatesToHandle) && int.TryParse(settings[Settings.MaxUpdatesToHandle], out int maxUpdatesToHandle))
+            {
+                return maxUpdatesToHandle;
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration or parse the value to an number for '{Settings.MaxUpdatesToHandle}' using default value of {Settings.DefaultMaxUpdatesToHandle}");
+
+            return Settings.DefaultMaxUpdatesToHandle;
+        }
+
         #endregion Methods
     }
 }

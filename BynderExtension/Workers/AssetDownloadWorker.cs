@@ -34,13 +34,6 @@ namespace Bynder.Workers
 
         public void Execute(Entity resourceEntity)
         {
-            if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
-
-            if (resourceEntity.LoadLevel < LoadLevel.DataOnly)
-            {
-                resourceEntity = InRiverContext.ExtensionManager.DataService.GetEntity(resourceEntity.Id, LoadLevel.DataOnly);
-            }
-
             // get the state field
             Field bynderDownloadStateField = resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState);
             var bynderDownloadState = (string)bynderDownloadStateField?.Data;

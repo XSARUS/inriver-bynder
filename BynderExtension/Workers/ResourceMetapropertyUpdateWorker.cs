@@ -14,11 +14,10 @@ namespace Bynder.Workers
     using SettingProviders;
     using Utils.Extensions;
     using Utils.Helpers;
-    using Utils.InRiver;
 
-    /**
-     * Updates metaproperties on asses in Bynder if Entity applies to EXPORT_CONDITIONS
-     */
+    /// <summary>
+    /// Updates metaproperties on asses in Bynder if Entity applies to EXPORT_CONDITIONS
+    /// </summary>
     public class ResourceMetapropertyUpdateWorker : AbstractBynderWorker, IWorker
     {
         #region Properties
@@ -39,9 +38,6 @@ namespace Bynder.Workers
 
         public void Execute(Entity resourceEntity)
         {
-            // check if entity is resource
-            if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
-
             // parse setting map in dictionary
             var configuredMetaPropertyMap = SettingHelper.GetConfiguredMetaPropertyMapToBynder(InRiverContext.Settings, InRiverContext.Logger);
             if (configuredMetaPropertyMap == null)
@@ -49,9 +45,6 @@ namespace Bynder.Workers
                 InRiverContext.Log(LogLevel.Warning, "No metaproperty mapping configured, skipping metaproperty update");
                 return;
             }
-
-            // get full resource entity (again to also prevent revision errors)
-            resourceEntity = InRiverContext.ExtensionManager.DataService.EntityLoadLevel(resourceEntity, LoadLevel.DataOnly);
 
             // block resourceEntity for bynder update if no BynderId is found on entity
             string bynderId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderId)?.Data;
