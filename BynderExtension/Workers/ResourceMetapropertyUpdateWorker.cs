@@ -23,13 +23,15 @@ namespace Bynder.Workers
         #region Properties
 
         public override Dictionary<string, string> DefaultSettings => ResourceMetapropertyUpdateWorkerSettingsProvider.Create();
+        private MetapropertyMapTraverser _metapropertyMapTraverser;
 
         #endregion Properties
 
         #region Constructors
 
-        public ResourceMetapropertyUpdateWorker(inRiverContext inRiverContext, IBynderClient bynderClient = null) : base(inRiverContext, bynderClient)
+        public ResourceMetapropertyUpdateWorker(MetapropertyMapTraverser metapropertyMapTraverser, inRiverContext inRiverContext, IBynderClient bynderClient = null) : base(inRiverContext, bynderClient)
         {
+            _metapropertyMapTraverser = metapropertyMapTraverser;
         }
 
         #endregion Constructors
@@ -73,9 +75,7 @@ namespace Bynder.Workers
             }
 
             // update metaproperties in Bynder
-            var traverser = new MetaPropertyTraverser(InRiverContext);
-            var metapropertyValues = traverser.GetMappedMetaPropertyValues(resourceEntity, configuredMetaPropertyMap);
-
+            var metapropertyValues = _metapropertyMapTraverser.GetMappedMetaPropertyValues(resourceEntity, configuredMetaPropertyMap);
             if (metapropertyValues.Count > 0)
             {
                 // inform bynder of the changes:

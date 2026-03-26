@@ -43,6 +43,7 @@ namespace BynderTest
             {Bynder.Config.Settings.InRiverIntegrationId, "" },
             {Bynder.Config.Settings.LocaleStringLanguagesToSet, "en-GB, nl-NL" },
             {Bynder.Config.Settings.MetapropertyMap, "[{\"bynderMetaProperty\":\"7915B585-07BC-481C-87F0AEBBA424F3F2\",\"inRiverFieldTypeId\":\"ResourceSeoText\",\"isMultiValue\":false}]" },
+            {Bynder.Config.Settings.MetapropertyMapToBynder, "{\"entityTypeId\":\"Resource\",\"inbound\":[{\"linkTypeId\":\"ItemResource\",\"entityTypeId\":\"Item\",\"metapropertyMapping\":[{\"bynderMetaProperty\":\"555943D1-E06D-4D81-B3BA305283C90186\",\"inRiverFieldTypeId\":\"ItemModelNumber\",\"isMultiValue\":false},{\"bynderMetaProperty\":\"B8F7F0B7-53C3-4B12-BBF88CF54FC15FF6\",\"inRiverFieldTypeId\":\"ItemSeason\",\"isMultiValue\":true}],\"inbound\":[{\"linkTypeId\":\"ProductItem\",\"entityTypeId\":\"Product\",\"metapropertyMapping\":[{\"bynderMetaProperty\":\"0B00A59A-E764-4753-8E101C7FB2965724\",\"inRiverFieldTypeId\":\"ProductModelGroup\",\"isMultiValue\":false},{\"bynderMetaProperty\":\"FBADAFD6-81CE-454B-A13EF6EAD0329723\",\"inRiverFieldTypeId\":\"ProductModelName\",\"isMultiValue\":false}]}]}]}" },
             {Bynder.Config.Settings.MultivalueSeparator, ", " },
             {Bynder.Config.Settings.RegularExpressionForFileName, @"^(?<ProductNumber>[0-9a-zA-Z]+)_(?<ResourceType>image|document)_(?<ResourcePosition>[0-9]+)" },
             {Bynder.Config.Settings.ResourceSearchType, ResourceSearchType.AssetId.ToString() },

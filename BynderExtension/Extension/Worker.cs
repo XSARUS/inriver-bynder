@@ -7,7 +7,6 @@ using System.Text;
 
 namespace Bynder.Extension
 {
-    using inRiver.Remoting.Extension;
     using Names;
     using SettingProviders;
     using Utils.Helpers;

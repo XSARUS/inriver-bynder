@@ -14,6 +14,7 @@ namespace Bynder.Workers
         #region Fields
 
         private readonly ResourceMetapropertyUpdateWorker _resourceMetapropertyUpdateWorker;
+        private readonly EntityTraverser _entityTraverser;
 
         #endregion Fields
 
@@ -25,8 +26,9 @@ namespace Bynder.Workers
 
         #region Constructors
 
-        public NonResourceMetapropertyWorker(inRiverContext inRiverContext, ResourceMetapropertyUpdateWorker resourceMetapropertyUpdateWorker) : base(inRiverContext)
+        public NonResourceMetapropertyWorker(inRiverContext inRiverContext, EntityTraverser entityTraverser, ResourceMetapropertyUpdateWorker resourceMetapropertyUpdateWorker) : base(inRiverContext)
         {
+            _entityTraverser = entityTraverser;
             _resourceMetapropertyUpdateWorker = resourceMetapropertyUpdateWorker;
         }
 
@@ -46,8 +48,7 @@ namespace Bynder.Workers
             if (!MetaPropertyTraverseConfigHelper.HasAnyConfiguredField(fields, configuredMetaPropertyMap)) return;
 
             // get start entities 
-            var entityTraverser = new EntityTraverser(InRiverContext);
-            var startEntityIds = entityTraverser.GetStartEntityIds(entity,configuredMetaPropertyMap);
+            var startEntityIds = _entityTraverser.GetStartEntityIds(entity,configuredMetaPropertyMap);
 
             // pass resource to the resource Metaproperty Update Worker so we can export the metaproperties
             var resources = InRiverContext.ExtensionManager.DataService.GetEntities(startEntityIds, LoadLevel.DataOnly);

@@ -1,4 +1,5 @@
-﻿using Bynder.Workers;
+﻿using Bynder.Utils.Traverser;
+using Bynder.Workers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BynderTest
@@ -26,7 +27,7 @@ namespace BynderTest
         [TestInitialize]
         public void Init()
         {
-            _worker = new Bynder.Workers.NonResourceMetapropertyWorker(InRiverContext, new ResourceMetapropertyUpdateWorker(InRiverContext, _bynderClient));
+            _worker = new Bynder.Workers.NonResourceMetapropertyWorker(InRiverContext, new EntityTraverser(InRiverContext), new ResourceMetapropertyUpdateWorker(new MetapropertyMapTraverser(InRiverContext), InRiverContext, _bynderClient));
         }
 
         #endregion Methods

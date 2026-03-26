@@ -10,11 +10,11 @@ namespace Bynder.Utils.Traverser
     using Extensions;
     using Models;
 
-    public class MetaPropertyTraverser
+    public class MetapropertyMapTraverser
     {
         private readonly inRiverContext _context;
 
-        public MetaPropertyTraverser(inRiverContext context)
+        public MetapropertyMapTraverser(inRiverContext context)
         {
             _context = context;
         }

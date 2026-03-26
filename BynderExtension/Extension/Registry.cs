@@ -6,6 +6,7 @@ namespace Bynder.Extension
     using Api;
     using Sdk.Settings;
     using Utils;
+    using Utils.Traverser;
     using Workers;
     using SdkBynderClient = Sdk.Service.BynderClient;
     using SdkIBynderClient = Sdk.Service.IBynderClient;
@@ -35,6 +36,10 @@ namespace Bynder.Extension
 
             // file name evaluator
             For<FilenameEvaluator>().Use<FilenameEvaluator>();
+
+            // traversers
+            For<EntityTraverser>().Use<EntityTraverser>();
+            For<MetapropertyMapTraverser>().Use<MetapropertyMapTraverser>();
 
             // auto add the workers
             Scan(x =>
