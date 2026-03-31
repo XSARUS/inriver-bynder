@@ -86,16 +86,6 @@ namespace Bynder.Workers
 
             int newFileId = InRiverContext.ExtensionManager.UtilityService.AddFileFromUrl(filename, url);
 
-            // delete older asset file
-            if (existingFileId > 0)
-            {
-                InRiverContext.Log(LogLevel.Verbose, $"existing fileId found {existingFileId}");
-                if (!InRiverContext.ExtensionManager.UtilityService.DeleteFile(existingFileId))
-                {
-                    InRiverContext.Log(LogLevel.Warning, $"Could not delete existing file with fileId {existingFileId} for resource entity {resourceEntity.Id}");
-                }
-            }
-
             // set fieldtypes for resource entity
             var resourceFileIdField = resourceEntity.GetField(FieldTypeIds.ResourceFileId);
             resourceFileIdField.Data = newFileId;
@@ -144,6 +134,16 @@ namespace Bynder.Workers
             {
                 resourceEntity = InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldList);
                 InRiverContext.Log(LogLevel.Information, $"Updated resource entity {resourceEntity.Id}");
+ 
+                // delete previous asset file from inriver
+                if (existingFileId > 0)
+                {
+                    InRiverContext.Log(LogLevel.Verbose, $"Previous resource-file with fileId {existingFileId} should be removed from inriver.");
+                    if (!InRiverContext.ExtensionManager.UtilityService.DeleteFile(existingFileId))
+                    {
+                        InRiverContext.Log(LogLevel.Warning, $"Could not delete previous resource-file with fileId {existingFileId} for resource-entity {resourceEntity.Id}");
+                    }
+                }
             }
             catch (Exception ex)
             {
