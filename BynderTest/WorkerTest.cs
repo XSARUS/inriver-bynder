@@ -66,8 +66,9 @@ namespace BynderTest
             Logger.Log("Done!");
         }
 
-        [Ignore()]
-        [TestMethod, DataRow("A4DDC8EC-C6FA-44FE-9AEC98D4B4C7A9A9" /* PON */)]
+        //[Ignore()]
+        // [TestMethod, DataRow("A4DDC8EC-C6FA-44FE-9AEC98D4B4C7A9A9" /* PON */)]
+        [TestMethod, DataRow("85DDA2B5-7F27-4816-B6E0A8FCABA49711" /* FPP */)]
         public void TestEntityFilename(string bynderAssetId)
         {
             InRiverContext.Settings = TestSettings;

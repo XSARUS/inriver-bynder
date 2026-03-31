@@ -134,11 +134,9 @@ namespace Bynder.Utils.Helpers
             SdkIBynderClient bynderClient,
             Media asset)
         {
-            string downloadMediaType =
-                SettingHelper.GetDownloadMediaType(context.Settings, context.Logger);
+            string downloadMediaType = SettingHelper.GetDownloadMediaType(context.Settings, context.Logger);
 
-            context.Log(LogLevel.Verbose,
-                $"Fall back to configured download-mediatype '{downloadMediaType}'!");
+            context.Log(LogLevel.Verbose, $"Fall back to configured download-mediatype '{downloadMediaType}'!");
 
             if (downloadMediaType.Equals("original", StringComparison.OrdinalIgnoreCase))
             {
@@ -150,7 +148,19 @@ namespace Bynder.Utils.Helpers
                 return (downloadLocation.ToString(), asset.GetOriginalFileName());
             }
 
-            if (asset.Thumbnails.All.TryGetValue(downloadMediaType, out JToken token))
+            JToken token = null;
+            var key = downloadMediaType?.Trim();
+
+            foreach (var kvp in asset.Thumbnails.All)
+            {
+                if (string.Equals(kvp.Key, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    token = kvp.Value;
+                    break;
+                }
+            }
+
+            if (token != null)
             {
                 string url = token.Value<string>();
 
@@ -162,17 +172,14 @@ namespace Bynder.Utils.Helpers
                         ?.Name
                     ?? asset.GetOriginalFileName();
 
-                context.Log(LogLevel.Verbose,
-                    $"Using thumbnail for configured download-mediatype '{downloadMediaType}'");
+                context.Log(LogLevel.Verbose, $"Using thumbnail for configured download-mediatype '{downloadMediaType}'");
 
                 return (url, filename);
             }
 
-            context.Log(LogLevel.Error,
-                $"Unable to resolve download media type '{downloadMediaType}' for asset '{asset.Id}'.");
+            context.Log(LogLevel.Error, $"Unable to get the download media type '{downloadMediaType}' for asset '{asset.Id}'.");
 
-            throw new InvalidOperationException(
-                $"Download media type '{downloadMediaType}' could not be resolved for asset '{asset.Id}'.");
+            throw new InvalidOperationException($"Download media-type '{downloadMediaType}' could not be found for asset '{asset.Id}'");
         }
 
         internal static string GetThumbnailUrlFromAsset(Media asset, string thumbnailType)

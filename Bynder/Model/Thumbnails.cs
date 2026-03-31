@@ -20,7 +20,10 @@ namespace Bynder.Sdk.Model
         [JsonExtensionData]
         public Dictionary<string, JToken> All { get; set; }
 
-        /// <summary>
+        // Onderstaande niet als properties gebruiken want dan komen ze niet in All terecht
+        // Dit komen we tegen in de MediaHelper
+
+/*        /// <summary>
         /// Mini thumbnail Url
         /// </summary>
         [JsonProperty("mini")]
@@ -36,7 +39,7 @@ namespace Bynder.Sdk.Model
         /// Web-image Url
         /// </summary>
         [JsonProperty("webimage")]
-        public string WebImage { get; set; }
+        public string WebImage { get; set; }*/
 
         #endregion Properties
     }
