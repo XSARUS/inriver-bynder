@@ -44,6 +44,13 @@ namespace Bynder.Utils
             var result = new Result { Filename = fileName };
 
             string regularExpressionPattern = SettingHelper.GetRegularExpressionForFileName(_inRiverContext.Settings, _inRiverContext.Logger);
+
+            if (string.IsNullOrEmpty(regularExpressionPattern))
+            {
+                result.IsValid = true;
+                return result;
+            }
+
             var regex = new Regex(regularExpressionPattern, RegexOptions.None);
 
             result.Match = regex.Match(fileName);
@@ -53,6 +60,8 @@ namespace Bynder.Utils
                 _inRiverContext.Log(LogLevel.Warning, $"Filename '{fileName}' did not match the configured reg. expr.!");
                 return result;
             }
+
+            result.IsValid = true;
 
             for (int i = 1; i < result.Match.Groups.Count; i++)
             {
@@ -80,6 +89,7 @@ namespace Bynder.Utils
             public Dictionary<FieldType, string> EntityDataInFilename { get; set; }
             public string Filename { get; set; }
             public Match Match { get; set; }
+            public bool IsValid { get; set; } = false;
 
             #endregion Properties
 

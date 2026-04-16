@@ -27,6 +27,7 @@ namespace Bynder.Workers
         private const string FieldTypeSettingsRegExKey = "RegExp";
         private readonly FilenameEvaluator _fileNameEvaluator;
         private Regex ResourceFilenameRegEx;
+        private IDictionary<string, Metaproperty> _bynderMetaProperties;
 
         #endregion Fields
 
@@ -34,7 +35,20 @@ namespace Bynder.Workers
 
         public override Dictionary<string, string> DefaultSettings => AssetUpdatedWorkerSettingsProvider.Create();
         private EntityType ResourceEntityType => InRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
+        private IDictionary<string, Metaproperty> BynderMetaPropertie
+        {
+            get
+            {
+                if (_bynderMetaProperties == null)
+                {
+                    InRiverContext.Log(LogLevel.Debug, $"GetMetapropertiesAsync Started [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
+                    _bynderMetaProperties = _bynderClient.GetAssetService().GetMetapropertiesAsync().GetAwaiter().GetResult();
+                    InRiverContext.Log(LogLevel.Debug, $"GetMetapropertiesAsync Finished [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
+                }
 
+                return _bynderMetaProperties;
+            }
+        }
         #endregion Properties
 
         #region Constructors
@@ -59,6 +73,8 @@ namespace Bynder.Workers
             var result = new WorkerResult();
 
             // get original filename, as we need to evaluate this for further processing
+            InRiverContext.Log(LogLevel.Debug, $"Start collecting asset ({bynderAssetId}) data from Bynder");
+
             Media media = GetMedia(bynderAssetId);
             if (media == null)
             {
@@ -66,10 +82,13 @@ namespace Bynder.Workers
                 return result;
             }
 
-            // evaluate filename
+            InRiverContext.Log(LogLevel.Debug, $"Finished collecting asset ({bynderAssetId}) data from Bynder");
+
             var (url, filename) = MediaHelper.GetDownloadUrlAndFilename(InRiverContext, _bynderClient, media).GetAwaiter().GetResult();
+
+            // evaluate filename
             var evaluatorResult = _fileNameEvaluator.Evaluate(filename);
-            if (!evaluatorResult.Match.Success)
+            if (!evaluatorResult.IsValid)
             {
                 result.Messages.Add($"Not processing '{filename}'; does not match regex.");
                 return result;
@@ -130,14 +149,19 @@ namespace Bynder.Workers
             }
         }
 
+        public void ResetMetaProperties()
+        {
+            _bynderMetaProperties = null;
+        }
+
         public Media GetMedia(string bynderAssetId)
         {
+            InRiverContext.Log(LogLevel.Debug, $"Collecting asset ({bynderAssetId}) data from Bynder: GetAssetByMediaQuery [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
             var media = _bynderClient.GetAssetService().GetAssetByMediaQuery(bynderAssetId).GetAwaiter().GetResult();
-            var metaProperties = _bynderClient.GetAssetService().GetMetapropertiesAsync().GetAwaiter().GetResult();
-
+           
             foreach (var mp in media.MetaProperties)
             {
-                mp.Id = metaProperties[mp.Name].Id;
+                mp.Id = BynderMetaPropertie[mp.Name].Id;
             }
 
             return media;

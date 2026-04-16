@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Bynder.Workers
 {
@@ -38,15 +39,14 @@ namespace Bynder.Workers
         public NotificationWorkerResult Execute(string requestBody)
         {
             var result = new NotificationWorkerResult();
-
             var snsMessage = Message.ParseMessage(requestBody) ?? throw new ArgumentException("Cannot parse Request Body as AWS SNS message");
 
             // check if (initial) subscription type
             if (snsMessage.IsSubscriptionType && snsMessage.IsMessageSignatureValid())
             {
-                result.Messages.Add("AWS SNS Subscription message received");
+                result.Messages.Add($"AWS SNS Subscription message received [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
                 snsMessage.SubscribeToTopic();
-                result.Messages.Add("AWS SNS Subscription acknowleged");
+                result.Messages.Add($"AWS SNS Subscription acknowleged [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
                 return result;
             }
 
@@ -55,7 +55,7 @@ namespace Bynder.Workers
             {
                 if (!_notificationMapping.ContainsKey(snsMessage.Subject))
                 {
-                    result.Messages.Add($"AWS SNS - Not acting on subject {snsMessage.Subject}");
+                    result.Messages.Add($"AWS SNS - Not acting on subject {snsMessage.Subject} [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
                     return result;
                 }
 
@@ -65,7 +65,7 @@ namespace Bynder.Workers
                 if (!string.IsNullOrEmpty(innerMessage?.media_id?.ToString()))
                 {
                     var mediaId = innerMessage.media_id.ToString();
-                    result.Messages.Add($"AWS SNS - Notification type '{result.NotificationType}' for media_id '{mediaId}'");
+                    result.Messages.Add($"AWS SNS - Notification type '{result.NotificationType}' for media_id '{mediaId}' [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
                     result.MediaId = mediaId;
                     return result;
                 }
