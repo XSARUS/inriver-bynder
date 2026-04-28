@@ -1,8 +1,10 @@
-﻿using inRiver.Remoting.Extension.Interface;
+﻿using inRiver.Remoting.Log;
+using inRiver.Remoting.Extension.Interface;
 using inRiver.Remoting.Objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Text;
 
 namespace Bynder.Extension
@@ -69,13 +71,11 @@ namespace Bynder.Extension
                     return;
                 }
 
-                Container.GetInstance<AssetDownloadWorker>().Execute(entity);
-                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
-                Container.GetInstance<AssetUsageUpdateWorker>().Execute(entity);
+                ExecuteWorkers(entity).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
         }
 
@@ -90,12 +90,12 @@ namespace Bynder.Extension
                     if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
                         EntityTypeIds.Resource, out var entity)) return;
 
-                    Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
+                    Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity).GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
         }
 
@@ -137,19 +137,17 @@ namespace Bynder.Extension
                 if (entity.EntityType.Id == EntityTypeIds.Resource)
                 {
                     entity = Context.ExtensionManager.DataService.GetEntity(entityId, LoadLevel.DataOnly);
-                    Container.GetInstance<AssetDownloadWorker>().Execute(entity);
-                    Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
-                    Container.GetInstance<AssetUsageUpdateWorker>().Execute(entity);
+                    ExecuteWorkers(entity).GetAwaiter().GetResult();
                 }
                 else
                 {
                     // if other entitytype than resource update metaproperties based on modified fields
-                    Container.GetInstance<NonResourceMetapropertyWorker>().Execute(entity, fields);
+                    Container.GetInstance<NonResourceMetapropertyWorker>().Execute(entity, fields).GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
         }
 
@@ -173,11 +171,11 @@ namespace Bynder.Extension
                 if (!Context.ExtensionManager.DataService.TryGetEntityOfType(targetId, LoadLevel.DataOnly,
                     EntityTypeIds.Resource, out var entity)) return;
 
-                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
+                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
         }
 
@@ -189,7 +187,7 @@ namespace Bynder.Extension
             }
             catch (Exception ex)
             {
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
             }
         }
 
@@ -206,7 +204,32 @@ namespace Bynder.Extension
             }
             catch (Exception ex)
             {
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, ex.GetBaseException().Message, ex);
+                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
+            }
+        }
+
+        private async Task ExecuteWorkers(Entity entity)
+        {
+            var tasks = new List<Task>()
+            {
+                Container.GetInstance<AssetDownloadWorker>().Execute(entity),
+                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity),
+                Container.GetInstance<AssetUsageUpdateWorker>().Execute(entity)
+            };
+
+            var task= Task.WhenAll(tasks);
+
+            try
+            {
+                await task;
+            }
+            catch (AggregateException ex)
+            {
+                Context.Log(LogLevel.Error, $"An exception occurred executing the workers (Task status: {task.Status}): {ex.GetBaseException().Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                Context.Log(LogLevel.Error, $"An exception occurred executing the workers (Task status: {task.Status}): {ex.GetBaseException().Message}", ex);
             }
         }
 

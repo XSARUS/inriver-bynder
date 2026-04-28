@@ -3,6 +3,7 @@ using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bynder.Workers
 {
@@ -38,7 +39,7 @@ namespace Bynder.Workers
 
         #region Methods
 
-        public void Execute(Entity resourceEntity)
+        public async Task Execute(Entity resourceEntity)
         {
             // parse setting map in dictionary
             var configuredMetaPropertyMap = SettingHelper.GetConfiguredMetaPropertyMapToBynder(InRiverContext.Settings, InRiverContext.Logger);
@@ -89,7 +90,7 @@ namespace Bynder.Workers
                     )
                 };
 
-                _bynderClient.GetAssetService().ModifyMediaAsync(query).GetAwaiter().GetResult();
+                await _bynderClient.GetAssetService().ModifyMediaAsync(query);
             }
             else
             {

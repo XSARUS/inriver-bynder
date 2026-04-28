@@ -1,6 +1,9 @@
-﻿using inRiver.Remoting.Extension;
+﻿using inRiver.Remoting.Log;
+using inRiver.Remoting.Extension;
 using inRiver.Remoting.Objects;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bynder.Workers
 {
@@ -36,7 +39,7 @@ namespace Bynder.Workers
 
         #region Methods
 
-        public void Execute(Entity entity, string[] fields)
+        public async Task Execute(Entity entity, string[] fields)
         {
             if (entity.EntityType.Id == EntityTypeIds.Resource) return;
 
@@ -52,9 +55,25 @@ namespace Bynder.Workers
 
             // pass resource to the resource Metaproperty Update Worker so we can export the metaproperties
             var resources = InRiverContext.ExtensionManager.DataService.GetEntities(startEntityIds, LoadLevel.DataOnly);
+            var tasks = new List<Task>(resources.Count);
             foreach (var resource in resources)
             {
-                _resourceMetapropertyUpdateWorker.Execute(resource);
+                tasks.Add(_resourceMetapropertyUpdateWorker.Execute(resource));
+            }
+
+            var task = Task.WhenAll(tasks);
+
+            try
+            {
+                await task;
+            }
+            catch (AggregateException ex)
+            {
+                InRiverContext.Log(LogLevel.Error, $"An exception occurred executing the workers for NonResourceMetapropertyWorker for {resources.Count} resources (Task status: {task.Status}): {ex.GetBaseException().Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                InRiverContext.Log(LogLevel.Error, $"An exception occurred executing the workers NonResourceMetapropertyWorker for {resources.Count} resources (Task status: {task.Status}): {ex.GetBaseException().Message}", ex);
             }
         }
 

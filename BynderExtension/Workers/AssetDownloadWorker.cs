@@ -4,13 +4,14 @@ using inRiver.Remoting.Objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bynder.Workers
 {
-    using Utils.Helpers;
     using Names;
     using Sdk.Model;
     using SettingProviders;
+    using Utils.Helpers;
     using SdkIBynderClient = Sdk.Service.IBynderClient;
 
     public class AssetDownloadWorker : AbstractBynderWorker, IWorker
@@ -32,7 +33,7 @@ namespace Bynder.Workers
 
         #region Methods
 
-        public void Execute(Entity resourceEntity)
+        public async Task Execute(Entity resourceEntity)
         {
             // get the state field
             Field bynderDownloadStateField = resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState);
@@ -45,7 +46,7 @@ namespace Bynder.Workers
             if (string.IsNullOrWhiteSpace(bynderId)) return;
 
             // download asset information
-            Media media = _bynderClient.GetAssetService().GetAssetByMediaQuery(bynderId).GetAwaiter().GetResult();
+            Media media = await _bynderClient.GetAssetService().GetAssetByMediaQuery(bynderId);
 
             if (media == null)
             {
@@ -73,7 +74,7 @@ namespace Bynder.Workers
                 return;
             }
 
-            var (url, filename) = MediaHelper.GetDownloadUrlAndFilename(InRiverContext, _bynderClient, media).GetAwaiter().GetResult();
+            var (url, filename) = await MediaHelper.GetDownloadUrlAndFilename(InRiverContext, _bynderClient, media);
             if (string.IsNullOrWhiteSpace(url))
             {
                 InRiverContext.Log(LogLevel.Error, "File url is empty");
