@@ -143,6 +143,21 @@ namespace Bynder.Extension
                         Context.Log(LogLevel.Error, $"Failed handling Bynder Notification of ConnectorState {state.Id} created at {state.Created} [attempt {stateData.Attempt}/{maxRetryAttempts}]: {e.Message} | Result-messages: {string.Join(Environment.NewLine, resultMessages)}", e);
                         Context.Log(LogLevel.Verbose, $"Failed for ConnectorState {state.Id} created at {state.Created} with data: {state.Data}");
 
+                        // Check for 429 Too Many Requests
+                        if (ExceptionHelper.IsTooManyRequestsException(e))
+                        {
+                            // Rethrow to interrupt the foreach and let the outer try/catch handle it
+                            Context.Log(LogLevel.Error, $"Too many request (rate-limit)! [ConnectorState {state.Id} was being handled]: {e.Message}", e);
+                            throw;
+                        }
+
+                        if (ExceptionHelper.Is500ServerErrorException(e))
+                        {
+                            // Rethrow to interrupt the foreach and let the outer try/catch handle it
+                            Context.Log(LogLevel.Error, $"A server error! [ConnectorState {state.Id} was being handled]: {e.Message}", e);
+                            throw;
+                        }
+
                         if (stateData.Attempt < maxRetryAttempts)
                         {
                             stateData.Attempt++;
