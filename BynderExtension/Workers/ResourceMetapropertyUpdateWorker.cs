@@ -24,7 +24,7 @@ namespace Bynder.Workers
         #region Properties
 
         public override Dictionary<string, string> DefaultSettings => ResourceMetapropertyUpdateWorkerSettingsProvider.Create();
-        private MetapropertyMapTraverser _metapropertyMapTraverser;
+        private readonly MetapropertyMapTraverser _metapropertyMapTraverser;
 
         #endregion Properties
 
@@ -94,7 +94,7 @@ namespace Bynder.Workers
             }
             else
             {
-                InRiverContext.Log(LogLevel.Verbose, $"No metaproperties mapped or found");
+                // InRiverContext.Log(LogLevel.Verbose, $"No metaproperties mapped or found");
             }
         }
 
@@ -122,22 +122,25 @@ namespace Bynder.Workers
 
             return values;
         }
-      
+
         private static bool GetConditionResult(Entity entity, ExportCondition condition)
         {
             var field = entity.GetField(condition.InRiverFieldTypeId);
 
-            // metaproperty is not included in asset, when the value is null
+            var values = condition.Values;
+            int valueCount = values?.Count ?? 0;
+
+            // Geen field of leeg field
             if (field == null || field.IsEmpty())
             {
-                // check if there are conditions or if the only condition value is null
-                if (condition.Values.Count == 0 || (condition.Values.Count == 1 && string.IsNullOrEmpty(condition.Values[0]))) return true;
-
-                // return false, because the metaproperty does not have a value, but the condition does
-                return false;
+                // true als:
+                // - geen condition values
+                // - of expliciet null/empty condition
+                return valueCount == 0 || (valueCount == 1 && string.IsNullOrEmpty(values[0]));
             }
 
-            List<string> fieldValues = GetValuesForField(field);
+            // Alleen nu pas field values ophalen (lazy)
+            var fieldValues = GetValuesForField(field);
 
             return ConditionHelper.ValuesApplyToCondition(fieldValues, condition);
         }
@@ -147,15 +150,23 @@ namespace Bynder.Workers
             var conditions = SettingHelper.GetExportConditions(InRiverContext.Settings, InRiverContext.Logger);
 
             // return true if no conditions found. Conditions are optional.
-            if (conditions.Count == 0) return true;
+            if (conditions == null || conditions.Count == 0)
+                return true;
 
             foreach (var condition in conditions)
             {
-                if (!GetConditionResult(entity, condition))
-                {
-                    InRiverContext.Log(LogLevel.Debug, $"Resource {entity.Id} does not apply to condition on field {condition.InRiverFieldTypeId} [value: {entity.GetField(condition.InRiverFieldTypeId).Data?.ToString()}], skipping metaproperty update; Condition values: {string.Join(";", condition.Values)}");
-                    return false;
-                }
+                if (GetConditionResult(entity, condition))
+                    continue;
+
+                /*var field = entity.GetField(condition.InRiverFieldTypeId);
+                var value = field?.Data?.ToString();
+
+                InRiverContext.Log(
+                    LogLevel.Debug,
+                    $"Resource {entity.Id} does not apply to condition on field {condition.InRiverFieldTypeId} [value: {value}], skipping metaproperty update; Condition values: {string.Join(";", condition.Values)}"
+                );*/
+
+                return false;
             }
 
             return true;

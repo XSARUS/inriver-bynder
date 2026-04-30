@@ -41,9 +41,9 @@ namespace Bynder.Workers
             {
                 if (_bynderMetaProperties == null)
                 {
-                    InRiverContext.Log(LogLevel.Debug, $"GetMetapropertiesAsync Started [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
+                    // InRiverContext.Log(LogLevel.Debug, $"GetMetapropertiesAsync Started [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
                     _bynderMetaProperties = _bynderClient.GetAssetService().GetMetapropertiesAsync().GetAwaiter().GetResult();
-                    InRiverContext.Log(LogLevel.Debug, $"GetMetapropertiesAsync Finished [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
+                    // InRiverContext.Log(LogLevel.Debug, $"GetMetapropertiesAsync Finished [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
                 }
 
                 return _bynderMetaProperties;
@@ -73,7 +73,7 @@ namespace Bynder.Workers
             var result = new WorkerResult();
 
             // get original filename, as we need to evaluate this for further processing
-            InRiverContext.Log(LogLevel.Debug, $"Start collecting asset ({bynderAssetId}) data from Bynder");
+            // InRiverContext.Log(LogLevel.Debug, $"Start collecting asset ({bynderAssetId}) data from Bynder");
 
             Media media = GetMedia(bynderAssetId);
             if (media == null)
@@ -82,7 +82,7 @@ namespace Bynder.Workers
                 return result;
             }
 
-            InRiverContext.Log(LogLevel.Debug, $"Finished collecting asset ({bynderAssetId}) data from Bynder");
+            // InRiverContext.Log(LogLevel.Debug, $"Finished collecting asset ({bynderAssetId}) data from Bynder");
 
             var (url, filename) = MediaHelper.GetDownloadUrlAndFilename(InRiverContext, _bynderClient, media).GetAwaiter().GetResult();
 
@@ -97,20 +97,20 @@ namespace Bynder.Workers
             // evaluate conditions
             if (!AssetAppliesToConditions(media))
             {
-                InRiverContext.Log(LogLevel.Debug, $"Asset {bynderAssetId} does not apply to the conditions");
+                // InRiverContext.Log(LogLevel.Debug, $"Asset {bynderAssetId} does not apply to the conditions");
 
                 result.Messages.Add($"Not processing '{filename}'; does not apply to import conditions.");
                 return result;
             }
 
-            InRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} with filename {filename}, applies to conditions; handling notification-type: {notificationType}");
+            // InRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} with filename {filename}, applies to conditions; handling notification-type: {notificationType}");
             result.Messages.Add($"Asset {media.Id} applies to conditions; handling notification-type: {notificationType}");
 
             var resourceSearchType = SettingHelper.GetResourceSearchType(InRiverContext.Settings, InRiverContext.Logger);
-            InRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} search by '{resourceSearchType}'");
+            // InRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} search by '{resourceSearchType}'");
             
             Entity resourceEntity = EntityHelper.GetResourceByAsset(media, resourceSearchType, InRiverContext, LoadLevel.DataAndLinks);
-            InRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} (notification-type: {notificationType}) belongs to Resource-Entity with id: '{resourceEntity?.Id}' (empty or 0 means that a new Entity should be created!)");
+            // InRiverContext.Log(LogLevel.Debug, $"Asset {media.Id} (notification-type: {notificationType}) belongs to Resource-Entity with id: '{resourceEntity?.Id}' (empty or 0 means that a new Entity should be created!)");
 
             // handle notification logic
             switch (notificationType)
@@ -135,14 +135,14 @@ namespace Bynder.Workers
                     }
                     else
                     {
-                        InRiverContext.Log(LogLevel.Debug, $"Archived asset {bynderAssetId}, does not exist in inRiver as Resource.");
+                        // InRiverContext.Log(LogLevel.Debug, $"Archived asset {bynderAssetId}, does not exist in inRiver as Resource.");
                         result.Messages.Add($"Archived asset {bynderAssetId}, does not exist in inRiver as Resource.");
 
                         return result;
                     }
 
                 default:
-                    InRiverContext.Log(LogLevel.Warning, $"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
+                    // InRiverContext.Log(LogLevel.Warning, $"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
                     result.Messages.Add($"Notification type {notificationType} is not implemented yet! This notification will not be processed for asset {bynderAssetId}.");
 
                     return result;
@@ -156,7 +156,7 @@ namespace Bynder.Workers
 
         public Media GetMedia(string bynderAssetId)
         {
-            InRiverContext.Log(LogLevel.Debug, $"Collecting asset ({bynderAssetId}) data from Bynder: GetAssetByMediaQuery [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
+            // InRiverContext.Log(LogLevel.Debug, $"Collecting asset ({bynderAssetId}) data from Bynder: GetAssetByMediaQuery [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
             var media = _bynderClient.GetAssetService().GetAssetByMediaQuery(bynderAssetId).GetAwaiter().GetResult();
            
             foreach (var mp in media.MetaProperties)
@@ -286,7 +286,7 @@ namespace Bynder.Workers
             // return true if no conditions found. Conditions are optional.
             if (conditions == null || conditions.Count == 0)
             {
-                InRiverContext.Log(LogLevel.Debug, $"Import conditions are empty > {asset.Id} applies to conditions immediately!");
+                // InRiverContext.Log(LogLevel.Debug, $"Import conditions are empty > {asset.Id} applies to conditions immediately!");
                 return true;
             }
 
@@ -305,7 +305,7 @@ namespace Bynder.Workers
         {
             StringBuilder resultString = new StringBuilder();
             string action = resourceEntity == null ? "Create Entity" : $"Update Entity {resourceEntity.Id}";
-            InRiverContext.Log(LogLevel.Verbose, $"{action}, metadata and relations for Bynder asset {asset.Id}");
+            // InRiverContext.Log(LogLevel.Verbose, $"{action}, metadata and relations for Bynder asset {asset.Id}");
 
             if (resourceEntity == null)
             {
@@ -345,10 +345,10 @@ namespace Bynder.Workers
                     resourceEntity = InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(updatedFields);
                     resultString.Append($"Resource {resourceEntity.Id} updated");
                 }
-                else
+                /*else
                 {
                     InRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for asset {asset.Id}");
-                }
+                }*/
             }
 
             var relatedEntityData = evaluatorResult.GetRelatedEntityDataInFilename();
@@ -365,7 +365,7 @@ namespace Bynder.Workers
             // var (url, filename) = MediaHelper.GetDownloadUrlAndFilename(InRiverContext, _bynderClient, asset).GetAwaiter().GetResult();
             if (string.IsNullOrEmpty(filename))
             {
-                InRiverContext.Log(LogLevel.Debug, $"Filename for asset {asset.Id} is empty");
+                InRiverContext.Log(LogLevel.Warning, $"Filename for asset {asset.Id} is empty");
                 filename = asset.Id;
             }
 
@@ -482,12 +482,7 @@ namespace Bynder.Workers
             {
                 case "localestring":
                     var languagesToSet = SettingHelper.GetLanguagesToSet(InRiverContext.Settings, InRiverContext.Logger);
-                    var ls = (LocaleString)field.Data;
-                    if (ls == null)
-                    {
-                        ls = new LocaleString(InRiverContext.ExtensionManager.UtilityService.GetAllLanguages());
-                    }
-
+                    var ls = (LocaleString)field.Data ?? new LocaleString(InRiverContext.ExtensionManager.UtilityService.GetAllLanguages());
                     foreach (var lang in languagesToSet)
                     {
                         var culture = new CultureInfo(lang);
@@ -534,7 +529,7 @@ namespace Bynder.Workers
 
         private void SetAssetProperties(Entity resourceEntity, Media asset, WorkerResult result)
         {
-            InRiverContext.Log(LogLevel.Verbose, $"Setting asset properties on entity {resourceEntity.Id}");
+            // InRiverContext.Log(LogLevel.Verbose, $"Setting asset properties on entity {resourceEntity.Id}");
 
             var propertyMap = SettingHelper.GetConfiguredAssetPropertyMap(InRiverContext.Settings, InRiverContext.Logger);
             var assetProperties = asset.GetType().GetProperties();
@@ -604,11 +599,11 @@ namespace Bynder.Workers
             var metaPropertyMapping = SettingHelper.GetConfiguredMetaPropertyMap(InRiverContext.Settings, InRiverContext.Logger);
             if (metaPropertyMapping.Count == 0)
             {
-                InRiverContext.Log(LogLevel.Verbose, "Could not find configured metaproperty Map");
+                // InRiverContext.Log(LogLevel.Verbose, "Could not find configured metaproperty Map");
                 return;
             }
 
-            InRiverContext.Log(LogLevel.Verbose, $"Setting metaproperties on entity {resourceEntity.Id}");
+            // InRiverContext.Log(LogLevel.Verbose, $"Setting metaproperties on entity {resourceEntity.Id}");
 
             var matchedProperties =
                 asset.MetaProperties.Join(
@@ -619,10 +614,10 @@ namespace Bynder.Workers
                     StringComparer.OrdinalIgnoreCase
                 );
 
-            foreach (var matchedProperty in matchedProperties)
+            /*foreach (var matchedProperty in matchedProperties)
             {
                 InRiverContext.Log(LogLevel.Debug, $"{matchedProperty.property.Name} ({matchedProperty.property.Id}) -> {matchedProperty.map.InriverFieldTypeId}");
-            }
+            }*/
 
             foreach (var match in matchedProperties)
             {
@@ -651,7 +646,7 @@ namespace Bynder.Workers
             var fieldValueCombinations = SettingHelper.GetFieldValueCombinations(InRiverContext.Settings, InRiverContext.Logger);
             if (fieldValueCombinations.Count == 0)
             {
-                InRiverContext.Log(LogLevel.Verbose, $"No fieldvalue combinations found. Not updating resource for archived bynder asset {bynderAssetId}");
+                //InRiverContext.Log(LogLevel.Verbose, $"No fieldvalue combinations found. Not updating resource for archived bynder asset {bynderAssetId}");
                 return result;
             }
 
@@ -662,14 +657,14 @@ namespace Bynder.Workers
             {
                 if (string.IsNullOrWhiteSpace(fvc.FieldTypeId))
                 {
-                    InRiverContext.Log(LogLevel.Verbose, $"Field value combination found without FieldTypeId setting filled in setting '{Settings.FieldValuesToSetOnArchiveEvent}'!");
+                    // InRiverContext.Log(LogLevel.Verbose, $"Field value combination found without FieldTypeId setting filled in setting '{Settings.FieldValuesToSetOnArchiveEvent}'!");
                     continue;
                 }
 
                 var field = resourceEntity.GetField(fvc.FieldTypeId);
                 if (field == null)
                 {
-                    InRiverContext.Log(LogLevel.Verbose, $"Field '{fvc.FieldTypeId}' used in the setting '{Settings.FieldValuesToSetOnArchiveEvent}' does not exist on Resource!");
+                    //InRiverContext.Log(LogLevel.Verbose, $"Field '{fvc.FieldTypeId}' used in the setting '{Settings.FieldValuesToSetOnArchiveEvent}' does not exist on Resource!");
                     continue;
                 }
 
@@ -677,7 +672,7 @@ namespace Bynder.Workers
                 {
                     if (dateTimeSettings == null)
                     {
-                        InRiverContext.Log(LogLevel.Verbose, $"Field value combination found with {nameof(FieldValueCombination.SetTimestamp)} on true, but the setting '{Settings.TimestampSettings}' is empty!");
+                        //InRiverContext.Log(LogLevel.Verbose, $"Field value combination found with {nameof(FieldValueCombination.SetTimestamp)} on true, but the setting '{Settings.TimestampSettings}' is empty!");
                         continue;
                     }
 
@@ -693,13 +688,13 @@ namespace Bynder.Workers
 
             if (fieldsToUpdate.Count > 0)
             {
-                InRiverContext.Log(LogLevel.Verbose, $"Setting values on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
+                // InRiverContext.Log(LogLevel.Verbose, $"Setting values on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
                 resourceEntity = InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(fieldsToUpdate);
                 result.Messages.Add($"Updated field(s) on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
             }
             else
             {
-                InRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
+                // InRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for archived bynder asset {bynderAssetId}");
             }
 
             return result;
@@ -707,7 +702,7 @@ namespace Bynder.Workers
 
         private WorkerResult UpdateMetadata(WorkerResult result, Media asset, Entity resourceEntity)
         {
-            InRiverContext.Log(LogLevel.Verbose, $"Update metadata only for Resource {resourceEntity.Id}");
+            // InRiverContext.Log(LogLevel.Verbose, $"Update metadata only for Resource {resourceEntity.Id}");
 
             // get current fieldvalues so we can check the updated fields later on
             var oldFieldValues = resourceEntity.Fields.Select(x => (Field)x.Clone()).ToList();
@@ -729,7 +724,7 @@ namespace Bynder.Workers
             }
             else
             {
-                InRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for asset {asset.Id}");
+                // InRiverContext.Log(LogLevel.Verbose, $"No fields to update on Resource {resourceEntity.Id} for asset {asset.Id}");
             }
 
             return result;

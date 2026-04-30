@@ -160,35 +160,36 @@ namespace Bynder.Extension
                             {
                                 var stateData = JsonConvert.DeserializeObject<AttemptSNSMessageWrapper>(state.Data);
 
-                                if (stateData.Attempt < maxRetryAttempts)
-                                {
-                                    stateData.Attempt++;
-                                    state.Data = JsonConvert.SerializeObject(stateData);
-                                    Context.ExtensionManager.UtilityService.UpdateConnectorState(state);
-                                    Interlocked.Increment(ref retried);
-                                }
-                                else
-                                {
-                                    Context.ExtensionManager.UtilityService.DeleteConnectorState(state.Id);
-                                    Interlocked.Increment(ref failed);
-                                }
-                            }
-                            catch
-                            {
-                                Interlocked.Increment(ref failed);
-                            }
-
-                            Context.Log(LogLevel.Error,
-                                $"Failed handling ConnectorState {state.Id}: {e.Message}", e);
-                        }
-                        finally
+                        // Check for 429 Too Many Requests
+                        if (ExceptionHelper.IsTooManyRequestsException(e))
                         {
-                            semaphore.Release();
+                            // Rethrow to interrupt the foreach and let the outer try/catch handle it
+                            Context.Log(LogLevel.Error, $"Too many request (rate-limit)! [ConnectorState {state.Id} was being handled]: {e.Message}", e);
+                            throw;
                         }
-                    }))
-                    .ToList();
 
-                Task.WaitAll(tasks.ToArray());
+                        if (ExceptionHelper.Is500ServerErrorException(e))
+                        {
+                            // Rethrow to interrupt the foreach and let the outer try/catch handle it
+                            Context.Log(LogLevel.Error, $"A server error! [ConnectorState {state.Id} was being handled]: {e.Message}", e);
+                            throw;
+                        }
+
+                        if (stateData.Attempt < maxRetryAttempts)
+                        {
+                            stateData.Attempt++;
+                            state.Data = JsonConvert.SerializeObject(stateData);
+                            var updatedState = Context.ExtensionManager.UtilityService.UpdateConnectorState(state);
+                            retried++;
+                        }
+                        else
+                        {
+                            Context.ExtensionManager.UtilityService.DeleteConnectorState(state.Id);
+                            Context.Log(LogLevel.Error, $"Max retry attempts reached for ConnectorState {state.Id}", e);
+                            failed++;
+                        }
+                    }
+                }
 
                 assetWorker.ResetMetaProperties();
 
