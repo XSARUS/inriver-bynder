@@ -2,12 +2,9 @@
 using inRiver.Remoting.Objects;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Bynder.Extension
 {
@@ -67,9 +64,7 @@ namespace Bynder.Extension
 
             try
             {
-                List<ConnectorState> states = Context.ExtensionManager.UtilityService
-                    .GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
-
+                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
                 sb.AppendLine($"Number of connectorstates found: {states.Count}");
             }
             catch (Exception ex)
@@ -84,81 +79,69 @@ namespace Bynder.Extension
         {
             try
             {
-                var states = Context.ExtensionManager.UtilityService
-                    .GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener)
-                    .OrderBy(s => s.Created);
-
-                if (states.Count() == 0)
+                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
+                if (states.Count == 0)
+                {
                     return;
+                }
 
-                Context.Log(LogLevel.Information, $"Start handling of {states.Count()} Bynder Notifications");
+                Context.Log(LogLevel.Information, $"Start handling of {states.Count} Bynder Notifications");
 
                 var notificationWorker = Container.GetInstance<NotificationWorker>();
-                var assetDeletedWorker = Container.GetInstance<AssetDeletedWorker>();
-                var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
-
-                int maxUpdatedWorkerCalledCount = SettingHelper.GetMaxUpdatedWorkerCalledCount(Context.Settings, Context.Logger);
-                int maxRetryAttempts = SettingHelper.GetMaxRetryAttempts(Context.Settings, Context.Logger);
-
-                // Thread-safe counters
                 int updatedWorkerCalledCount = 0;
+                int maxUpdatedWorkerCalledCount = SettingHelper.GetMaxUpdatedWorkerCalledCount(Context.Settings, Context.Logger);
                 int retried = 0;
                 int failed = 0;
                 int succesful = 0;
                 int deleted = 0;
+                int maxRetryAttempts = SettingHelper.GetMaxRetryAttempts(Context.Settings, Context.Logger);
 
-                // Throttling
-                int maxDegreeOfParallelism = 4;
-                var semaphore = new SemaphoreSlim(maxDegreeOfParallelism);
+                var assetDeletedWorker = Container.GetInstance<AssetDeletedWorker>();
+                var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
 
-                var tasks = states
-                    .Select(state => Task.Run(async () =>
+                foreach (ConnectorState state in states.OrderBy(s => s.Created))
+                {
+                    var stateData = JsonConvert.DeserializeObject<AttemptSNSMessageWrapper>(state.Data);
+                    var notificationMessage = stateData.OriginalMessageJson;
+                    List<string> resultMessages = new List<string>(8);
+
+                    try
                     {
-                        await semaphore.WaitAsync();
+                        Context.Log(LogLevel.Debug, $"Handling Bynder Notifications of ConnectorState {state.Id} created at {state.Created} attempt {stateData.Attempt}/{maxRetryAttempts}");
 
-                        try
+                        var notificationResult = notificationWorker.Execute(notificationMessage);
+                        resultMessages = notificationResult.Messages;
+
+                        if (!string.IsNullOrEmpty(notificationResult.MediaId))
                         {
-                            var stateData = JsonConvert.DeserializeObject<AttemptSNSMessageWrapper>(state.Data);
-                            var notificationMessage = stateData.OriginalMessageJson;
-                            var resultMessages = new List<string>(8);
+                            WorkerResult workerResult;
 
-                            Context.Log(LogLevel.Debug,
-                                $"Handling ConnectorState {state.Id} attempt {stateData.Attempt}/{maxRetryAttempts}");
-
-                            var notificationResult = notificationWorker.Execute(notificationMessage);
-                            resultMessages = notificationResult.Messages;
-
-                            if (!string.IsNullOrEmpty(notificationResult.MediaId))
+                            if (notificationResult.NotificationType == NotificationType.IsDeleted)
                             {
-                                WorkerResult workerResult;
-
-                                if (notificationResult.NotificationType == NotificationType.IsDeleted)
+                                workerResult = assetDeletedWorker.Execute(notificationResult.MediaId);
+                                deleted++;
+                            }
+                            else
+                            {
+                                if (updatedWorkerCalledCount >= maxUpdatedWorkerCalledCount)
                                 {
-                                    workerResult = assetDeletedWorker.Execute(notificationResult.MediaId);
-                                    Interlocked.Increment(ref deleted);
+                                    continue;
                                 }
-                                else
-                                {
-                                    if (Interlocked.Increment(ref updatedWorkerCalledCount) > maxUpdatedWorkerCalledCount)
-                                        return;
-
-                                    workerResult = assetWorker.Execute(
-                                        notificationResult.MediaId,
-                                        notificationResult.NotificationType);
-
-                                    Interlocked.Increment(ref succesful);
-                                }
-
-                                resultMessages.AddRange(workerResult.Messages);
+                                workerResult = assetWorker.Execute(notificationResult.MediaId, notificationResult.NotificationType);
+                                succesful++;
                             }
 
-                            Context.ExtensionManager.UtilityService.DeleteConnectorState(state.Id);
+                            resultMessages.AddRange(workerResult.Messages);
                         }
-                        catch (Exception e)
-                        {
-                            try
-                            {
-                                var stateData = JsonConvert.DeserializeObject<AttemptSNSMessageWrapper>(state.Data);
+
+                        Context.Log(LogLevel.Debug, $"Handled Bynder Notification of ConnectorState {state.Id} created at {state.Created} | Result-messages: {string.Join(Environment.NewLine, resultMessages)}");
+
+                        Context.ExtensionManager.UtilityService.DeleteConnectorState(state.Id);
+                    }
+                    catch (Exception e)
+                    {
+                        Context.Log(LogLevel.Error, $"Failed handling Bynder Notification of ConnectorState {state.Id} created at {state.Created} [attempt {stateData.Attempt}/{maxRetryAttempts}]: {e.Message} | Result-messages: {string.Join(Environment.NewLine, resultMessages)}", e);
+                        Context.Log(LogLevel.Verbose, $"Failed for ConnectorState {state.Id} created at {state.Created} with data: {state.Data}");
 
                         // Check for 429 Too Many Requests
                         if (ExceptionHelper.IsTooManyRequestsException(e))
@@ -192,9 +175,7 @@ namespace Bynder.Extension
                 }
 
                 assetWorker.ResetMetaProperties();
-
-                Context.Log(LogLevel.Information,
-                    $"Finished handling [{succesful} updated | {deleted} deleted | {failed} failed | {retried} retried]");
+                Context.Log(LogLevel.Information, $"Finished handling of {states.Count} Bynder Notifications [{succesful} created/updated | {deleted} deleted | {failed} failed | {retried} retried]");
             }
             catch (Exception ex)
             {
