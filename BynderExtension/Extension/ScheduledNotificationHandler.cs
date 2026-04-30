@@ -1,10 +1,10 @@
 ﻿using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 
 namespace Bynder.Extension
 {
@@ -53,6 +53,11 @@ namespace Bynder.Extension
             }
         }
 
+        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         #endregion Properties
 
         #region Methods
@@ -80,28 +85,29 @@ namespace Bynder.Extension
             try
             {
                 List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
-                if (states.Count == 0)
+                int numOfStates = states.Count;
+                if (numOfStates == 0)
                 {
                     return;
                 }
 
-                Context.Log(LogLevel.Information, $"Start handling of {states.Count} Bynder Notifications");
+                Context.Log(LogLevel.Information, $"Start handling of {numOfStates} Bynder Notifications");
 
                 var notificationWorker = Container.GetInstance<NotificationWorker>();
                 int updatedWorkerCalledCount = 0;
                 int maxUpdatedWorkerCalledCount = SettingHelper.GetMaxUpdatedWorkerCalledCount(Context.Settings, Context.Logger);
                 int retried = 0;
                 int failed = 0;
-                int succesful = 0;
+                int successful = 0;
                 int deleted = 0;
                 int maxRetryAttempts = SettingHelper.GetMaxRetryAttempts(Context.Settings, Context.Logger);
 
                 var assetDeletedWorker = Container.GetInstance<AssetDeletedWorker>();
                 var assetWorker = Container.GetInstance<AssetUpdatedWorker>();
 
-                foreach (ConnectorState state in states.OrderBy(s => s.Created))
+                foreach (var state in states.OrderBy(s => s.Created))
                 {
-                    var stateData = JsonConvert.DeserializeObject<AttemptSNSMessageWrapper>(state.Data);
+                    var stateData = JsonSerializer.Deserialize<AttemptSNSMessageWrapper>(state.Data, JsonOptions);
                     var notificationMessage = stateData.OriginalMessageJson;
                     List<string> resultMessages = new List<string>(8);
 
@@ -128,7 +134,7 @@ namespace Bynder.Extension
                                     continue;
                                 }
                                 workerResult = assetWorker.Execute(notificationResult.MediaId, notificationResult.NotificationType);
-                                succesful++;
+                                successful++;
                             }
 
                             resultMessages.AddRange(workerResult.Messages);
@@ -161,7 +167,7 @@ namespace Bynder.Extension
                         if (stateData.Attempt < maxRetryAttempts)
                         {
                             stateData.Attempt++;
-                            state.Data = JsonConvert.SerializeObject(stateData);
+                            state.Data = JsonSerializer.Serialize(stateData, JsonOptions);
                             var updatedState = Context.ExtensionManager.UtilityService.UpdateConnectorState(state);
                             retried++;
                         }
@@ -175,7 +181,7 @@ namespace Bynder.Extension
                 }
 
                 assetWorker.ResetMetaProperties();
-                Context.Log(LogLevel.Information, $"Finished handling of {states.Count} Bynder Notifications [{succesful} created/updated | {deleted} deleted | {failed} failed | {retried} retried]");
+                Context.Log(LogLevel.Information, $"Finished handling of {states.Count} Bynder Notifications [{successful} created/updated | {deleted} deleted | {failed} failed | {retried} retried]");
             }
             catch (Exception ex)
             {
