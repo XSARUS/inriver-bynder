@@ -1,4 +1,5 @@
 ﻿using inRiver.Remoting.Extension;
+using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using System;
 using System.Collections.Generic;
@@ -88,10 +89,11 @@ namespace Bynder.Utils.Traverser
             }
 
             // Traverse inbound children
-            if (node.Inbound != null)
+            if (node.Inbound != null && node.Inbound.Any())
             {
                 foreach (var child in node.Inbound)
                 {
+                    // child.LinkTypeId describes the link type between current and next
                     foreach (var next in GetInboundEntities(currentEntity.Id, child.LinkTypeId))
                     {
                         TraverseNode(next, child, result, visited);
@@ -100,7 +102,7 @@ namespace Bynder.Utils.Traverser
             }
 
             // Traverse outbound children
-            if (node.Outbound != null)
+            if (node.Outbound != null && node.Outbound.Any())
             {
                 foreach (var child in node.Outbound)
                 {
@@ -223,14 +225,14 @@ namespace Bynder.Utils.Traverser
                 var field = entity.GetField(map.InriverFieldTypeId);
                 var values = GetValuesForField(field);
 
-                // _context.Log(LogLevel.Debug, $"Checking value(s) for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}): {values.Count} values");
+                _context.Log(LogLevel.Debug, $"Checking value(s) for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}): {values.Count} values");
 
                 if (values.Count == 0)
                 {
                     continue;
                 }
 
-                // _context.Log(LogLevel.Debug, $"Saving value for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}) (R)");
+                _context.Log(LogLevel.Debug, $"Saving value for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}) (R)");
 
                 // update existing or add new
                 if (!newMetapropertyValues.TryGetValue(map.BynderMetaProperty, out var list))
