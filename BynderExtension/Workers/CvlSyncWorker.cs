@@ -88,14 +88,11 @@ namespace Bynder.Workers
             }
             catch (Exception ex)
             {
-                if (string.IsNullOrEmpty(cvlKey))
-                {
-                    result.Messages.Add($"Error while executing worker for action {action}, CVL id '{cvlId}'!");
-                }
-                else
-                {
-                    result.Messages.Add($"Error while executing worker for action {action}, CVL id '{cvlId}' and key '{cvlKey}'!");
-                }
+                var keyPart = string.IsNullOrEmpty(cvlKey) ? string.Empty : $" and key '{cvlKey}'";
+
+                result.Messages.Add(
+                    $"Error while executing worker for action {action}, CVL id '{cvlId}'{keyPart}!"
+                );
 
                 result.Messages.Add(ex.Message);
             }
