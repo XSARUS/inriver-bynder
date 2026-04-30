@@ -225,14 +225,14 @@ namespace Bynder.Utils.Traverser
                 var field = entity.GetField(map.InriverFieldTypeId);
                 var values = GetValuesForField(field);
 
-                _context.Log(LogLevel.Debug, $"Checking value(s) for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}): {values.Count} values");
+                // _context.Log(LogLevel.Debug, $"Checking value(s) for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}): {values.Count} values");
 
                 if (values.Count == 0)
                 {
                     continue;
                 }
 
-                _context.Log(LogLevel.Debug, $"Saving value for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}) (R)");
+                // _context.Log(LogLevel.Debug, $"Saving value for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}) (R)");
 
                 // update existing or add new
                 if (!newMetapropertyValues.TryGetValue(map.BynderMetaProperty, out var list))
