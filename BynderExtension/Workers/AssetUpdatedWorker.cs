@@ -73,16 +73,12 @@ namespace Bynder.Workers
             var result = new WorkerResult();
 
             // get original filename, as we need to evaluate this for further processing
-            InRiverContext.Log(LogLevel.Debug, $"Start collecting asset ({bynderAssetId}) data from Bynder");
-
             Media media = GetMedia(bynderAssetId);
             if (media == null)
             {
                 result.Messages.Add($"Not processing '{bynderAssetId}'; asset not found.");
                 return result;
             }
-
-            InRiverContext.Log(LogLevel.Debug, $"Finished collecting asset ({bynderAssetId}) data from Bynder");
 
             var (url, filename) = MediaHelper.GetDownloadUrlAndFilename(InRiverContext, _bynderClient, media).GetAwaiter().GetResult();
 
