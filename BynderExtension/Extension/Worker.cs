@@ -17,6 +17,7 @@ namespace Bynder.Extension
 
     public class Worker : AbstractBynderExtension, IEntityListener, ILinkListener
     {
+
         #region Properties
 
         public override Dictionary<string, string> DefaultSettings
@@ -165,31 +166,10 @@ namespace Bynder.Extension
         /// <param name="linkTypeId"></param>
         /// <param name="linkEntityId"></param>
         public void LinkCreated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
-        {
-            try
-            {
-                if (!Context.ExtensionManager.DataService.TryGetEntityOfType(targetId, LoadLevel.DataOnly,
-                    EntityTypeIds.Resource, out var entity)) return;
-
-                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity).GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
-            }
-        }
+            => HandleLink(targetId);
 
         public void LinkDeleted(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
-        {
-            try
-            {
-                LinkCreated(linkId, sourceId, targetId, linkTypeId, linkEntityId);
-            }
-            catch (Exception ex)
-            {
-                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
-            }
-        }
+            => HandleLink(targetId);
 
         public void LinkInactivated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
         {
@@ -197,41 +177,7 @@ namespace Bynder.Extension
         }
 
         public void LinkUpdated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
-        {
-            try
-            {
-                LinkCreated(linkId, sourceId, targetId, linkTypeId, linkEntityId);
-            }
-            catch (Exception ex)
-            {
-                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
-            }
-        }
-
-        private async Task ExecuteWorkers(Entity entity)
-        {
-            var tasks = new List<Task>()
-            {
-                Container.GetInstance<AssetDownloadWorker>().Execute(entity),
-                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity),
-                Container.GetInstance<AssetUsageUpdateWorker>().Execute(entity)
-            };
-
-            var task= Task.WhenAll(tasks);
-
-            try
-            {
-                await task;
-            }
-            catch (AggregateException ex)
-            {
-                Context.Log(LogLevel.Error, $"An exception occurred executing the workers (Task status: {task.Status}): {ex.GetBaseException().Message}", ex);
-            }
-            catch (Exception ex)
-            {
-                Context.Log(LogLevel.Error, $"An exception occurred executing the workers (Task status: {task.Status}): {ex.GetBaseException().Message}", ex);
-            }
-        }
+            => HandleLink(targetId);
 
         public override string Test()
         {
@@ -251,6 +197,52 @@ namespace Bynder.Extension
             }
 
             return sb.ToString();
+        }
+
+        private async Task ExecuteWorkers(Entity entity)
+        {
+            // first download the data, we need that before the other workers
+            await Container.GetInstance<AssetDownloadWorker>().Execute(entity);
+
+            var tasks = new List<Task>()
+            {
+                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity),
+                Container.GetInstance<AssetUsageUpdateWorker>().Execute(entity)
+            };
+
+            var task = Task.WhenAll(tasks);
+
+            try
+            {
+                await task;
+            }
+            catch (AggregateException ex)
+            {
+                Context.Log(LogLevel.Error, $"An exception occurred executing the workers (Task status: {task.Status}): {ex.GetBaseException().Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                Context.Log(LogLevel.Error, $"An exception occurred executing the workers (Task status: {task.Status}): {ex.GetBaseException().Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// we should check if we inform bynder of the link create/update/delete
+        /// </summary>
+        /// <param name="targetId"></param>
+        private void HandleLink(int targetId)
+        {
+            try
+            {
+                if (!Context.ExtensionManager.DataService.TryGetEntityOfType(targetId, LoadLevel.DataOnly,
+                    EntityTypeIds.Resource, out var entity)) return;
+
+                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Context.Log(LogLevel.Error, ex.GetBaseException().Message, ex);
+            }
         }
 
         #endregion Methods

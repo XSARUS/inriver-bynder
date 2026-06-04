@@ -86,7 +86,7 @@ namespace Bynder.Workers
                 {
                     MetapropertyOptions = metapropertyValues.ToDictionary(
                         kvp => kvp.Key,
-                        kvp => (IList<string>)kvp.Value
+                        kvp => kvp.Value
                     )
                 };
 

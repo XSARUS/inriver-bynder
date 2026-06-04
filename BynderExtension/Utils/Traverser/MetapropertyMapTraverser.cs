@@ -1,5 +1,4 @@
 ﻿using inRiver.Remoting.Extension;
-using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using System;
 using System.Collections.Generic;
@@ -23,9 +22,9 @@ namespace Bynder.Utils.Traverser
         /// Collects mapped Bynder metaproperty values for a given start entity (typically a Resource)
         /// using the traversal config tree.
         /// </summary>
-        public Dictionary<string, IList<string>> GetMappedMetaPropertyValues(Entity startEntity, MetaPropertyMapTraverseConfig config)
+        public Dictionary<string, List<string>> GetMappedMetaPropertyValues(Entity startEntity, MetaPropertyMapTraverseConfig config)
         {
-            var result = new Dictionary<string, IList<string>>(StringComparer.OrdinalIgnoreCase);
+            var result = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
             if (startEntity == null || config == null)
                 return result;
@@ -59,7 +58,7 @@ namespace Bynder.Utils.Traverser
         /// <summary>
         /// Convenience overload when you only have an entity id.
         /// </summary>
-        public Dictionary<string, IList<string>> GetMappedMetaPropertyValues(int startEntityId, MetaPropertyMapTraverseConfig config)
+        public Dictionary<string, List<string>> GetMappedMetaPropertyValues(int startEntityId, MetaPropertyMapTraverseConfig config)
         {
             var entity = _context.ExtensionManager.DataService.GetEntity(startEntityId, LoadLevel.DataOnly);
             return GetMappedMetaPropertyValues(entity, config);
@@ -68,7 +67,7 @@ namespace Bynder.Utils.Traverser
         private void TraverseNode(
             Entity currentEntity,
             MetaPropertyMapTraverseConfig node,
-            Dictionary<string, IList<string>> result,
+            Dictionary<string, List<string>> result,
             HashSet<string> visited)
         {
             if (currentEntity == null || node == null)
@@ -169,10 +168,10 @@ namespace Bynder.Utils.Traverser
         private void AddOrMergeEntityValues(
             Entity entity,
             List<MetaPropertyMap> maps,
-            Dictionary<string, IList<string>> result)
+            Dictionary<string, List<string>> result)
         {
             // Reuse your existing logic but merge into result instead of throwing on duplicate keys
-            var newValues = new Dictionary<string, IList<string>>(StringComparer.OrdinalIgnoreCase);
+            var newValues = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
             AddMetapropertyValuesForEntity(entity, maps, newValues);
 
@@ -180,8 +179,8 @@ namespace Bynder.Utils.Traverser
         }
 
         private static void Merge(
-            Dictionary<string, IList<string>> target,
-            Dictionary<string, IList<string>> incoming)
+            Dictionary<string, List<string>> target,
+            Dictionary<string, List<string>> incoming)
         {
             foreach (var incomingKvp in incoming)
             {
@@ -194,7 +193,7 @@ namespace Bynder.Utils.Traverser
                 if (incomingKvp.Value == null || incomingKvp.Value.Count == 0)
                     continue;
 
-                existing.ToList().AddRange(incomingKvp.Value);
+                existing.AddRange(incomingKvp.Value);
             }
         }
 
@@ -217,22 +216,17 @@ namespace Bynder.Utils.Traverser
             }
         }
 
-        protected void AddMetapropertyValuesForEntity(Entity entity, List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, IList<string>> newMetapropertyValues)
+        protected void AddMetapropertyValuesForEntity(Entity entity, List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
         {
             foreach (var map in configuredMetaPropertyMap)
             {
                 // check if configured fieldtype is on entity
                 var field = entity.GetField(map.InriverFieldTypeId);
                 var values = GetValuesForField(field);
-
-                // _context.Log(LogLevel.Debug, $"Checking value(s) for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}): {values.Count} values");
-
                 if (values.Count == 0)
                 {
                     continue;
                 }
-
-                // _context.Log(LogLevel.Debug, $"Saving value for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}) (R)");
 
                 // update existing or add new
                 if (!newMetapropertyValues.TryGetValue(map.BynderMetaProperty, out var list))
@@ -241,7 +235,7 @@ namespace Bynder.Utils.Traverser
                 }
                 else
                 {
-                    list.ToList().AddRange(values);
+                    list.AddRange(values);
                 }
             }
         }
@@ -250,7 +244,7 @@ namespace Bynder.Utils.Traverser
         /// Ensures that metaproperties configured as single-value contain at most one value.
         /// Extra values are discarded.
         /// </summary>
-        protected static void EnforceSingleValueMetaProperties(List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, IList<string>> newMetapropertyValues)
+        protected static void EnforceSingleValueMetaProperties(List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
         {
             foreach (var map in configuredMetaPropertyMap)
             {

@@ -55,6 +55,7 @@ namespace Bynder.Workers
 
             // pass resource to the resource Metaproperty Update Worker so we can export the metaproperties
             var resources = InRiverContext.ExtensionManager.DataService.GetEntities(startEntityIds, LoadLevel.DataOnly);
+
             var tasks = new List<Task>(resources.Count);
             foreach (var resource in resources)
             {
