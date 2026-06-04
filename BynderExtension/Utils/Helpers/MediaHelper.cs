@@ -35,9 +35,6 @@ namespace Bynder.Utils.Helpers
             var mappings = SettingHelper
                 .GetFilenameExtensionMediaTypeMapping(context.Settings, context.Logger);
 
-            context.Log(LogLevel.Verbose,
-                $"Got {mappings.Count} filename-ext mappings!");
-
             if (!TryGetMappedThumbnail(
                 context,
                 asset,
@@ -75,8 +72,7 @@ namespace Bynder.Utils.Helpers
 
             if (!mappings.TryGetValue(originalExtension, out var extensionMappings))
             {
-                context.Log(LogLevel.Verbose,
-                    $"No mappings found for filename-ext '{originalExtension}'!");
+                context.Log(LogLevel.Verbose, $"No mappings found for filename-ext '{originalExtension}'!");
                 return false;
             }
 
@@ -84,16 +80,12 @@ namespace Bynder.Utils.Helpers
             {
                 if (!asset.Thumbnails.All.TryGetValue(mapping.MediaType, out JToken token))
                 {
-                    context.Log(LogLevel.Verbose,
-                        $"Asset thumbnails do not contain key '{mapping.MediaType}' for filename-ext '{originalExtension}'!");
+                    context.Log(LogLevel.Verbose, $"Asset thumbnails do not contain key '{mapping.MediaType}' for filename-ext '{originalExtension}'!");
                     continue;
                 }
 
                 string downloadUrl = token.Value<string>();
                 string filename = FormatFilename(asset, downloadUrl, mapping.FilenameRegex);
-
-                context.Log(LogLevel.Verbose,
-                    $"Mapping hit for mediatype '{mapping.MediaType}', formatted filename '{filename}'");
 
                 result = (downloadUrl, filename);
                 return true;
@@ -140,10 +132,9 @@ namespace Bynder.Utils.Helpers
 
             if (downloadMediaType.Equals("original", StringComparison.OrdinalIgnoreCase))
             {
-                Uri downloadLocation =
-                    await bynderClient.GetAssetService()
-                        .GetDownloadFileUrlAsync(
-                            new DownloadMediaQuery { MediaId = asset.Id });
+                Uri downloadLocation = await bynderClient
+                    .GetAssetService()
+                    .GetDownloadFileUrlAsync(new DownloadMediaQuery { MediaId = asset.Id });
 
                 return (downloadLocation.ToString(), asset.GetOriginalFileName());
             }

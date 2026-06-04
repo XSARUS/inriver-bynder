@@ -35,15 +35,13 @@ namespace Bynder.Workers
 
         public override Dictionary<string, string> DefaultSettings => AssetUpdatedWorkerSettingsProvider.Create();
         private EntityType ResourceEntityType => InRiverContext.ExtensionManager.ModelService.GetEntityType(EntityTypeIds.Resource);
-        private IDictionary<string, Metaproperty> BynderMetaPropertie
+        private IDictionary<string, Metaproperty> BynderMetaProperties
         {
             get
             {
                 if (_bynderMetaProperties == null)
                 {
-                    InRiverContext.Log(LogLevel.Debug, $"GetMetapropertiesAsync Started [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
                     _bynderMetaProperties = _bynderClient.GetAssetService().GetMetapropertiesAsync().GetAwaiter().GetResult();
-                    InRiverContext.Log(LogLevel.Debug, $"GetMetapropertiesAsync Finished [{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]");
                 }
 
                 return _bynderMetaProperties;
@@ -157,7 +155,7 @@ namespace Bynder.Workers
            
             foreach (var mp in media.MetaProperties)
             {
-                mp.Id = BynderMetaPropertie[mp.Name].Id;
+                mp.Id = BynderMetaProperties[mp.Name].Id;
             }
 
             return media;

@@ -24,7 +24,7 @@ namespace Bynder.Workers
         #region Properties
 
         public override Dictionary<string, string> DefaultSettings => ResourceMetapropertyUpdateWorkerSettingsProvider.Create();
-        private MetapropertyMapTraverser _metapropertyMapTraverser;
+        private readonly MetapropertyMapTraverser _metapropertyMapTraverser;
 
         #endregion Properties
 
@@ -86,7 +86,7 @@ namespace Bynder.Workers
                 {
                     MetapropertyOptions = metapropertyValues.ToDictionary(
                         kvp => kvp.Key,
-                        kvp => (IList<string>)kvp.Value
+                        kvp => kvp.Value
                     )
                 };
 
