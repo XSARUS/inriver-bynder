@@ -67,7 +67,7 @@ namespace Bynder.Extension
                 var processingStatistics = new ProcessingStatistics();
                 int maxRetryAttempts = SettingHelper.GetMaxRetryAttempts(Context.Settings, Context.Logger);
 
-                foreach (ConnectorState state in states.OrderBy(s => s.Created))
+                foreach (ConnectorState state in states)
                 {
                     ProcessState(workers, processingStatistics, maxRetryAttempts, state);
                 }
@@ -115,9 +115,16 @@ namespace Bynder.Extension
             }
         }
 
+        /// <summary>
+        /// Gets connector states, orders them by created and then removes duplicates
+        /// </summary>
+        /// <returns></returns>
         private List<ConnectorState> GetConnectorStates()
         {
-            return Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderInriverEvents);
+            return Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderInriverEvents)
+                .GroupBy(s => s.Id)
+                .Select(g => g.OrderBy(s => s.Created).First())
+                .ToList();
         }
 
         private WorkerContainer GetWorkers()
