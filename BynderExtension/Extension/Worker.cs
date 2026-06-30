@@ -15,6 +15,7 @@ namespace Bynder.Extension
     using Utils.InRiver;
     using Workers;
 
+    [Obsolete("Use the InriverEventEnqueuer and InriverEventHandler instead")]
     public class Worker : AbstractBynderExtension, IEntityListener, ILinkListener
     {
 
