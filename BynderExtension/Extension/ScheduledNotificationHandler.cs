@@ -216,6 +216,7 @@ namespace Bynder.Extension
                     if (ex != null)
                         throw;
                 }
+                cts.Dispose();
 
                 assetWorker.ResetMetaProperties();
                 Context.Log(LogLevel.Information, $"Finished handling of {states.Count} Bynder Notifications [{successful} created/updated | {deleted} deleted | {failed} failed | {retried} retried]");
