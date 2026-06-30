@@ -62,15 +62,18 @@ At the extensions page add the following connectors with configurations.
 
 After adding and saving a connector press 'Get Default Settings' to get the default configuration options. After editing and saving this settings, restart the service.
 
-| ExtensionId | Package | Assembly Name | Assembly Type | Extension Type | ApiKey |
-| ----------- | ------- | ------------ | ------------- | -------------- | ------ |
-| BynderAssetNotify | Bynder.zip | Bynder.dll | Bynder.Extension.NotificationListener | InboundDataExtension |
-| BynderAssetLoader | Bynder.zip | Bynder.dll | Bynder.Extension.AssetLoader | ScheduledExtension |
-| BynderAssetWorkerEntities | Bynder.zip | Bynder.dll | Bynder.Extension.Worker | EntityListener |
-| BynderUploader | Bynder.zip | Bynder.dll | Bynder.Extension.Uploader | EntityListener |
-| BynderAssetWorkerLinks | Bynder.zip | Bynder.dll | Bynder.Extension.Worker | LinkListener |
-| ScheduledNotificationHandler| Bynder.zip | Bynder.dll | Bynder.Extension.ScheduledNotificationHandler | ScheduledExtension |
-| CvlSyncListener | Bynder.zip | Bynder.dll | Bynder.Extension.CvlSyncListener | CvlListener |
+| ExtensionId | Package | Assembly Name | Assembly Type | Extension Type | Deprecated |
+| ----------- | ------- | ------------- | ------------- | -------------- | ---------- |
+| BynderAssetNotify | Bynder.zip | Bynder.dll | Bynder.Extension.NotificationListener | InboundDataExtension | |
+| BynderAssetLoader | Bynder.zip | Bynder.dll | Bynder.Extension.AssetLoader | ScheduledExtension | |
+| BynderAssetWorkerEntities | Bynder.zip | Bynder.dll | Bynder.Extension.Worker | EntityListener | yes, use InriverEventEnqueuer and InriverEventHandler instead |
+| BynderAssetWorkerLinks | Bynder.zip | Bynder.dll | Bynder.Extension.Worker | LinkListener | yes, use InriverEventEnqueuer and InriverEventHandler instead |
+| BynderInriverEntityEventEnqueuer | Bynder.zip | Bynder.dll | Bynder.Extension.InriverEventEnqueuer | EntityListener | |
+| BynderInriverLinkEventEnqueuer | Bynder.zip | Bynder.dll | Bynder.Extension.InriverEventEnqueuer | LinkListener | |
+| BynderInriverEventHandler | Bynder.zip | Bynder.dll | Bynder.Extension.InriverEventHandler | ScheduledExtension | |
+| BynderUploader | Bynder.zip | Bynder.dll | Bynder.Extension.Uploader | EntityListener | |
+| ScheduledNotificationHandler| Bynder.zip | Bynder.dll | Bynder.Extension.ScheduledNotificationHandler | ScheduledExtension | |
+| CvlSyncListener | Bynder.zip | Bynder.dll | Bynder.Extension.CvlSyncListener | CvlListener |  |
 
 ### Extension settings
 Unfortunately you have to configure 4 extensions to make the integration complete and they cannot share configuration values.

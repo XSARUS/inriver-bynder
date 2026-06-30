@@ -1,58 +1,18 @@
-﻿using inRiver.Remoting.Log;
-using inRiver.Remoting.Extension.Interface;
+﻿using inRiver.Remoting.Extension.Interface;
+using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Text;
 
 namespace Bynder.Extension
 {
+    using Models;
     using Names;
-    using SettingProviders;
-    using Utils.Helpers;
     using Utils.InRiver;
-    using Workers;
 
-    [Obsolete("Use the InriverEventEnqueuer and InriverEventHandler instead")]
-    public class Worker : AbstractBynderExtension, IEntityListener, ILinkListener
+    public class InriverEventEnqueuer : AbstractExtension, IEntityListener, ILinkListener
     {
-
-        #region Properties
-
-        public override Dictionary<string, string> DefaultSettings
-        {
-            get
-            {
-                var settings = base.DefaultSettings;
-
-                foreach (var setting in AssetDownloadWorkerSettingsProvider.Create())
-                {
-                    settings[setting.Key] = setting.Value;
-                }
-
-                foreach (var setting in ResourceMetapropertyUpdateWorkerSettingsProvider.Create())
-                {
-                    settings[setting.Key] = setting.Value;
-                }
-
-                foreach (var setting in AssetUsageUpdateWorkerSettingsProvider.Create())
-                {
-                    settings[setting.Key] = setting.Value;
-                }
-
-                foreach (var setting in NonResourceMetapropertyWorkerSettingsProvider.Create())
-                {
-                    settings[setting.Key] = setting.Value;
-                }
-
-                return settings;
-            }
-        }
-
-        #endregion Properties
-
         #region Methods
 
         public void EntityCommentAdded(int entityId, int commentId)
@@ -68,12 +28,12 @@ namespace Bynder.Extension
         {
             try
             {
-                if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly, EntityTypeIds.Resource, out var entity))
+                if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.Shallow, EntityTypeIds.Resource, out var entity))
                 {
                     return;
                 }
 
-                ExecuteWorkers(entity).GetAwaiter().GetResult();
+                AddConnectorState(new InriverEvent { EntityId = entity.Id, IsResource = true });
             }
             catch (Exception ex)
             {
@@ -89,10 +49,10 @@ namespace Bynder.Extension
                     .Where(l => l.Target.EntityType.Id.Equals(EntityTypeIds.Resource))
                     .Select(l => l.Target.Id))
                 {
-                    if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.DataOnly,
+                    if (!Context.ExtensionManager.DataService.TryGetEntityOfType(entityId, LoadLevel.Shallow,
                         EntityTypeIds.Resource, out var entity)) return;
 
-                    Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity).GetAwaiter().GetResult();
+                    AddConnectorState(new InriverEvent { EntityId = entity.Id, IsResource = true, IsLink = true });
                 }
             }
             catch (Exception ex)
@@ -136,16 +96,9 @@ namespace Bynder.Extension
             try
             {
                 var entity = Context.ExtensionManager.DataService.GetEntity(entityId, LoadLevel.Shallow);
-                if (entity.EntityType.Id == EntityTypeIds.Resource)
-                {
-                    entity = Context.ExtensionManager.DataService.GetEntity(entityId, LoadLevel.DataOnly);
-                    ExecuteWorkers(entity).GetAwaiter().GetResult();
-                }
-                else
-                {
-                    // if other entitytype than resource update metaproperties based on modified fields
-                    Container.GetInstance<NonResourceMetapropertyWorker>().Execute(entity, fields).GetAwaiter().GetResult();
-                }
+                if (entity == null) return;
+
+                AddConnectorState(new InriverEvent { EntityId = entityId, IsResource = entity.EntityType.Id == EntityTypeIds.Resource, FieldTypeIds = fields });
             }
             catch (Exception ex)
             {
@@ -180,53 +133,13 @@ namespace Bynder.Extension
         public void LinkUpdated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
             => HandleLink(targetId);
 
-        public override string Test()
+        private void AddConnectorState(InriverEvent inriverEvent)
         {
-            var sb = new StringBuilder();
-            if (SettingHelper.ExecuteBaseTestMethod(Context.Settings, Context.Logger))
-            {
-                sb.AppendLine(base.Test());
-            }
-
-            try
-            {
-                // Not implemented yet, depends on worker's test-methods
-            }
-            catch (Exception ex)
-            {
-                sb.AppendLine(ex.ToString());
-            }
-
-            return sb.ToString();
+            Context.ExtensionManager.UtilityService.AddConnectorState( new ConnectorState {
+                    ConnectorId = ConnectorStateIds.BynderInriverEvents,
+                    Data = JsonConvert.SerializeObject(inriverEvent)
+            });
         }
-
-        private async Task ExecuteWorkers(Entity entity)
-        {
-            // first download the data, we need that before the other workers
-            await Container.GetInstance<AssetDownloadWorker>().Execute(entity);
-
-            var tasks = new List<Task>()
-            {
-                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity),
-                Container.GetInstance<AssetUsageUpdateWorker>().Execute(entity)
-            };
-
-            var task = Task.WhenAll(tasks);
-
-            try
-            {
-                await task;
-            }
-            catch (AggregateException ex)
-            {
-                Context.Log(LogLevel.Error, $"An exception occurred executing the workers (Task status: {task.Status}): {ex.GetBaseException().Message}", ex);
-            }
-            catch (Exception ex)
-            {
-                Context.Log(LogLevel.Error, $"An exception occurred executing the workers (Task status: {task.Status}): {ex.GetBaseException().Message}", ex);
-            }
-        }
-
         /// <summary>
         /// we should check if we inform bynder of the link create/update/delete
         /// </summary>
@@ -235,10 +148,10 @@ namespace Bynder.Extension
         {
             try
             {
-                if (!Context.ExtensionManager.DataService.TryGetEntityOfType(targetId, LoadLevel.DataOnly,
+                if (!Context.ExtensionManager.DataService.TryGetEntityOfType(targetId, LoadLevel.Shallow,
                     EntityTypeIds.Resource, out var entity)) return;
 
-                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity).GetAwaiter().GetResult();
+                AddConnectorState(new InriverEvent { EntityId = entity.Id, IsResource = true, IsLink = true });
             }
             catch (Exception ex)
             {

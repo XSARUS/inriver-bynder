@@ -98,10 +98,12 @@ namespace Bynder.Extension
                 var notificationWorker = Container.GetInstance<NotificationWorker>();
                 int updatedWorkerCalledCount = 0;
                 int maxUpdatedWorkerCalledCount = SettingHelper.GetMaxUpdatedWorkerCalledCount(Context.Settings, Context.Logger);
+
                 int retried = 0;
                 int failed = 0;
                 int successful = 0;
                 int deleted = 0;
+
                 int maxRetryAttempts = SettingHelper.GetMaxRetryAttempts(Context.Settings, Context.Logger);
 
                 var assetDeletedWorker = Container.GetInstance<AssetDeletedWorker>();
@@ -125,13 +127,12 @@ namespace Bynder.Extension
 
                             var stateData = JsonSerializer.Deserialize<AttemptSNSMessageWrapper>(state.Data, JsonOptions);
                             var notificationMessage = stateData.OriginalMessageJson;
-                            var resultMessages = new List<string>(8);
 
                             Context.Log(LogLevel.Debug,
                                 $"Handling ConnectorState {state.Id} attempt {stateData.Attempt}/{maxRetryAttempts}");
 
                             var notificationResult = notificationWorker.Execute(notificationMessage);
-                            resultMessages = notificationResult.Messages;
+                            var resultMessages = notificationResult.Messages;
 
                             if (!string.IsNullOrEmpty(notificationResult.MediaId))
                             {
@@ -158,6 +159,7 @@ namespace Bynder.Extension
                             }
 
                             Context.ExtensionManager.UtilityService.DeleteConnectorState(state.Id);
+                            Context.Log(LogLevel.Debug, $"Handled Bynder Notification of ConnectorState {state.Id} created at {state.Created} | Result-messages: {string.Join(Environment.NewLine, resultMessages)}");
                         }
                         catch (Exception e)
                         {
