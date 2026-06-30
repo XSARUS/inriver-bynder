@@ -90,10 +90,9 @@ namespace Bynder.Extension
                 var notificationWorker = Container.GetInstance<NotificationWorker>();
                 int updatedWorkerCalledCount = 0;
                 int maxUpdatedWorkerCalledCount = SettingHelper.GetMaxUpdatedWorkerCalledCount(Context.Settings, Context.Logger);
-                int retried = 0;
-                int failed = 0;
-                int succesful = 0;
-                int deleted = 0;
+                
+                var processingStatistics = new ProcessingStatistics();
+
                 int maxRetryAttempts = SettingHelper.GetMaxRetryAttempts(Context.Settings, Context.Logger);
 
                 var assetDeletedWorker = Container.GetInstance<AssetDeletedWorker>();
@@ -119,7 +118,7 @@ namespace Bynder.Extension
                             if (notificationResult.NotificationType == NotificationType.IsDeleted)
                             {
                                 workerResult = assetDeletedWorker.Execute(notificationResult.MediaId);
-                                deleted++;
+                                processingStatistics.Deleted++;
                             }
                             else
                             {
@@ -128,7 +127,7 @@ namespace Bynder.Extension
                                     continue;
                                 }
                                 workerResult = assetWorker.Execute(notificationResult.MediaId, notificationResult.NotificationType);
-                                succesful++;
+                                processingStatistics.Successful++;
                             }
 
                             resultMessages.AddRange(workerResult.Messages);
@@ -148,19 +147,19 @@ namespace Bynder.Extension
                             stateData.Attempt++;
                             state.Data = JsonConvert.SerializeObject(stateData);
                             var updatedState = Context.ExtensionManager.UtilityService.UpdateConnectorState(state);
-                            retried++;
+                            processingStatistics.Retried++;
                         }
                         else
                         {
                             Context.ExtensionManager.UtilityService.DeleteConnectorState(state.Id);
                             Context.Log(LogLevel.Error, $"Max retry attempts reached for ConnectorState {state.Id}", e);
-                            failed++;
+                            processingStatistics.Failed++;
                         }
                     }
                 }
 
                 assetWorker.ResetMetaProperties();
-                Context.Log(LogLevel.Information, $"Finished handling of {states.Count} Bynder Notifications [{succesful} created/updated | {deleted} deleted | {failed} failed | {retried} retried]");
+                Context.Log(LogLevel.Information, $"Finished handling of {states.Count} Bynder Notifications [{processingStatistics.Successful} created/updated | {processingStatistics.Deleted} deleted | {processingStatistics.Failed} failed | {processingStatistics.Retried} retried]");
             }
             catch (Exception ex)
             {

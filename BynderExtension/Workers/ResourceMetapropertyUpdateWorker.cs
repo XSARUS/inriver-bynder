@@ -17,7 +17,7 @@ namespace Bynder.Workers
     using Utils.Helpers;
 
     /// <summary>
-    /// Updates metaproperties on asses in Bynder if Entity applies to EXPORT_CONDITIONS
+    /// Updates metaproperties on assets in Bynder if Entity applies to EXPORT_CONDITIONS
     /// </summary>
     public class ResourceMetapropertyUpdateWorker : AbstractBynderWorker, IWorker
     {
