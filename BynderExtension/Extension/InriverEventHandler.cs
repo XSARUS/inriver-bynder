@@ -127,10 +127,17 @@ namespace Bynder.Extension
         /// <returns></returns>
         private List<ConnectorState> GetConnectorStates()
         {
-            return Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderInriverEvents)
-                .GroupBy(s => s.Id)
+            var all = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderInriverEvents);
+
+            var withoutDuplicates = all
+                .GroupBy(s => s.Data)
                 .Select(g => g.OrderBy(s => s.Created).First())
                 .ToList();
+
+            // delete the duplicates
+            Context.ExtensionManager.UtilityService.DeleteConnectorStates(all.Except(withoutDuplicates).Select(s => s.Id).ToList());
+
+            return withoutDuplicates;
         }
 
         private WorkerContainer GetWorkers()
