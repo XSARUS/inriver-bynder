@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Bynder.Extension
 {
+    using Api;
     using Config;
     using Models;
     using SettingProviders;
@@ -23,6 +24,11 @@ namespace Bynder.Extension
             get
             {
                 var settings = base.DefaultSettings;
+
+                foreach (var kvp in SettingNames.GetDefaultBynderApiSettings())
+                {
+                    settings[kvp.Key] = kvp.Value;
+                }
 
                 foreach (var setting in AssetDownloadWorkerSettingsProvider.Create())
                 {
