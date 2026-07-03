@@ -1,5 +1,5 @@
 ﻿using Amazon.SimpleNotificationService.Util;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Bynder.Models
 {
