@@ -8,6 +8,7 @@ using System.Text;
 
 namespace Bynder.Extension
 {
+    using Bynder.Config;
     using Models;
     using Names;
 
@@ -21,7 +22,7 @@ namespace Bynder.Extension
             {
                 var settings = new Dictionary<string, string>()
                 {
-                    // No settings for this extension
+                    { Settings.ConnectorStateName, ConnectorStateIds.BynderNotificationListener }
                 };
 
                 return settings;
