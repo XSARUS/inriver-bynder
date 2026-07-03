@@ -48,6 +48,7 @@ namespace Bynder.Extension
                     settings[setting.Key] = setting.Value;
                 }
 
+                settings.Add(Settings.ConnectorStateName, Names.ConnectorStateIds.BynderNotificationListener);
                 settings.Add(Settings.MaxRetryAttempts, Settings.DefaultMaxRetryAttempts.ToString());
                 settings.Add(Settings.MaxUpdatesToHandle, Settings.DefaultMaxUpdatesToHandle.ToString());
 

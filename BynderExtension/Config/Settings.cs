@@ -10,6 +10,7 @@
         public const string BynderLocaleForMetapropertyOptionLabel = "BYNDER_LOCALE_FOR_METAPROPERTY_OPTION_LABEL";
         public const string CreateMissingCvlKeys = "CREATE_MISSING_CVL_KEYS";
         public const string CronExpression = "CRON_EXPRESSION";
+        public const string ConnectorStateName = "CONNECTOR_STATE_NAME";
         public const string CvlMetapropertyMapping = "CVL_METAPROPERTY_MAPPING";
         public const int DefaultMaxRetryAttempts = 3;
         public const string DeleteResourceOnDeleteEvent = "DELETE_RESOURCE_ON_DELETE_EVENT";
