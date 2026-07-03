@@ -3,16 +3,31 @@ using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Bynder.Extension
 {
+    using Bynder.Config;
     using Models;
     using Names;
     using Utils.InRiver;
 
     public class InriverEventEnqueuer : AbstractExtension, IEntityListener, ILinkListener
     {
+        public override Dictionary<string, string> DefaultSettings
+        {
+            get
+            {
+                var settings = new Dictionary<string, string>()
+                {
+                    { Settings.ConnectorStateName, ConnectorStateIds.BynderInriverEvents }
+                };
+
+                return settings;
+            }
+        }
+
         #region Methods
 
         public void EntityCommentAdded(int entityId, int commentId)
