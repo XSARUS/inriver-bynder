@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace Bynder.Extension
 {
     using Api;
+    using Bynder.Names;
     using Config;
     using Models;
     using SettingProviders;
@@ -50,6 +51,7 @@ namespace Bynder.Extension
                     settings[setting.Key] = setting.Value;
                 }
 
+                settings.Add(Settings.ConnectorStateName, ConnectorStateIds.BynderInriverEvents);
                 settings.Add(Settings.MaxRetryAttempts, Settings.DefaultMaxRetryAttempts.ToString());
 
                 return settings;
