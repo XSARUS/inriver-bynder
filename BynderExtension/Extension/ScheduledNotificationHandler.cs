@@ -72,7 +72,8 @@ namespace Bynder.Extension
 
             try
             {
-                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
+                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(connectorStateName);
                 sb.AppendLine($"Number of connectorstates found: {states.Count}");
             }
             catch (Exception ex)
@@ -87,14 +88,14 @@ namespace Bynder.Extension
         {
             try
             {
-                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
-                int numOfStates = states.Count;
-                if (numOfStates == 0)
+                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(connectorStateName);
+                if (states.Count == 0)
                 {
                     return;
                 }
 
-                Context.Log(LogLevel.Information, $"Start handling of {numOfStates} Bynder Notifications");
+                Context.Log(LogLevel.Information, $"Start handling of {states.Count} Bynder Notifications");
 
                 var notificationWorker = Container.GetInstance<NotificationWorker>();
                 int updatedWorkerCalledCount = 0;
