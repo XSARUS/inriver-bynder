@@ -12,6 +12,7 @@ namespace Bynder.Extension
     using Config;
     using Enums;
     using Models;
+    using Names;
     using SettingProviders;
     using Utils.Helpers;
     using Workers;
@@ -46,7 +47,7 @@ namespace Bynder.Extension
                     settings[setting.Key] = setting.Value;
                 }
 
-                settings.Add(Settings.ConnectorStateName, Names.ConnectorStateIds.BynderNotificationListener);
+                settings.Add(Settings.ConnectorStateName, ConnectorStateIds.BynderNotificationListener);
                 settings.Add(Settings.MaxRetryAttempts, Settings.DefaultMaxRetryAttempts.ToString());
                 settings.Add(Settings.MaxUpdatesToHandle, Settings.DefaultMaxUpdatesToHandle.ToString());
 
@@ -65,7 +66,7 @@ namespace Bynder.Extension
 
             try
             {
-                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger, ConnectorStateIds.BynderNotificationListener);
                 List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(connectorStateName);
                 sb.AppendLine($"Number of connectorstates found: {states.Count}");
             }
@@ -81,7 +82,7 @@ namespace Bynder.Extension
         {
             try
             {
-                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger, ConnectorStateIds.BynderNotificationListener);
                 List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(connectorStateName);
                 if (states.Count == 0)
                 {

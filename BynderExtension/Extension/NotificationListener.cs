@@ -54,7 +54,7 @@ namespace Bynder.Extension
 
             try
             {
-                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger, ConnectorStateIds.BynderNotificationListener);
                 List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(connectorStateName);
                 sb.AppendLine($"Number of connectorstates currently: {states.Count}");
             }
@@ -73,7 +73,7 @@ namespace Bynder.Extension
         /// <returns></returns>
         public string Update(string value)
         {
-            var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+            var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger, ConnectorStateIds.BynderNotificationListener);
 
             // Value is a Amazon SNS message containing the Bynder notification
             // We just store it in a wrapper in the ConnectorState for processing by the ScheduledNotificationHandler and using retry-logic
