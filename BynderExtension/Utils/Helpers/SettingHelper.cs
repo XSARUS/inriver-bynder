@@ -314,6 +314,17 @@ namespace Bynder.Utils.Helpers
             return string.Empty;
         }
 
+        public static string GetConnectorStateName(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.ConnectorStateName))
+            {
+                return settings[Settings.ConnectorStateName];
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.ConnectorStateName}'");
+            return string.Empty;
+        }
+
         /// <summary>
         /// Optional setting. Default is an empty list.
         /// </summary>
