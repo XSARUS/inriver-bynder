@@ -65,7 +65,8 @@ namespace Bynder.Extension
 
             try
             {
-                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
+                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(connectorStateName);
                 sb.AppendLine($"Number of connectorstates found: {states.Count}");
             }
             catch (Exception ex)
@@ -80,7 +81,8 @@ namespace Bynder.Extension
         {
             try
             {
-                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderNotificationListener);
+                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(connectorStateName);
                 if (states.Count == 0)
                 {
                     return;
