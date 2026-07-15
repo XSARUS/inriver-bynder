@@ -334,6 +334,7 @@ namespace Bynder.Utils.Helpers
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.InRiverIntegrationId}'");
             return string.Empty;
         }
+
         /// <summary>
         /// Optional setting. Default is an empty list.
         /// </summary>
