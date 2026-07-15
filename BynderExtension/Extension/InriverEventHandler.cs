@@ -149,7 +149,7 @@ namespace Bynder.Extension
         /// <returns></returns>
         private List<ConnectorState> GetConnectorStates()
         {
-            var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+            var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger, ConnectorStateIds.BynderInriverEvents);
             var all = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(connectorStateName);
 
             var withoutDuplicates = all

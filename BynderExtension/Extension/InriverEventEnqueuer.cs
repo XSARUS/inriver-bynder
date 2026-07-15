@@ -161,7 +161,7 @@ namespace Bynder.Extension
 
             try
             {
-                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger, ConnectorStateIds.BynderInriverEvents);
                 List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(connectorStateName);
                 sb.AppendLine($"Number of connectorstates currently: {states.Count}");
             }
@@ -175,7 +175,7 @@ namespace Bynder.Extension
 
         private void AddConnectorState(InriverEvent inriverEvent)
         {
-            var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+            var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger, ConnectorStateIds.BynderInriverEvents);
 
             Context.ExtensionManager.UtilityService.AddConnectorState( new ConnectorState {
                     ConnectorId = connectorStateName,
