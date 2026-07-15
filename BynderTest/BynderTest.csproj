@@ -51,6 +51,7 @@
     <Compile Include="CvlSyncListenerTest.cs" />
     <Compile Include="InriverEventHandlerTest.cs" />
     <Compile Include="JsonConvertTest.cs" />
+    <Compile Include="NotificationHandlerTest.cs" />
     <Compile Include="NotificationListenerTest.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
