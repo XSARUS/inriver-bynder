@@ -4,20 +4,22 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Bynder.Extension
 {
     using Api;
-    using Bynder.Names;
     using Config;
     using Models;
+    using Names;
     using SettingProviders;
     using Utils.Helpers;
     using Workers;
 
     public class InriverEventHandler : AbstractScheduledExtension
     {
+
         #region Properties
 
         public override Dictionary<string, string> DefaultSettings
@@ -61,6 +63,24 @@ namespace Bynder.Extension
         #endregion Properties
 
         #region Methods
+
+        public override string Test()
+        {
+            var sb = new StringBuilder();
+            try
+            {
+                sb.AppendLine(base.Test());
+
+                List<ConnectorState> states = GetConnectorStates();
+                sb.AppendLine($"Number of connectorstates currently: {states.Count}");
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine(ex.ToString());
+            }
+
+            return sb.ToString();
+        }
 
         protected override void Execute()
         {
@@ -129,7 +149,8 @@ namespace Bynder.Extension
         /// <returns></returns>
         private List<ConnectorState> GetConnectorStates()
         {
-            var all = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(Names.ConnectorStateIds.BynderInriverEvents);
+            var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+            var all = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(connectorStateName);
 
             var withoutDuplicates = all
                 .GroupBy(s => s.Data)
@@ -211,6 +232,7 @@ namespace Bynder.Extension
 
         private sealed class WorkerContainer
         {
+
             #region Properties
 
             public AssetDownloadWorker AssetDownloadWorker { get; set; }
@@ -219,8 +241,10 @@ namespace Bynder.Extension
             public ResourceMetapropertyUpdateWorker ResourceMetapropertyUpdateWorker { get; set; }
 
             #endregion Properties
+
         }
 
         #endregion Classes
+
     }
 }

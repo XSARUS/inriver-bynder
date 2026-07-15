@@ -5,16 +5,21 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Bynder.Extension
 {
-    using Bynder.Config;
+    using Config;
     using Models;
     using Names;
+    using Utils.Helpers;
     using Utils.InRiver;
 
     public class InriverEventEnqueuer : AbstractExtension, IEntityListener, ILinkListener
     {
+
+        #region Properties
+
         public override Dictionary<string, string> DefaultSettings
         {
             get
@@ -27,6 +32,8 @@ namespace Bynder.Extension
                 return settings;
             }
         }
+
+        #endregion Properties
 
         #region Methods
 
@@ -148,10 +155,30 @@ namespace Bynder.Extension
         public void LinkUpdated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
             => HandleLink(targetId);
 
+        public override string Test()
+        {
+            var sb = new StringBuilder();
+
+            try
+            {
+                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(connectorStateName);
+                sb.AppendLine($"Number of connectorstates currently: {states.Count}");
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine(ex.ToString());
+            }
+
+            return sb.ToString();
+        }
+
         private void AddConnectorState(InriverEvent inriverEvent)
         {
+            var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger);
+
             Context.ExtensionManager.UtilityService.AddConnectorState( new ConnectorState {
-                    ConnectorId = ConnectorStateIds.BynderInriverEvents,
+                    ConnectorId = connectorStateName,
                     Data = JsonConvert.SerializeObject(inriverEvent)
             });
         }
@@ -175,5 +202,6 @@ namespace Bynder.Extension
         }
 
         #endregion Methods
+
     }
 }

@@ -14,6 +14,7 @@ namespace Bynder.Utils.Helpers
 
     public static class SettingHelper
     {
+
         #region Methods
 
         public static bool ExecuteBaseTestMethod(Dictionary<string, string> settings, IExtensionLog logger)
@@ -89,7 +90,6 @@ namespace Bynder.Utils.Helpers
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.CreateMissingCvlKeys}'. Using default value '{false}'");
             return false;
         }
-
         /// <summary>
         /// Optional setting. Default is an empty dictionary.
         /// </summary>
@@ -139,6 +139,16 @@ namespace Bynder.Utils.Helpers
             return null;
         }
 
+        public static string GetConnectorStateName(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.ConnectorStateName))
+            {
+                return settings[Settings.ConnectorStateName];
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.ConnectorStateName}'");
+            return string.Empty;
+        }
         public static string GetCronExpression(Dictionary<string, string> settings, IExtensionLog logger)
         {
             if (settings.ContainsKey(Settings.CronExpression))
@@ -212,6 +222,17 @@ namespace Bynder.Utils.Helpers
 
             logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.ExportConditions}'");
             return new List<ExportCondition>();
+        }
+
+        public static List<FieldTypeThumbnailMapping> GetFieldTypeThumbnailMappings(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.FieldTypeThumbnailMapping) && !string.IsNullOrWhiteSpace(settings[Settings.FieldTypeThumbnailMapping]))
+            {
+                return JsonConvert.DeserializeObject<List<FieldTypeThumbnailMapping>>(settings[Settings.FieldTypeThumbnailMapping]);
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.FieldTypeThumbnailMapping}'");
+            return new List<FieldTypeThumbnailMapping>();
         }
 
         /// <summary>
@@ -352,6 +373,18 @@ namespace Bynder.Utils.Helpers
             return Settings.DefaultMaxRetryAttempts;
         }
 
+        public static int GetMaxUpdatedWorkerCalledCount(Dictionary<string, string> settings, IExtensionLog logger)
+        {
+            if (settings.ContainsKey(Settings.MaxUpdatesToHandle) && int.TryParse(settings[Settings.MaxUpdatesToHandle], out int maxUpdatesToHandle))
+            {
+                return maxUpdatesToHandle;
+            }
+
+            logger.Log(LogLevel.Verbose, $"Could not find configuration or parse the value to an number for '{Settings.MaxUpdatesToHandle}' using default value of {Settings.DefaultMaxUpdatesToHandle}");
+
+            return Settings.DefaultMaxUpdatesToHandle;
+        }
+
         /// <summary>
         /// Optional setting. Default is an empty string.
         /// </summary>
@@ -403,29 +436,7 @@ namespace Bynder.Utils.Helpers
             return true;
         }
 
-        public static List<FieldTypeThumbnailMapping> GetFieldTypeThumbnailMappings(Dictionary<string, string> settings, IExtensionLog logger)
-        {
-            if (settings.ContainsKey(Settings.FieldTypeThumbnailMapping) && !string.IsNullOrWhiteSpace(settings[Settings.FieldTypeThumbnailMapping]))
-            {
-                return JsonConvert.DeserializeObject<List<FieldTypeThumbnailMapping>>(settings[Settings.FieldTypeThumbnailMapping]);
-            }
-
-            logger.Log(LogLevel.Verbose, $"Could not find configuration for '{Settings.FieldTypeThumbnailMapping}'");
-            return new List<FieldTypeThumbnailMapping>();
-        }
-
-        public static int GetMaxUpdatedWorkerCalledCount(Dictionary<string, string> settings, IExtensionLog logger)
-        {
-            if (settings.ContainsKey(Settings.MaxUpdatesToHandle) && int.TryParse(settings[Settings.MaxUpdatesToHandle], out int maxUpdatesToHandle))
-            {
-                return maxUpdatesToHandle;
-            }
-
-            logger.Log(LogLevel.Verbose, $"Could not find configuration or parse the value to an number for '{Settings.MaxUpdatesToHandle}' using default value of {Settings.DefaultMaxUpdatesToHandle}");
-
-            return Settings.DefaultMaxUpdatesToHandle;
-        }
-
         #endregion Methods
+
     }
 }
