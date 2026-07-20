@@ -290,12 +290,9 @@ namespace Bynder.Workers
                 return true;
             }
 
-            foreach (var condition in conditions)
+            if (conditions.Any(x => !GetConditionResult(asset, x)))
             {
-                if (!GetConditionResult(asset, condition))
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;
