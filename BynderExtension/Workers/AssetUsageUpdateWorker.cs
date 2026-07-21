@@ -2,6 +2,7 @@
 using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bynder.Workers
 {
@@ -30,7 +31,7 @@ namespace Bynder.Workers
 
         #region Methods
 
-        public void Execute(Entity resourceEntity)
+        public async Task Execute(Entity resourceEntity)
         {
             // get settings, if missing return, nothing to do
             string integrationId = SettingHelper.GetInRiverIntegrationId(InRiverContext.Settings, InRiverContext.Logger);
@@ -47,10 +48,10 @@ namespace Bynder.Workers
 
             // clear all current usages
             InRiverContext.Log(LogLevel.Information, $"Set asset usage for asset {assetId}");
-            _bynderClient.GetAssetService().DeleteAssetUsage(new AssetUsageQuery(integrationId, assetId));
+            await _bynderClient.GetAssetService().DeleteAssetUsage(new AssetUsageQuery(integrationId, assetId));
 
             // and set new one
-            _bynderClient.GetAssetService().CreateAssetUsage(new AssetUsageQuery(integrationId, assetId)
+            await _bynderClient.GetAssetService().CreateAssetUsage(new AssetUsageQuery(integrationId, assetId)
             {
                 Uri = formattedInriverResourceUrl
             });

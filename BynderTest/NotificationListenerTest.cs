@@ -7,19 +7,26 @@ namespace BynderTest
     public class NotificationListenerTest : TestBase
     {
         #region Methods
+        private NotificationListener _extension;
+
+        [TestInitialize]
+        public void Init()
+        {
+            _extension = new NotificationListener
+            {
+                Context = InRiverContext
+            };
+            TestSettings["CONNECTOR_STATE_NAME"] = "BynderNotificationListenerMetadata";
+
+            _extension.Context.Settings = TestSettings;
+        }
 
         [Ignore("Temporary disabled because since 1.7.0 we only store a ConnectorState and handle it by a ScheduledExtension")]
         [TestMethod]
         public void TestAwsNotification()
         {
-            var listener = new NotificationListener
-            {
-                Context = InRiverContext
-            };
-            listener.Context.Settings = TestSettings;
-
             // todo: fill in your SNS settings in this test message
-            var result = listener.Add(@"{
+            var result = _extension.Add(@"{
                   ""Type"" : ""Notification"",
                   ""MessageId"" : ""da41e39f-ea4d-435a-b922-c6aae3915ebe"",
                   ""TopicArn"" : ""arn:aws:sns:us-west-2:123456789012:MyTopic"",
@@ -39,13 +46,7 @@ namespace BynderTest
         [TestMethod]
         public void TestTestMethod()
         {
-            var listener = new NotificationListener
-            {
-                Context = InRiverContext
-            };
-            listener.Context.Settings = TestSettings;
-
-            var result = listener.Test();
+            var result = _extension.Test();
             Logger.Log(result);
             Assert.AreNotEqual(string.Empty, result, "Got no result");
         }
