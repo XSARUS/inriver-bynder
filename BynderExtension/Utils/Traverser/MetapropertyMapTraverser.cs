@@ -102,7 +102,7 @@ namespace Bynder.Utils.Traverser
             {
                 // check if configured fieldtype is on entity
                 var field = entity.GetField(map.InriverFieldTypeId);
-                var values = GetValuesForField(field);
+                var values = GetValuesForField(field, map.UseCvlValue);
                 if (values.Count == 0)
                 {
                     continue;
@@ -118,6 +118,77 @@ namespace Bynder.Utils.Traverser
                     list.AddRange(values);
                 }
             }
+        }
+
+        protected List<string> GetValuesForField(Field field, bool useCvlValue)
+        {
+            var values = new List<string>();
+
+            if (field?.Data == null)
+            {
+                return values;
+            }
+
+            var data = field.Data.ToString();
+            if (string.IsNullOrWhiteSpace(data))
+            {
+                return values;
+            }
+
+            if (field.FieldType.DataType != DataType.CVL)
+            {
+                values.Add(data);
+                return values;
+            }
+
+            if (field.FieldType.Multivalue)
+            {
+                var keys = data.ToIEnumerable<string>(';');
+
+                foreach (var key in keys)
+                {
+                    var value = useCvlValue
+                        ? GetCvlValueData(key, field.FieldType.CVLId)
+                        : key;
+
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        values.Add(value);
+                    }
+                }
+            }
+            else
+            {
+                var value = useCvlValue
+                    ? GetCvlValueData(data, field.FieldType.CVLId)
+                    : data;
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    values.Add(value);
+                }
+            }
+
+            return values;
+        }
+        private static bool Applies(Entity entity, MetaPropertyMapTraverseConfig node)
+        {
+            // EntityTypeId is required in config; match if set
+            if (!string.IsNullOrWhiteSpace(node.EntityTypeId) &&
+                !entity.EntityType.Id.Equals(node.EntityTypeId, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            // null is all fieldsets, empty is no fieldset, filled is a specific fieldset
+            if (node.FieldSet != null)
+            {
+                var entityFieldSet = entity.FieldSetId ?? string.Empty;
+                if (!entityFieldSet.Equals(node.FieldSet, StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
+
+            return true;
         }
 
         private static IEnumerable<MetaPropertyMapTraverseConfig> FlattenConfig(MetaPropertyMapTraverseConfig root)
@@ -170,27 +241,6 @@ namespace Bynder.Utils.Traverser
 
             Merge(result, newValues);
         }
-
-        private bool Applies(Entity entity, MetaPropertyMapTraverseConfig node)
-        {
-            // EntityTypeId is required in config; match if set
-            if (!string.IsNullOrWhiteSpace(node.EntityTypeId) &&
-                !entity.EntityType.Id.Equals(node.EntityTypeId, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            // null is all fieldsets, empty is no fieldset, filled is a specific fieldset
-            if (node.FieldSet != null)
-            {
-                var entityFieldSet = entity.FieldSetId ?? string.Empty;
-                if (!entityFieldSet.Equals(node.FieldSet, StringComparison.OrdinalIgnoreCase))
-                    return false;
-            }
-
-            return true;
-        }
-
         private string GetCvlValueData(string cvlKey, string cvlId)
         {
             var cvlValue = _context.ExtensionManager.ModelService
