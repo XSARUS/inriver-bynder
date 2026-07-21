@@ -44,7 +44,7 @@ namespace Bynder.Sdk.Query.Asset
         /// Metaproperty options to set on the asset.
         /// </summary>
         [ApiField("metaproperty", Converter = typeof(MetapropertyOptionsConverter))]
-        public IDictionary<string, IList<string>> MetapropertyOptions { get; set; }
+        public IDictionary<string, List<string>> MetapropertyOptions { get; set; }
 
         /// <summary>
         /// Name of the media
@@ -86,7 +86,7 @@ namespace Bynder.Sdk.Query.Asset
         /// </summary>
         /// <param name="metapropertyId">metaproperty ID</param>
         /// <param name="optionIds">set of options</param>
-        public void AddMetapropertyOptions(string metapropertyId, IList<string> optionIds)
+        public void AddMetapropertyOptions(string metapropertyId, List<string> optionIds)
         {
             MetapropertyOptions.Add(metapropertyId, optionIds);
         }

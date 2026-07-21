@@ -74,9 +74,15 @@ Using the initial load query in `INITIAL_ASSET_LOAD_URL_QUERY` it is possible to
 Any asset found is processed using the [AssetUpdated Worker](#AssetUpdated).
 For large collections in Bynder you may assume that this process will take a long time. You can follow its progress by looking at the inRiver Log.
 
-## UC inRiver Resource Entity created or changed
+## UC inRiver Resource Entity created or changed 
 
-Many events lead to changes on the Resource Entity. These events trigger the `Bynder.Extension.Worker` which is both configured as `IEntityListener` and `ILinkListener` to be able to catch all the required events.
+Many events lead to changes on the Resource Entity. 
+
+Deprecated: These events trigger the `Bynder.Extension.Worker` which is both configured as `IEntityListener` and `ILinkListener` to be able to catch all the required events.
+New: These events trigger the `Bynder.Extension.InriverEventEnqueuer` which is configured as `IEntityListener` and `ILinkListener` to be able to catch all the required events. 
+The InriverEventEnqueuer will enqueue the events in a ConnectorState which will be processed by the ScheduledExtension `Bynder.Extension.InriverEventHandler`. 
+In here the workers are called based on the event type.
+
 
 ![Sequence diagram](img/inRiver_Bynder_integration_overview-page3.png)
 
@@ -120,15 +126,27 @@ This worker is responsible for updating the asset usage in Bynder.
   * integration_id = `INRIVER_INTEGRATION_ID`
   * uri = `INRIVER_RESOURCE_URL` in which `{EntityId}` is replaced by the inRiver Resource Entity Id.
 
-## UC inRiver link to Resource is created
+## UC inRiver link to Resource is created / updated / deleted
 
-When a link is created or updated with a resource as Target, the metaproperties worker is called. See [Resource Metaproperty Update worker](#ResourceMetapropertyUpdateWorker).
+When a link is created, updated or deleted with a resource as Target, the metaproperties worker is called. 
+
+Deprecated: These events trigger the `Bynder.Extension.Worker` which is both configured as `IEntityListener` and `ILinkListener` to be able to catch all the required events.
+New: These events trigger the `Bynder.Extension.InriverEventEnqueuer` which is configured as `IEntityListener` and `ILinkListener` to be able to catch all the required events. 
+The InriverEventEnqueuer will enqueue the events in a ConnectorState which will be processed by the ScheduledExtension `Bynder.Extension.InriverEventHandler`. 
+In here the workers are called based on the event type.
+
+See [Resource Metaproperty Update worker](#ResourceMetapropertyUpdateWorker).
 
 ![Sequence diagram](img/inRiver_Bynder_integration_overview-page4.png)
 
 ## UC inRiver "Other than Resource" Entity changed
 
-Many events lead to changes on the Resource Entity. These events trigger the `Bynder.Extension.Worker` which is both configured as `IEntityListener` and `ILinkListener` to be able to catch all the required events.
+Many events lead to changes on the Resource Entity.
+
+Deprecated: These events trigger the `Bynder.Extension.Worker` which is both configured as `IEntityListener` and `ILinkListener` to be able to catch all the required events.
+New: These events trigger the `Bynder.Extension.InriverEventEnqueuer` which is configured as `IEntityListener` and `ILinkListener` to be able to catch all the required events. 
+The InriverEventEnqueuer will enqueue the events in a ConnectorState which will be processed by the ScheduledExtension `Bynder.Extension.InriverEventHandler`. 
+In here the workers are called based on the event type.
 
 ![Sequence diagram](img/inRiver_Bynder_integration_overview-page5.png)
 

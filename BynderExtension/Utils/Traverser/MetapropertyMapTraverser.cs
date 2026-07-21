@@ -1,5 +1,4 @@
 ﻿using inRiver.Remoting.Extension;
-using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
 using System;
 using System.Collections.Generic;
@@ -224,15 +223,10 @@ namespace Bynder.Utils.Traverser
                 // check if configured fieldtype is on entity
                 var field = entity.GetField(map.InriverFieldTypeId);
                 var values = GetValuesForField(field);
-
-                _context.Log(LogLevel.Debug, $"Checking value(s) for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}): {values.Count} values");
-
                 if (values.Count == 0)
                 {
                     continue;
                 }
-
-                _context.Log(LogLevel.Debug, $"Saving value for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}) (R)");
 
                 // update existing or add new
                 if (!newMetapropertyValues.TryGetValue(map.BynderMetaProperty, out var list))

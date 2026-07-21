@@ -1,5 +1,5 @@
 ﻿using Amazon.SimpleNotificationService.Util;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Bynder.Models
 {
@@ -7,10 +7,30 @@ namespace Bynder.Models
     {
         #region Properties
 
+        private readonly object _lock = new object();
+        private Message _originalMessage;
+
         public int Attempt { get; set; }
 
         [JsonIgnore]
-        public Message OriginalMessage => Message.ParseMessage(OriginalMessageJson);
+        public Message OriginalMessage
+        {
+            get
+            {
+                if (_originalMessage == null)
+                {
+                    lock (_lock)
+                    {
+                        if (_originalMessage == null && !string.IsNullOrEmpty(OriginalMessageJson))
+                        {
+                            _originalMessage = Message.ParseMessage(OriginalMessageJson);
+                        }
+                    }
+                }
+
+                return _originalMessage;
+            }
+        }
 
         public string OriginalMessageJson { get; set; }
 
