@@ -11,12 +11,22 @@ namespace Bynder.Utils.Traverser
 
     public class MetapropertyMapTraverser
     {
+        #region Fields
+
         private readonly inRiverContext _context;
+
+        #endregion Fields
+
+        #region Constructors
 
         public MetapropertyMapTraverser(inRiverContext context)
         {
             _context = context;
         }
+
+        #endregion Constructors
+
+        #region Methods
 
         /// <summary>
         /// Collects mapped Bynder metaproperty values for a given start entity (typically a Resource)
@@ -64,53 +74,123 @@ namespace Bynder.Utils.Traverser
             return GetMappedMetaPropertyValues(entity, config);
         }
 
-        private void TraverseNode(
-            Entity currentEntity,
-            MetaPropertyMapTraverseConfig node,
-            Dictionary<string, List<string>> result,
-            HashSet<string> visited)
+        /// <summary>
+        /// Ensures that metaproperties configured as single-value contain at most one value.
+        /// Extra values are discarded.
+        /// </summary>
+        protected static void EnforceSingleValueMetaProperties(List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
         {
-            if (currentEntity == null || node == null)
-                return;
-
-            // Validate entity type and fieldset if configured
-            if (!Applies(currentEntity, node))
-                return;
-
-            var visitKey = $"{currentEntity.Id}:{node.Hash()}";
-            if (!visited.Add(visitKey))
-                return;
-
-            // Collect metaproperty values from the current entity itself (fields)
-            if (node.MetaPropertyMapping != null && node.MetaPropertyMapping.Any())
+            foreach (var map in configuredMetaPropertyMap)
             {
-                AddOrMergeEntityValues(currentEntity, node.MetaPropertyMapping, result);
-            }
+                if (!newMetapropertyValues.ContainsKey(map.BynderMetaProperty)) continue;
 
-            // Traverse inbound children
-            if (node.Inbound != null && node.Inbound.Any())
-            {
-                foreach (var child in node.Inbound)
+                // if the bynder property is not multivalue but we have multiple values then only grab the first
+                var values = newMetapropertyValues[map.BynderMetaProperty];
+                if (!map.IsMultiValue && values.Count > 1)
                 {
-                    // child.LinkTypeId describes the link type between current and next
-                    foreach (var next in GetInboundEntities(currentEntity.Id, child.LinkTypeId))
-                    {
-                        TraverseNode(next, child, result, visited);
-                    }
+                    newMetapropertyValues[map.BynderMetaProperty] = new List<string> { values[0] };
                 }
             }
+        }
 
-            // Traverse outbound children
-            if (node.Outbound != null && node.Outbound.Any())
+        protected static List<string> GetValuesForField(Field field)
+        {
+            var values = new List<string>();
+
+            if (field == null || string.IsNullOrWhiteSpace(field?.Data?.ToString()))
             {
-                foreach (var child in node.Outbound)
+                return values;
+            }
+
+            if (field.FieldType.DataType.Equals(DataType.CVL) && field.FieldType.Multivalue)
+            {
+                var keys = field.Data.ToString().ToIEnumerable<string>(';');
+                if (keys.Any())
                 {
-                    foreach (var next in GetOutboundEntities(currentEntity.Id, child.LinkTypeId))
-                    {
-                        TraverseNode(next, child, result, visited);
-                    }
+                    values.AddRange(keys);
                 }
             }
+            else
+            {
+                values.Add(field.Data.ToString());
+            }
+
+            return values;
+        }
+
+        protected void AddMetapropertyValuesForEntity(Entity entity, List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
+        {
+            foreach (var map in configuredMetaPropertyMap)
+            {
+                // check if configured fieldtype is on entity
+                var field = entity.GetField(map.InriverFieldTypeId);
+                var values = GetValuesForField(field);
+                if (values.Count == 0)
+                {
+                    continue;
+                }
+
+                // update existing or add new
+                if (!newMetapropertyValues.TryGetValue(map.BynderMetaProperty, out var list))
+                {
+                    newMetapropertyValues[map.BynderMetaProperty] = values;
+                }
+                else
+                {
+                    list.AddRange(values);
+                }
+            }
+        }
+
+        private static IEnumerable<MetaPropertyMapTraverseConfig> FlattenConfig(MetaPropertyMapTraverseConfig root)
+        {
+            if (root == null) yield break;
+
+            yield return root;
+
+            if (root.Inbound != null)
+            {
+                foreach (var c in root.Inbound.SelectMany(FlattenConfig))
+                    yield return c;
+            }
+
+            if (root.Outbound != null)
+            {
+                foreach (var c in root.Outbound.SelectMany(FlattenConfig))
+                    yield return c;
+            }
+        }
+
+        private static void Merge(
+            Dictionary<string, List<string>> target,
+            Dictionary<string, List<string>> incoming)
+        {
+            foreach (var incomingKvp in incoming)
+            {
+                if (!target.TryGetValue(incomingKvp.Key, out var existing))
+                {
+                    target[incomingKvp.Key] = incomingKvp.Value ?? new List<string>();
+                    continue;
+                }
+
+                if (incomingKvp.Value == null || incomingKvp.Value.Count == 0)
+                    continue;
+
+                existing.AddRange(incomingKvp.Value);
+            }
+        }
+
+        private void AddOrMergeEntityValues(
+            Entity entity,
+            List<MetaPropertyMap> maps,
+            Dictionary<string, List<string>> result)
+        {
+            // Reuse your existing logic but merge into result instead of throwing on duplicate keys
+            var newValues = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+
+            AddMetapropertyValuesForEntity(entity, maps, newValues);
+
+            Merge(result, newValues);
         }
 
         private bool Applies(Entity entity, MetaPropertyMapTraverseConfig node)
@@ -165,123 +245,55 @@ namespace Bynder.Utils.Traverser
             return _context.ExtensionManager.DataService.GetEntities(ids, LoadLevel.DataOnly);
         }
 
-        private void AddOrMergeEntityValues(
-            Entity entity,
-            List<MetaPropertyMap> maps,
-            Dictionary<string, List<string>> result)
+        private void TraverseNode(
+                                                                                    Entity currentEntity,
+            MetaPropertyMapTraverseConfig node,
+            Dictionary<string, List<string>> result,
+            HashSet<string> visited)
         {
-            // Reuse your existing logic but merge into result instead of throwing on duplicate keys
-            var newValues = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            if (currentEntity == null || node == null)
+                return;
 
-            AddMetapropertyValuesForEntity(entity, maps, newValues);
+            // Validate entity type and fieldset if configured
+            if (!Applies(currentEntity, node))
+                return;
 
-            Merge(result, newValues);
-        }
+            var visitKey = $"{currentEntity.Id}:{node.Hash()}";
+            if (!visited.Add(visitKey))
+                return;
 
-        private static void Merge(
-            Dictionary<string, List<string>> target,
-            Dictionary<string, List<string>> incoming)
-        {
-            foreach (var incomingKvp in incoming)
+            // Collect metaproperty values from the current entity itself (fields)
+            if (node.MetaPropertyMapping != null && node.MetaPropertyMapping.Any())
             {
-                if (!target.TryGetValue(incomingKvp.Key, out var existing))
-                {
-                    target[incomingKvp.Key] = incomingKvp.Value ?? new List<string>();
-                    continue;
-                }
-
-                if (incomingKvp.Value == null || incomingKvp.Value.Count == 0)
-                    continue;
-
-                existing.AddRange(incomingKvp.Value);
-            }
-        }
-
-        private static IEnumerable<MetaPropertyMapTraverseConfig> FlattenConfig(MetaPropertyMapTraverseConfig root)
-        {
-            if (root == null) yield break;
-
-            yield return root;
-
-            if (root.Inbound != null)
-            {
-                foreach (var c in root.Inbound.SelectMany(FlattenConfig))
-                    yield return c;
+                AddOrMergeEntityValues(currentEntity, node.MetaPropertyMapping, result);
             }
 
-            if (root.Outbound != null)
+            // Traverse inbound children
+            if (node.Inbound != null && node.Inbound.Any())
             {
-                foreach (var c in root.Outbound.SelectMany(FlattenConfig))
-                    yield return c;
+                foreach (var child in node.Inbound)
+                {
+                    // child.LinkTypeId describes the link type between current and next
+                    foreach (var next in GetInboundEntities(currentEntity.Id, child.LinkTypeId))
+                    {
+                        TraverseNode(next, child, result, visited);
+                    }
+                }
             }
-        }
 
-        protected void AddMetapropertyValuesForEntity(Entity entity, List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
-        {
-            foreach (var map in configuredMetaPropertyMap)
+            // Traverse outbound children
+            if (node.Outbound != null && node.Outbound.Any())
             {
-                // check if configured fieldtype is on entity
-                var field = entity.GetField(map.InriverFieldTypeId);
-                var values = GetValuesForField(field);
-                if (values.Count == 0)
+                foreach (var child in node.Outbound)
                 {
-                    continue;
-                }
-
-                // update existing or add new
-                if (!newMetapropertyValues.TryGetValue(map.BynderMetaProperty, out var list))
-                {
-                    newMetapropertyValues[map.BynderMetaProperty] = values;
-                }
-                else
-                {
-                    list.AddRange(values);
+                    foreach (var next in GetOutboundEntities(currentEntity.Id, child.LinkTypeId))
+                    {
+                        TraverseNode(next, child, result, visited);
+                    }
                 }
             }
         }
 
-        /// <summary>
-        /// Ensures that metaproperties configured as single-value contain at most one value.
-        /// Extra values are discarded.
-        /// </summary>
-        protected static void EnforceSingleValueMetaProperties(List<MetaPropertyMap> configuredMetaPropertyMap, Dictionary<string, List<string>> newMetapropertyValues)
-        {
-            foreach (var map in configuredMetaPropertyMap)
-            {
-                if (!newMetapropertyValues.ContainsKey(map.BynderMetaProperty)) continue;
-
-                // if the bynder property is not multivalue but we have multiple values then only grab the first
-                var values = newMetapropertyValues[map.BynderMetaProperty];
-                if (!map.IsMultiValue && values.Count > 1)
-                {
-                    newMetapropertyValues[map.BynderMetaProperty] = new List<string> { values[0] };
-                }
-            }
-        }
-
-        protected static List<string> GetValuesForField(Field field)
-        {
-            var values = new List<string>();
-
-            if (field == null || string.IsNullOrWhiteSpace(field?.Data?.ToString()))
-            {
-                return values;
-            }
-
-            if (field.FieldType.DataType.Equals(DataType.CVL) && field.FieldType.Multivalue)
-            {
-                var keys = field.Data.ToString().ToIEnumerable<string>(';');
-                if (keys.Any())
-                {
-                    values.AddRange(keys);
-                }
-            }
-            else
-            {
-                values.Add(field.Data.ToString());
-            }
-
-            return values;
-        }
+        #endregion Methods
     }
 }
