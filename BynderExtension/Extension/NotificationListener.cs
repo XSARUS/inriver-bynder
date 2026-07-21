@@ -8,6 +8,8 @@ using System.Text;
 
 namespace Bynder.Extension
 {
+    using Bynder.Config;
+    using Bynder.Utils.Helpers;
     using Models;
     using Names;
 
@@ -21,7 +23,7 @@ namespace Bynder.Extension
             {
                 var settings = new Dictionary<string, string>()
                 {
-                    // No settings for this extension
+                    { Settings.ConnectorStateName, ConnectorStateIds.BynderNotificationListener }
                 };
 
                 return settings;
@@ -52,7 +54,8 @@ namespace Bynder.Extension
 
             try
             {
-                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(ConnectorStateIds.BynderNotificationListener);
+                var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger, ConnectorStateIds.BynderNotificationListener);
+                List<ConnectorState> states = Context.ExtensionManager.UtilityService.GetAllConnectorStatesForConnector(connectorStateName);
                 sb.AppendLine($"Number of connectorstates currently: {states.Count}");
             }
             catch (Exception ex)
@@ -70,6 +73,8 @@ namespace Bynder.Extension
         /// <returns></returns>
         public string Update(string value)
         {
+            var connectorStateName = SettingHelper.GetConnectorStateName(Context.Settings, Context.Logger, ConnectorStateIds.BynderNotificationListener);
+
             // Value is a Amazon SNS message containing the Bynder notification
             // We just store it in a wrapper in the ConnectorState for processing by the ScheduledNotificationHandler and using retry-logic
             AttemptSNSMessageWrapper data = new AttemptSNSMessageWrapper
@@ -83,7 +88,7 @@ namespace Bynder.Extension
 
             ConnectorState state = new ConnectorState
             {
-                ConnectorId = ConnectorStateIds.BynderNotificationListener,
+                ConnectorId = connectorStateName,
                 Data = JsonConvert.SerializeObject(data)
             };
 
@@ -91,7 +96,7 @@ namespace Bynder.Extension
 
             state = Context.ExtensionManager.UtilityService.AddConnectorState(state);
 
-            string responseMessage = $"Notification message queued in ConnectorState {state.Id} for arbitrary connector {ConnectorStateIds.BynderNotificationListener} at {DateTime.Now.ToString("yyyyMMddHHmmss")}";
+            string responseMessage = $"Notification message queued in ConnectorState {state.Id} for name {connectorStateName} at {DateTime.Now.ToString("yyyyMMddHHmmss")}";
             Context.Log(LogLevel.Verbose, responseMessage);
 
             return responseMessage;

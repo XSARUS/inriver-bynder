@@ -102,16 +102,11 @@ namespace Bynder.Utils.Traverser
             {
                 // check if configured fieldtype is on entity
                 var field = entity.GetField(map.InriverFieldTypeId);
-                var values = GetValuesForField(field, map.UseCvlValue);
-
-                _context.Log(LogLevel.Debug, $"Checking value(s) for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}): {values.Count} values");
-
+                var values = GetValuesForField(field);
                 if (values.Count == 0)
                 {
                     continue;
                 }
-
-                _context.Log(LogLevel.Debug, $"Saving value for metaproperty {map.BynderMetaProperty} ({map.InriverFieldTypeId}) (R)");
 
                 // update existing or add new
                 if (!newMetapropertyValues.TryGetValue(map.BynderMetaProperty, out var list))
@@ -123,58 +118,6 @@ namespace Bynder.Utils.Traverser
                     list.AddRange(values);
                 }
             }
-        }
-
-        protected List<string> GetValuesForField(Field field, bool useCvlValue)
-        {
-            var values = new List<string>();
-
-            if (field?.Data == null)
-            {
-                return values;
-            }
-
-            var data = field.Data.ToString();
-            if (string.IsNullOrWhiteSpace(data))
-            {
-                return values;
-            }
-
-            if (field.FieldType.DataType != DataType.CVL)
-            {
-                values.Add(data);
-                return values;
-            }
-
-            if (field.FieldType.Multivalue)
-            {
-                var keys = data.ToIEnumerable<string>(';');
-
-                foreach (var key in keys)
-                {
-                    var value = useCvlValue
-                        ? GetCvlValueData(key, field.FieldType.CVLId)
-                        : key;
-
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        values.Add(value);
-                    }
-                }
-            }
-            else
-            {
-                var value = useCvlValue
-                    ? GetCvlValueData(data, field.FieldType.CVLId)
-                    : data;
-
-                if (!string.IsNullOrEmpty(value))
-                {
-                    values.Add(value);
-                }
-            }
-
-            return values;
         }
 
         private static IEnumerable<MetaPropertyMapTraverseConfig> FlattenConfig(MetaPropertyMapTraverseConfig root)
@@ -314,7 +257,7 @@ namespace Bynder.Utils.Traverser
         }
 
         private void TraverseNode(
-                                                                                            Entity currentEntity,
+            Entity currentEntity,
             MetaPropertyMapTraverseConfig node,
             Dictionary<string, List<string>> result,
             HashSet<string> visited)
