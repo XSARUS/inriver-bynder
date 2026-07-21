@@ -86,6 +86,7 @@
     <Compile Include="Models\ProcessingStatistics.cs" />
     <Compile Include="Models\ResourceUploadData.cs" />
     <Compile Include="Names\ConnectorStateIds.cs" />
+    <Compile Include="Names\ServerSettings.cs" />
     <Compile Include="SettingProviders\AssetDownloadWorkerSettingsProvider.cs" />
     <Compile Include="SettingProviders\AssetUsageUpdateWorkerSettingsProvider.cs" />
     <Compile Include="SettingProviders\NonResourceMetapropertyWorkerSettingsProvider.cs" />
