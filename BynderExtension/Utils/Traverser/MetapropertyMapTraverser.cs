@@ -13,6 +13,7 @@ namespace Bynder.Utils.Traverser
 
     public class MetapropertyMapTraverser
     {
+
         #region Fields
 
         private readonly inRiverContext _context;
@@ -362,5 +363,6 @@ namespace Bynder.Utils.Traverser
         }
 
         #endregion Methods
+
     }
 }
