@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="AssetLoaderTest.cs" />
     <Compile Include="CvlSyncListenerTest.cs" />
+    <Compile Include="ScheduledNotificationHandlerTests.cs" />
     <Compile Include="InriverEventHandlerTest.cs" />
     <Compile Include="JsonConvertTest.cs" />
     <Compile Include="NotificationHandlerTest.cs" />
@@ -58,15 +59,16 @@
     <Compile Include="NonResourceMetapropertyWorkerTest.cs" />
     <Compile Include="ResourceMetapropertyUpdateWorkerTest.cs" />
     <Compile Include="ApiTest.cs" />
-    <Compile Include="TestBase.local.cs" />
+    <Compile Include="TestBase.cs" />
+    <Compile Include="UploaderTest.cs" />
     <Compile Include="WorkerTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MSTest.TestAdapter">
-      <Version>4.0.2</Version>
+      <Version>4.3.3</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
-      <Version>4.0.2</Version>
+      <Version>4.3.3</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
