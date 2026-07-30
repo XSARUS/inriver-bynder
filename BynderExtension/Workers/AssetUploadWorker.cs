@@ -17,7 +17,7 @@ namespace Bynder.Workers
     using SdkIBynderClient = Sdk.Service.IBynderClient;
     using SdkUploadQuery = Sdk.Query.Upload.UploadQuery;
 
-    public class AssetUploadWorker : AbstractBynderWorker, IWorker
+    public class AssetUploadWorker : AbstractBynderUploadWorker, IWorker
     {
         #region Properties
 
@@ -46,6 +46,13 @@ namespace Bynder.Workers
 
             string bynderUploadState = GetBynderUploadStateFromEntity(resourceEntity);
             if (string.IsNullOrWhiteSpace(bynderUploadState) || bynderUploadState != BynderStates.Todo) return;
+
+            // check if it may upload
+            if (!EntityAppliesToConditions(resourceEntity))
+            {
+                InRiverContext.Log(LogLevel.Information, $"Resource {resourceEntity.Id} does not apply to conditions, skipping upload");
+                return;
+            }
 
             UploadResourceForEntity(resourceEntity);
         }
