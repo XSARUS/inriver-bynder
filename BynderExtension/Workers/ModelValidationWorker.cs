@@ -42,7 +42,7 @@ namespace Bynder.Workers
 
             // check existance of CVL
             AssumeCVLExists(CvlIds.ResourceBynderState);
-            AssumeCVLValuesExists(CvlIds.ResourceBynderState, new[] { BynderStates.Todo, BynderStates.Done, BynderStates.Error });
+            AssumeCVLValuesExists(CvlIds.ResourceBynderState, new[] { BynderStates.Todo, BynderStates.Done, BynderStates.Error, BynderStates.Skipped });
 
             // check if field downloadstate linked to right CVL
             AssumeFieldTypeIsCVL(FieldTypeIds.ResourceBynderDownloadState, CvlIds.ResourceBynderState);

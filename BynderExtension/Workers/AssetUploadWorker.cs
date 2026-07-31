@@ -17,7 +17,7 @@ namespace Bynder.Workers
     using SdkIBynderClient = Sdk.Service.IBynderClient;
     using SdkUploadQuery = Sdk.Query.Upload.UploadQuery;
 
-    public class AssetUploadWorker : AbstractBynderWorker, IWorker
+    public class AssetUploadWorker : AbstractBynderUploadWorker, IWorker
     {
         #region Properties
 
@@ -44,15 +44,20 @@ namespace Bynder.Workers
             if (resourceEntity.LoadLevel < LoadLevel.DataOnly)
                 resourceEntity = InRiverContext.ExtensionManager.DataService.GetEntity(resourceEntity.Id, LoadLevel.DataOnly);
 
-            string bynderUploadState = GetBynderUploadStateFromEntity(resourceEntity);
+            var bynderUploadStateField = resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState);
+            string bynderUploadState = bynderUploadStateField?.Data?.ToString();
             if (string.IsNullOrWhiteSpace(bynderUploadState) || bynderUploadState != BynderStates.Todo) return;
 
-            UploadResourceForEntity(resourceEntity);
-        }
+            // check if it may upload
+            if (!EntityAppliesToConditions(resourceEntity))
+            {
+                InRiverContext.Log(LogLevel.Information, $"Resource {resourceEntity.Id} does not apply to conditions, skipping upload");
+                bynderUploadStateField.Data = BynderStates.Skipped;
+                InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderUploadStateField });
+                return;
+            }
 
-        private static string GetBynderUploadStateFromEntity(Entity resourceEntity)
-        {
-            return (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState)?.Data;
+            UploadResourceForEntity(resourceEntity);
         }
 
         private static int GetFileIdFromEntity(Entity resourceEntity)
