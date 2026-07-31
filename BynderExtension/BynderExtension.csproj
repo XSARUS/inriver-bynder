@@ -109,8 +109,9 @@
     <Compile Include="Utils\InRiver\DataServiceExtensions.cs" />
     <Compile Include="Utils\Traverser\EntityTraverser.cs" />
     <Compile Include="Utils\Traverser\MetapropertyMapTraverser.cs" />
-    <Compile Include="Workers\AbstractBynderWorker.cs" />
-    <Compile Include="Workers\AbstractWorker.cs" />
+    <Compile Include="Workers\Abstract\AbstractBynderUploadWorker.cs" />
+    <Compile Include="Workers\Abstract\AbstractBynderWorker.cs" />
+    <Compile Include="Workers\Abstract\AbstractWorker.cs" />
     <Compile Include="Workers\AssetDeletedWorker.cs" />
     <Compile Include="Workers\AssetDownloadWorker.cs" />
     <Compile Include="Workers\AssetUpdatedWorker.cs" />

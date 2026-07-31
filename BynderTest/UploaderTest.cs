@@ -17,7 +17,7 @@ namespace BynderTest
             };
 
             uploader.Context.Settings = TestSettings;
-            uploader.EntityUpdated(232963, new string[] { });
+            uploader.EntityUpdated(54239, new string[] { });
         }
     }
 }
