@@ -49,6 +49,12 @@ namespace Bynder.Workers
                 return;
             }
 
+            string bynderUploadStatus = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState)?.Data;
+            if (bynderUploadStatus == BynderStates.Skipped)
+            {
+                return;
+            }
+
             // block resourceEntity for bynder update if no BynderId is found on entity
             string bynderId = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderId)?.Data;
             if (string.IsNullOrWhiteSpace(bynderId))
@@ -59,7 +65,6 @@ namespace Bynder.Workers
 
             // only update bynder asset if resource has been downloaded or uploaded
             string bynderDownloadStatus = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderDownloadState)?.Data;
-            string bynderUploadStatus = (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState)?.Data;
 
             if ((string.IsNullOrWhiteSpace(bynderDownloadStatus) && string.IsNullOrWhiteSpace(bynderUploadStatus))
                 || (bynderDownloadStatus != BynderStates.Done && bynderUploadStatus != BynderStates.Done))

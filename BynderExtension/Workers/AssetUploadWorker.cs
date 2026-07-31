@@ -44,22 +44,20 @@ namespace Bynder.Workers
             if (resourceEntity.LoadLevel < LoadLevel.DataOnly)
                 resourceEntity = InRiverContext.ExtensionManager.DataService.GetEntity(resourceEntity.Id, LoadLevel.DataOnly);
 
-            string bynderUploadState = GetBynderUploadStateFromEntity(resourceEntity);
+            var bynderUploadStateField = resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState);
+            string bynderUploadState = bynderUploadStateField?.Data?.ToString();
             if (string.IsNullOrWhiteSpace(bynderUploadState) || bynderUploadState != BynderStates.Todo) return;
 
             // check if it may upload
             if (!EntityAppliesToConditions(resourceEntity))
             {
                 InRiverContext.Log(LogLevel.Information, $"Resource {resourceEntity.Id} does not apply to conditions, skipping upload");
+                bynderUploadStateField.Data = BynderStates.Skipped;
+                InRiverContext.ExtensionManager.DataService.UpdateFieldsForEntity(new List<Field> { bynderUploadStateField });
                 return;
             }
 
             UploadResourceForEntity(resourceEntity);
-        }
-
-        private static string GetBynderUploadStateFromEntity(Entity resourceEntity)
-        {
-            return (string)resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState)?.Data;
         }
 
         private static int GetFileIdFromEntity(Entity resourceEntity)

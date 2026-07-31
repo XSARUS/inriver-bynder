@@ -40,6 +40,7 @@ For the integration you need to add the following CVLs and values to the model:
 | `todo` | Todo |
 | `done` | Done |
 | `error` | Error |
+| `skipped` | Skipped |
 
 Also you need the have the following fields on the `Resource` Entity:
 
