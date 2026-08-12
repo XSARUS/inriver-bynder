@@ -1,10 +1,10 @@
 ﻿using inRiver.Remoting.Log;
 using inRiver.Remoting.Objects;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -56,11 +56,6 @@ namespace Bynder.Extension
                 return settings;
             }
         }
-
-        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
 
         #endregion Properties
 
@@ -128,7 +123,7 @@ namespace Bynder.Extension
                         {
                             token.ThrowIfCancellationRequested();
 
-                            var stateData = JsonSerializer.Deserialize<AttemptSNSMessageWrapper>(state.Data, JsonOptions);
+                            var stateData = JsonConvert.DeserializeObject<AttemptSNSMessageWrapper>(state.Data);
                             var notificationMessage = stateData.OriginalMessageJson;
 
                             Context.Log(LogLevel.Debug,
@@ -166,7 +161,7 @@ namespace Bynder.Extension
                         }
                         catch (Exception e)
                         {
-                            var stateData = JsonSerializer.Deserialize<AttemptSNSMessageWrapper>(state.Data, JsonOptions);
+                            var stateData = JsonConvert.DeserializeObject<AttemptSNSMessageWrapper>(state.Data);
 
                             Context.Log(LogLevel.Error,
                                 $"Failed handling ConnectorState {state.Id} [attempt {stateData.Attempt}/{maxRetryAttempts}]: {e.Message}",
@@ -190,7 +185,7 @@ namespace Bynder.Extension
                             if (stateData.Attempt < maxRetryAttempts)
                             {
                                 stateData.Attempt++;
-                                state.Data = JsonSerializer.Serialize(stateData, JsonOptions);
+                                state.Data = JsonConvert.SerializeObject(stateData);
                                 Context.ExtensionManager.UtilityService.UpdateConnectorState(state);
                                 Interlocked.Increment(ref retried);
                             }
