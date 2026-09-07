@@ -148,13 +148,21 @@ namespace Bynder.Workers
 
                 if (uploadResult.IsSuccessful)
                 {
+                    bynderUploadStateField.Data = BynderStates.Done;
+                    InRiverContext.Log(LogLevel.Information, $"Finished uploading resource entity {resourceEntity.Id} with name {resourceUploadData.Filename}");
+                }
+                else
+                {
+                    bynderUploadStateField.Data = BynderStates.Error;
+                    InRiverContext.Log(LogLevel.Error, $"Error uploading resource entity {resourceEntity.Id} with name {resourceUploadData.Filename}, but no reason given.");
+                }
+
+                if (!string.IsNullOrWhiteSpace(uploadResult.MediaId))
+                {
                     var bynderAssetIdField = resourceEntity.GetField(FieldTypeIds.ResourceBynderAssetId);
                     bynderAssetIdField.Data = uploadResult.MediaId;
                     fieldsToUpdate.Add(bynderAssetIdField);
                 }
-
-                bynderUploadStateField.Data = BynderStates.Done;
-                InRiverContext.Log(LogLevel.Information, $"Finished uploading resource entity {resourceEntity.Id}");
             }
             catch (Exception ex)
             {
