@@ -53,7 +53,7 @@ namespace Bynder.Extension
                     EntityTypeIds.Resource, out var entity)) return;
 
                 Container.GetInstance<AssetUploadWorker>().Execute(entity);
-                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
+                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity).GetAwaiter().GetResult();
             }
             catch (System.Exception ex)
             {
@@ -99,7 +99,7 @@ namespace Bynder.Extension
                     EntityTypeIds.Resource, out var entity)) return;
 
                 Container.GetInstance<AssetUploadWorker>().Execute(entity);
-                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity);
+                Container.GetInstance<ResourceMetapropertyUpdateWorker>().Execute(entity).GetAwaiter().GetResult();
             }
             catch (System.Exception ex)
             {
