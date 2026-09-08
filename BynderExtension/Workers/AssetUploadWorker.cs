@@ -37,8 +37,6 @@ namespace Bynder.Workers
 
         public void Execute(Entity resourceEntity)
         {
-            InRiverContext.Log(LogLevel.Information, $"Start uploading resource entity {resourceEntity.Id}");
-
             if (!resourceEntity.EntityType.Id.Equals(EntityTypeIds.Resource)) return;
 
             if (resourceEntity.LoadLevel < LoadLevel.DataOnly)
@@ -122,6 +120,8 @@ namespace Bynder.Workers
 
         private void UploadResourceForEntity(Entity resourceEntity)
         {
+            InRiverContext.Log(LogLevel.Information, $"Start uploading resource entity {resourceEntity.Id}");
+
             var fieldsToUpdate = new List<Field>();
             Field bynderUploadStateField = resourceEntity.GetField(FieldTypeIds.ResourceBynderUploadState);
 
